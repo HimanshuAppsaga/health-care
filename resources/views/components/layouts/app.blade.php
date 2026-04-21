@@ -9,9 +9,39 @@
         @vite(['resources/css/app.css', 'resources/js/app.js'])
 
         @livewireStyles
+        <style>
+            .custom-scrollbar::-webkit-scrollbar {
+                width: 6px;
+            }
+            .custom-scrollbar::-webkit-scrollbar-track {
+                background: transparent;
+            }
+            .custom-scrollbar::-webkit-scrollbar-thumb {
+                background: #E2E8F0;
+                border-radius: 10px;
+            }
+        </style>
     </head>
-    <body>
-        {{ $slot }}
+    <body class="antialiased">
+        @auth
+            <div class="flex h-screen bg-[#F8FAFC] font-sans text-gray-900">
+                <!-- Sidebar -->
+                <livewire:common.sidebar />
+
+                <!-- Main Content -->
+                <div class="flex-1 flex flex-col overflow-hidden">
+                    <!-- Header -->
+                    <livewire:common.header />
+
+                    <!-- Dashboard Content -->
+                    <main class="flex-1 overflow-y-auto custom-scrollbar">
+                        {{ $slot }}
+                    </main>
+                </div>
+            </div>
+        @else
+            {{ $slot }}
+        @endauth
 
         @livewireScripts
     </body>

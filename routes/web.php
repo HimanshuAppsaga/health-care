@@ -17,4 +17,10 @@ Route::middleware('guest')->group(function () {
 
 Route::middleware('auth')->group(function () {
     Route::get('/dashboard', \App\Livewire\ClinicAdmin\Dashboard::class)->name('admin.dashboard');
+    
+    // Staff Management
+    Route::get('/staff', \App\Livewire\ClinicAdmin\Staff\Staff::class)->name('admin.staff.index');
+    Route::get('/staff/create', \App\Livewire\ClinicAdmin\Staff\CreateStaff::class)->name('admin.staff.create');
+    Route::get('/staff/{id}/edit', \App\Livewire\ClinicAdmin\Staff\EditStaff::class)->name('admin.staff.edit');
+    Route::get('/staff/{id}', \App\Livewire\ClinicAdmin\Staff\DetailStaff::class)->name('admin.staff.detail');
 });
