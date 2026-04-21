@@ -1,65 +1,145 @@
-<aside class="flex flex-col w-64 h-screen px-5 py-8 overflow-y-auto bg-white border-r rtl:border-r-0 rtl:border-l dark:bg-gray-900 dark:border-gray-700">
-    <a href="#" class="flex items-center gap-2 px-4">
-        <div class="flex items-center justify-center w-8 h-8 rounded-lg bg-primary-600">
-            <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
-            </svg>
-        </div>
-        <span class="text-xl font-bold tracking-tight text-gray-800 dark:text-white">CMS App</span>
-    </a>
-
-    <div class="flex flex-col justify-between flex-1 mt-6">
-        <nav class="flex-1 -mx-3 space-y-3">
-            <a class="flex items-center px-3 py-2 text-gray-600 transition-colors duration-300 transform rounded-lg dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 dark:hover:text-gray-200 hover:text-gray-700" href="#">
-                <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M19 11H5M19 11C20.1046 11 21 11.8954 21 13V19C21 20.1046 20.1046 21 19 21H5C3.89543 21 3 20.1046 3 19V13C3 11.8954 3.89543 11 5 11M19 11V9C19 7.89543 18.1046 7 17 7M5 11V9C5 7.89543 5.89543 7 7 7M17 7V5C17 3.89543 16.1046 3 15 3H9C7.89543 3 7 3.89543 7 5V7M17 7H7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                </svg>
-                <span class="mx-2 text-sm font-medium">Dashboard</span>
-            </a>
-
-            <a class="flex items-center px-3 py-2 text-gray-600 transition-colors duration-300 transform rounded-lg dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 dark:hover:text-gray-200 hover:text-gray-700" href="#">
-                <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M16 7C16 9.20914 14.2091 11 12 11C9.79086 11 8 9.20914 8 7C8 4.79086 9.79086 3 12 3C14.2091 3 16 4.79086 16 7Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                    <path d="M12 14C8.13401 14 5 17.134 5 21H19C19 17.134 15.866 14 12 14Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                </svg>
-                <span class="mx-2 text-sm font-medium">Users</span>
-            </a>
-
-            <a class="flex items-center px-3 py-2 text-gray-600 transition-colors duration-300 transform rounded-lg dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 dark:hover:text-gray-200 hover:text-gray-700" href="#">
-                <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M9 5H7C5.89543 5 5 5.89543 5 7V19C5 20.1046 5.89543 21 7 21H17C18.1046 21 19 20.1046 19 19V7C19 5.89543 18.1046 5 17 5H15M9 5C9 6.10457 9.89543 7 11 7H13C14.1046 7 15 6.10457 15 5M9 5C9 3.89543 9.89543 3 11 3H13C14.1046 3 15 3.89543 15 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                </svg>
-                <span class="mx-2 text-sm font-medium">Reports</span>
-            </a>
-
-            <a class="flex items-center px-3 py-2 text-gray-600 transition-colors duration-300 transform rounded-lg dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 dark:hover:text-gray-200 hover:text-gray-700" href="#">
-                <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M10.3246 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                    <path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                </svg>
-                <span class="mx-2 text-sm font-medium">Settings</span>
-            </a>
-        </nav>
-
-        <div class="mt-6">
-            <div class="p-3 bg-gray-100 rounded-lg dark:bg-gray-800">
-                <h2 class="text-sm font-medium text-gray-800 dark:text-white">New feature availabe!</h2>
-                <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Check out the new analytics dashboard.</p>
-                <img class="object-cover w-full h-32 mt-2 rounded-lg" src="https://images.unsplash.com/photo-1543269865-cbf427effbad?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=3120&q=80" alt="Feature">
+<div class="relative flex">
+    <!-- Sidebar -->
+    <aside 
+        class="flex flex-col h-screen transition-all duration-300 ease-in-out bg-white border-r dark:bg-gray-900 dark:border-gray-800 {{ $isCollapsed ? 'w-20' : 'w-64' }}"
+    >
+        <!-- Logo Section -->
+        <div class="flex items-center h-20 px-6 border-b dark:border-gray-800">
+            <div class="flex items-center gap-3">
+                <div class="flex items-center justify-center flex-shrink-0 w-10 h-10 rounded-xl bg-gradient-to-tr from-primary-600 to-primary-400 shadow-lg shadow-primary-500/20">
+                    <x-icon name="layout-dashboard" class="w-6 h-6 text-white" />
+                </div>
+                @if(!$isCollapsed)
+                    <span class="text-xl font-bold tracking-tight text-gray-800 dark:text-white transition-opacity duration-300">
+                        Clinic<span class="text-primary-600">Sync</span>
+                    </span>
+                @endif
             </div>
+        </div>
 
-            <div class="flex items-center justify-between mt-6">
-                <a href="#" class="flex items-center gap-x-2">
-                    <img class="object-cover rounded-full h-7 w-7" src="https://images.unsplash.com/photo-1531427186611-ecfd6d936c79?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=634&q=80" alt="avatar">
-                    <span class="text-sm font-medium text-gray-700 dark:text-gray-200">John Doe</span>
-                </a>
+        <!-- Toggle Button (Desktop) -->
+        <button 
+            wire:click="toggleSidebar"
+            class="absolute top-7 -right-3 flex items-center justify-center w-6 h-6 bg-white border border-gray-200 rounded-full shadow-sm dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors z-50"
+        >
+            <x-icon name="{{ $isCollapsed ? 'chevron-right' : 'chevron-left' }}" class="w-4 h-4 text-gray-500" />
+        </button>
+
+        <!-- Navigation Items -->
+        <div class="flex-1 overflow-y-auto overflow-x-hidden py-6 px-4 space-y-8 custom-scrollbar">
+            @foreach($menuItems as $section => $items)
+                <div class="space-y-2">
+                    @if(!$isCollapsed)
+                        <h3 class="px-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                            {{ $section }}
+                        </h3>
+                    @else
+                        <div class="h-px bg-gray-100 dark:bg-gray-800 mx-2"></div>
+                    @endif
+
+                    <nav class="space-y-1">
+                        @foreach($items as $item)
+                            @php
+                                $isActive = request()->routeIs($item['route']);
+                                $hasBadge = isset($item['badge']) && isset($$item['badge']) && $$item['badge'] > 0;
+                            @endphp
+                            <a 
+                                href="#" 
+                                class="flex items-center gap-3 px-4 py-3 text-sm font-medium transition-all duration-200 rounded-xl group relative
+                                    {{ $isActive 
+                                        ? 'bg-primary-50 text-primary-600 dark:bg-primary-900/20 dark:text-primary-400' 
+                                        : 'text-gray-600 hover:bg-gray-50 dark:text-gray-400 dark:hover:bg-gray-800/50 dark:hover:text-gray-200' }}"
+                                title="{{ $isCollapsed ? $item['name'] : '' }}"
+                            >
+                                <x-icon 
+                                    name="{{ $item['icon'] }}" 
+                                    class="flex-shrink-0 transition-transform group-hover:scale-110 {{ $isActive ? 'text-primary-600 dark:text-primary-400' : 'text-gray-400 group-hover:text-gray-600 dark:group-hover:text-gray-300' }}" 
+                                />
+                                
+                                @if(!$isCollapsed)
+                                    <span class="flex-1 truncate">{{ $item['name'] }}</span>
+                                    
+                                    @if($hasBadge)
+                                        <span class="inline-flex items-center justify-center px-2 py-0.5 text-xs font-bold leading-none text-white bg-red-500 rounded-full">
+                                            {{ $$item['badge'] }}
+                                        </span>
+                                    @endif
+                                @else
+                                    @if($hasBadge)
+                                        <span class="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full border-2 border-white dark:border-gray-900"></span>
+                                    @endif
+                                @endif
+
+                                @if($isActive && !$isCollapsed)
+                                    <div class="absolute left-0 w-1 h-6 bg-primary-600 rounded-r-full"></div>
+                                @endif
+                            </a>
+                        @endforeach
+                    </nav>
+                </div>
+            @endforeach
+        </div>
+
+        <!-- User Profile Section -->
+        <div class="p-4 border-t dark:border-gray-800">
+            <div class="flex items-center gap-3 p-2 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors cursor-pointer group">
+                <div class="relative flex-shrink-0">
+                    <img 
+                        class="w-10 h-10 rounded-lg object-cover" 
+                        src="https://ui-avatars.com/api/?name={{ urlencode(auth()->user()?->name ?? 'User') }}&background=0D8ABC&color=fff" 
+                        alt="Avatar"
+                    >
+                    <div class="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-white dark:border-gray-900 rounded-full"></div>
+                </div>
                 
-                <a href="#" class="text-gray-500 transition-colors duration-200 rotate-180 dark:text-gray-400 rtl:rotate-0 hover:text-blue-500 dark:hover:text-blue-400">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15M12 9l-3 3m0 0l3 3m-3-3h12.75" />
-                    </svg>
-                </a>
+                @if(!$isCollapsed)
+                    <div class="flex-1 min-w-0">
+                        <p class="text-sm font-semibold text-gray-800 dark:text-white truncate">
+                            {{ auth()->user()?->name ?? 'John Doe' }}
+                        </p>
+                        <p class="text-xs text-gray-500 dark:text-gray-400 truncate">
+                            {{ ucfirst(auth()->user()?->roles()->first()?->name ?? 'Guest') }}
+                        </p>
+                    </div>
+                    <button class="text-gray-400 hover:text-red-500 transition-colors">
+                        <x-icon name="logout" class="w-5 h-5" />
+                    </button>
+                @endif
             </div>
         </div>
-    </div>
-</aside>
+    </aside>
+
+    <style>
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #e5e7eb;
+            border-radius: 10px;
+        }
+        .dark .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #374151;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: #d1d5db;
+        }
+
+        :root {
+            --primary-50: #eff6ff;
+            --primary-100: #dbeafe;
+            --primary-400: #60a5fa;
+            --primary-500: #3b82f6;
+            --primary-600: #2563eb;
+            --primary-900: #1e3a8a;
+        }
+
+        .bg-primary-50 { background-color: var(--primary-50); }
+        .bg-primary-600 { background-color: var(--primary-600); }
+        .text-primary-600 { color: var(--primary-600); }
+        .text-primary-400 { color: var(--primary-400); }
+        .dark .bg-primary-900\/20 { background-color: rgba(30, 58, 138, 0.2); }
+    </style>
+</div>

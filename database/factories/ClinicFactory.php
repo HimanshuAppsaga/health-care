@@ -18,7 +18,13 @@ class ClinicFactory extends Factory
     public function definition(): array
     {
         return [
-            //
+            'name' => $this->faker->company().' Clinic',
+            'address' => $this->faker->address(),
+            'phone' => $this->faker->phoneNumber(),
+            'email' => $this->faker->unique()->safeEmail(),
+            'timezone' => 'UTC',
+            'subscription_plan' => 'free',
+            'is_active' => true,
         ];
     }
 }

@@ -15,7 +15,7 @@ use Illuminate\Notifications\Notifiable;
 class User extends Authenticatable
 {
     /** @use HasFactory<UserFactory> */
-    use HasFactory, Notifiable;
+    use HasFactory, \Laravel\Sanctum\HasApiTokens, Notifiable;
 
     /**
      * Get the attributes that should be cast.
@@ -38,5 +38,21 @@ class User extends Authenticatable
     public function roles()
     {
         return $this->belongsToMany(Role::class, 'user_roles');
+    }
+
+    public function hasRole(string|array $role): bool
+    {
+        if (is_array($role)) {
+            return $this->roles()->whereIn('name', $role)->exists();
+        }
+
+        return $this->roles()->where('name', $role)->exists();
+    }
+
+    public function hasPermission(string $permission): bool
+    {
+        return $this->roles()->whereHas('permissions', function ($query) use ($permission) {
+            $query->where('slug', $permission);
+        })->exists();
     }
 }
