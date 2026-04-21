@@ -15,4 +15,6 @@ Route::middleware('guest')->group(function () {
     Route::get('/reset-password/{token}', ResetPassword::class)->name('password.reset');
 });
 
-
+Route::middleware('auth')->group(function () {
+    Route::get('/dashboard', \App\Livewire\ClinicAdmin\Dashboard::class)->name('dashboard');
+});
