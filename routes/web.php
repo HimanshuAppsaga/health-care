@@ -16,5 +16,5 @@ Route::middleware('guest')->group(function () {
 });
 
 Route::middleware('auth')->group(function () {
-    Route::get('/dashboard', \App\Livewire\ClinicAdmin\Dashboard::class)->name('dashboard');
+    Route::get('/dashboard', \App\Livewire\ClinicAdmin\Dashboard::class)->name('admin.dashboard');
 });

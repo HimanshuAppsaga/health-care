@@ -20,7 +20,7 @@ class DashboardTest extends TestCase
         ]);
 
         $this->actingAs($user)
-            ->get(route('dashboard'))
+            ->get(route('admin.dashboard'))
             ->assertStatus(200)
             ->assertSee('Clinic Overview');
     }
