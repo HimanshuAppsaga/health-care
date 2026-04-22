@@ -55,4 +55,14 @@ class User extends Authenticatable
             $query->where('slug', $permission);
         })->exists();
     }
+
+    public function patient()
+    {
+        return $this->hasOne(Patient::class);
+    }
+
+    public function doctor()
+    {
+        return $this->hasOne(Doctor::class);
+    }
 }

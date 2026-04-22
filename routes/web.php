@@ -6,8 +6,6 @@ use App\Livewire\Auth\ResetPassword;
 use App\Livewire\Auth\SignUp;
 use Illuminate\Support\Facades\Route;
 
-
-
 Route::middleware('guest')->group(function () {
     Route::get('/', Login::class)->name('login');
     Route::get('/register', SignUp::class)->name('register');
@@ -15,4 +13,15 @@ Route::middleware('guest')->group(function () {
     Route::get('/reset-password/{token}', ResetPassword::class)->name('password.reset');
 });
 
+Route::middleware('auth')->group(function () {
+    Route::get('/patient/dashboard', App\Livewire\Patient\Dashboard::class)->name('patient.dashboard');
 
+    // Fail-safe GET logout
+    Route::get('/logout', function () {
+        auth()->logout();
+        session()->invalidate();
+        session()->regenerateToken();
+
+        return redirect()->route('login');
+    })->name('logout.get');
+});
