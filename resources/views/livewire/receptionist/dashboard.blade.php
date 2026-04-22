@@ -143,24 +143,14 @@
             <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
                 <h3 class="text-lg font-black text-[#1c1b1b] mb-6">Quick Actions</h3>
                 <div class="space-y-4">
-                    <button class="w-full flex items-center gap-4 p-4 rounded-2xl bg-[#ede7ff] text-[#5200cc] font-bold hover:bg-[#5200cc] hover:text-white transition-all group">
-                        <div class="w-10 h-10 rounded-xl bg-white/50 flex items-center justify-center group-hover:bg-[#3f00a3]">
-                            <span class="material-symbols-outlined">person_add</span>
-                        </div>
-                        <span>Add New Patient</span>
-                    </button>
-                    <button class="w-full flex items-center gap-4 p-4 rounded-2xl bg-[#e6fffb] text-[#0fbda6] font-bold hover:bg-[#0fbda6] hover:text-white transition-all group">
+                    
+                    <a href="{{ route('receptionist.book-appointment') }}" wire:navigate class="w-full flex items-center gap-4 p-4 rounded-2xl bg-[#e6fffb] text-[#0fbda6] font-bold hover:bg-[#0fbda6] hover:text-white transition-all group">
                         <div class="w-10 h-10 rounded-xl bg-white/50 flex items-center justify-center group-hover:bg-[#0da692]">
                             <span class="material-symbols-outlined">calendar_add_on</span>
                         </div>
                         <span>Book Appointment</span>
-                    </button>
-                    <button class="w-full flex items-center gap-4 p-4 rounded-2xl bg-gray-100 text-gray-700 font-bold hover:bg-[#1c1b1b] hover:text-white transition-all group">
-                        <div class="w-10 h-10 rounded-xl bg-white/50 flex items-center justify-center group-hover:bg-gray-700">
-                            <span class="material-symbols-outlined">confirmation_number</span>
-                        </div>
-                        <span>Generate Token</span>
-                    </button>
+                    </a>
+                    
                 </div>
             </div>
 
