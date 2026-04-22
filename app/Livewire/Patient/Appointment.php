@@ -28,6 +28,10 @@ class Appointment extends Component
 
     public $notes;
 
+    public $name;
+
+    public $phone;
+
     // UI Data
     public $clinics = [];
 
@@ -50,6 +54,18 @@ class Appointment extends Component
     {
         $this->clinics = Clinic::where('is_active', true)->get();
         $this->selectedDate = Carbon::today()->format('Y-m-d');
+
+        if (Auth::check()) {
+            $user = Auth::user();
+            $this->name = $user->name;
+            $this->phone = $user->phone;
+
+            $patient = Patient::where('user_id', $user->id)->first();
+            if ($patient) {
+                $this->name = $patient->name;
+                $this->phone = $patient->phone;
+            }
+        }
     }
 
     public function updatedSelectedClinicId($value)
@@ -160,6 +176,12 @@ class Appointment extends Component
                 'selectedDate' => 'required|date|after_or_equal:today',
                 'selectedSlot' => 'required',
             ]);
+        } elseif ($this->step == 4) {
+            $this->validate([
+                'name' => 'required|string|max:191',
+                'phone' => 'required|string|max:20',
+                'reason' => 'required',
+            ]);
         }
     }
 
@@ -170,6 +192,8 @@ class Appointment extends Component
             'selectedDoctorId' => 'required',
             'selectedDate' => 'required',
             'selectedSlot' => 'required',
+            'name' => 'required|string|max:191',
+            'phone' => 'required|string|max:20',
             'reason' => 'required',
         ]);
 
@@ -177,17 +201,20 @@ class Appointment extends Component
         $patient = Patient::where('user_id', Auth::id())->first();
 
         if (! $patient) {
-            // If patient record doesn't exist, we might need to create it or error.
-            // For now, let's try to create a basic one or use the one we seeded.
-            // In a real app, you'd have a profile completion step.
             $user = Auth::user();
             $patient = Patient::create([
                 'clinic_id' => $this->selectedClinicId,
-                'user_id' => $user->id,
-                'name' => $user->name,
-                'email' => $user->email,
-                'phone' => $user->phone ?? '',
+                'user_id' => $user?->id,
+                'name' => $this->name,
+                'email' => $user?->email ?? 'guest@example.com',
+                'phone' => $this->phone,
                 'gender' => 'other',
+            ]);
+        } else {
+            // Update patient details if changed
+            $patient->update([
+                'name' => $this->name,
+                'phone' => $this->phone,
             ]);
         }
 

@@ -19,7 +19,7 @@ Route::middleware('auth')->group(function () {
 
     // Fail-safe GET logout
     Route::get('/logout', function () {
-        auth()->logout();
+        auth()->logout();   
         session()->invalidate();
         session()->regenerateToken();
 
