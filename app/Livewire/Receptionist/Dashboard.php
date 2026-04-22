@@ -96,6 +96,10 @@ class Dashboard extends Component
             ->where('status', 'confirmed')
             ->count();
 
+        $completedToday = Appointment::whereDate('appointment_date', $today)
+            ->where('status', 'completed')
+            ->count();
+
         $revenueToday = 0;
         if (class_exists(\App\Models\Payment::class)) {
             $revenueToday = \App\Models\Payment::whereDate('paid_at', $today)
@@ -136,6 +140,7 @@ class Dashboard extends Component
             'checkedIn' => $checkedIn,
             'pendingArrivals' => $pendingArrivals,
             'revenueToday' => $revenueToday,
+            'completedToday' => $completedToday,
             'nowServing' => $nowServing,
             'nextTokens' => $nextTokens,
             'todaysAppointments' => $todaysAppointments,

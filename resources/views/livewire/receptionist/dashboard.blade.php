@@ -29,6 +29,16 @@
             </div>
         </div>
 
+        <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex items-center justify-between hover:border-orange-200 transition-all">
+            <div>
+                <p class="text-sm font-medium text-gray-500 mb-1">Completed</p>
+                <h3 class="text-3xl font-black text-orange-500">{{ $completedToday }}</h3>
+                <p class="text-xs text-gray-400 font-medium mt-2 italic">Done for today</p>
+            </div>
+            <div class="w-14 h-14 bg-orange-50 rounded-2xl flex items-center justify-center text-orange-500">
+                <span class="material-symbols-outlined text-3xl" style="font-variation-settings: 'FILL' 1;">task_alt</span>
+            </div>
+        </div>
     </div>
 
     <div class="grid grid-cols-12 gap-8 px-8 pb-12">
