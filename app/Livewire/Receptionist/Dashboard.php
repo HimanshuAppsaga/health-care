@@ -50,8 +50,26 @@ class Dashboard extends Component
         $current = Queue::whereDate('created_at', $today)->where('status', 'serving')->first();
         if ($current) {
             $currentTokenNum = (int) $current->token_number;
-            $newTokenStr = (string) ($currentTokenNum + 5);
+            $newTokenStr = (string) ($currentTokenNum + 6);
             
+            // Shift the next 6 tokens down by 1
+            $nextTokensToShift = Queue::whereDate('created_at', $today)
+                ->where('status', 'waiting')
+                ->whereRaw('CAST(token_number AS UNSIGNED) > ?', [$currentTokenNum])
+                ->orderByRaw('CAST(token_number AS UNSIGNED) ASC')
+                ->take(6)
+                ->get();
+                
+            foreach ($nextTokensToShift as $q) {
+                $num = (int) $q->token_number;
+                $newNumStr = (string) ($num - 1);
+                $q->update(['token_number' => $newNumStr]);
+                if ($q->appointment) {
+                    $q->appointment->update(['token' => $newNumStr]);
+                }
+            }
+            
+            // Update the transferred token
             $current->update([
                 'token_number' => $newTokenStr,
                 'status' => 'waiting'
