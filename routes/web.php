@@ -15,6 +15,7 @@ Route::middleware('guest')->group(function () {
 
 Route::middleware('auth')->group(function () {
     Route::get('/patient/dashboard', App\Livewire\Patient\Dashboard::class)->name('patient.dashboard');
+    Route::get('/patient/book-appointment', App\Livewire\Patient\Appointment::class)->name('patient.book-appointment');
 
     // Fail-safe GET logout
     Route::get('/logout', function () {
