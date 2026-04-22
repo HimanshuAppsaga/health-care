@@ -15,6 +15,9 @@ class Appointment extends Model
         'end_time',
         'status',
         'notes',
+        'name',
+        'phone',
+        'token',
     ];
 
     public function clinic()

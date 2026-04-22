@@ -7,6 +7,7 @@ use App\Models\Clinic;
 use App\Models\Doctor;
 use App\Models\DoctorSchedule;
 use App\Models\Patient;
+use App\Models\Queue;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
@@ -31,6 +32,8 @@ class Appointment extends Component
     public $name;
 
     public $phone;
+
+    public $generatedToken = null;
 
     // UI Data
     public $clinics = [];
@@ -188,50 +191,66 @@ class Appointment extends Component
     public function bookAppointment()
     {
         $this->validate([
-            'selectedClinicId' => 'required',
-            'selectedDoctorId' => 'required',
-            'selectedDate' => 'required',
-            'selectedSlot' => 'required',
+            // 'selectedClinicId' => 'required',
+            // 'selectedDoctorId' => 'required',
+            // 'selectedDate' => 'required',
+            // 'selectedSlot' => 'required',
             'name' => 'required|string|max:191',
             'phone' => 'required|string|max:20',
-            'reason' => 'required',
+            // 'reason' => 'required',
         ]);
 
-        // Find or create patient record for current user
-        $patient = Patient::where('user_id', Auth::id())->first();
+        // Find or create patient record by phone
+        $patient = Patient::where('phone', $this->phone)->first();
 
         if (! $patient) {
             $user = Auth::user();
             $patient = Patient::create([
-                'clinic_id' => $this->selectedClinicId,
+                'clinic_id' => $this->selectedClinicId ?? 1,
                 'user_id' => $user?->id,
                 'name' => $this->name,
                 'email' => $user?->email ?? 'guest@example.com',
                 'phone' => $this->phone,
+                'dob' => '1990-01-01',
                 'gender' => 'other',
             ]);
         } else {
             // Update patient details if changed
             $patient->update([
                 'name' => $this->name,
-                'phone' => $this->phone,
+                'user_id' => $patient->user_id ?? Auth::id(),
             ]);
         }
 
+        // Generate simple sequential token number for the day
+        $tokenNumber = Queue::whereDate('created_at', Carbon::today())->count() + 1;
+
         $appointment = AppointmentModel::create([
-            'clinic_id' => $this->selectedClinicId,
-            'doctor_id' => $this->selectedDoctorId,
+            'clinic_id' => $this->selectedClinicId ?? 1,
+            'doctor_id' => $this->selectedDoctorId ?? 1,
             'patient_id' => $patient->id,
-            'appointment_date' => $this->selectedDate,
-            'start_time' => $this->selectedSlot,
-            'end_time' => Carbon::parse($this->selectedSlot)->addMinutes(30)->format('H:i'), // Default 30 min
+            'name' => $this->name,
+            'phone' => $this->phone,
+            'token' => $tokenNumber,
+            'appointment_date' => $this->selectedDate ?? Carbon::today()->format('Y-m-d'),
+            'start_time' => $this->selectedSlot ?? '09:00',
+            'end_time' => Carbon::parse($this->selectedSlot ?? '09:00')->addMinutes(30)->format('H:i'), // Default 30 min
             'status' => 'pending',
-            'notes' => $this->reason.($this->notes ? "\n".$this->notes : ''),
+            'notes' => ($this->reason ?? 'Checkup').($this->notes ? "\n".$this->notes : ''),
         ]);
 
-        session()->flash('message', 'Appointment booked successfully!');
+        Queue::create([
+            'appointment_id' => $appointment->id,
+            'token_number' => $tokenNumber,
+            'status' => 'waiting',
+        ]);
 
-        return redirect()->route('patient.dashboard'); // Or wherever relevant
+        $this->generatedToken = $tokenNumber;
+
+        session()->flash('message', 'Appointment booked successfully! Your Token: '.$tokenNumber);
+
+        // Do not redirect to make it dynamic
+        // return redirect()->route('patient.dashboard');
     }
 
     public function render()

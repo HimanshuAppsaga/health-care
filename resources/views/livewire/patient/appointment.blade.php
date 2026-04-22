@@ -9,6 +9,25 @@
         <div class="lg:col-span-8 space-y-6">
             <!-- Section 4: Visit Info -->
             <section class="bg-surface-container-lowest p-6 rounded-xl border border-slate-100 shadow-sm animate-fade-in">
+                @if($generatedToken)
+                    <div class="text-center space-y-4 py-8 animate-fade-in">
+                        <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-green-100 text-green-600 mb-4">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                            </svg>
+                        </div>
+                        <h2 class="text-2xl font-bold text-slate-800">Appointment Confirmed!</h2>
+                        <p class="text-slate-500">Your token number is:</p>
+                        <div class="inline-block px-6 py-3 bg-indigo-50 border border-indigo-100 rounded-xl">
+                            <span class="text-3xl font-extrabold tracking-widest text-indigo-700">{{ $generatedToken }}</span>
+                        </div>
+                        <div class="pt-6">
+                            <button wire:click="$set('generatedToken', null)" class="text-sm font-semibold text-indigo-600 hover:text-indigo-800">
+                                Book Another Appointment
+                            </button>
+                        </div>
+                    </div>
+                @else
                 <div class="space-y-4">
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
@@ -47,6 +66,7 @@
                         </button>
                     </div>
                 </div>
+                @endif
             </section>
        </div>   
     </div>
