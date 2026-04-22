@@ -13,8 +13,8 @@
                         <div class="w-24 h-24 rounded-3xl bg-indigo-50 flex items-center justify-center overflow-hidden border-4 border-white shadow-xl shadow-indigo-100">
                             <img src="https://ui-avatars.com/api/?name={{ urlencode($staff->name) }}&background=EEF2FF&color=4F46E5&size=128" alt="{{ $staff->name }}" class="w-full h-full object-cover">
                         </div>
-                        <div class="absolute -bottom-2 -right-2 px-3 py-1 bg-green-500 text-white text-[10px] font-black uppercase tracking-widest rounded-full border-2 border-white shadow-sm">
-                            Active
+                        <div class="absolute -bottom-2 -right-2 px-3 py-1 {{ $staff->is_active ? 'bg-green-500' : 'bg-gray-500' }} text-white text-[10px] font-black uppercase tracking-widest rounded-full border-2 border-white shadow-sm">
+                            {{ $staff->is_active ? 'Active' : 'Inactive' }}
                         </div>
                     </div>
                     <div>
@@ -70,12 +70,12 @@
                         </div>
                         <div>
                             <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Emergency Contact</p>
-                            <p class="text-sm font-bold text-gray-800">Marcus Rodriguez (Husband)</p>
-                            <p class="text-xs text-gray-400 font-medium">+1 (555) 012-3459</p>
+                            <p class="text-sm font-bold text-gray-800">{{ $staff->emergency_contact_name ?? 'Not provided' }}</p>
+                            <p class="text-xs text-gray-400 font-medium">{{ $staff->emergency_contact_phone ?? '' }}</p>
                         </div>
                         <div>
                             <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Home Address</p>
-                            <p class="text-sm font-bold text-gray-800">742 Evergreen Terrace,<br>Springfield, ST 90210</p>
+                            <p class="text-sm font-bold text-gray-800">{!! nl2br(e($staff->address ?? 'Not provided')) !!}</p>
                         </div>
                     </div>
                 </div>
@@ -116,7 +116,7 @@
                             <h3 class="text-xs font-bold text-indigo-200 uppercase tracking-widest">Assigned Department</h3>
                         </div>
                         <h2 class="text-3xl font-black mb-1">{{ $staff->department ?? 'General Practice' }}</h2>
-                        <p class="text-indigo-200 text-sm font-medium">Unit 4 - Trauma Center</p>
+                        <p class="text-indigo-200 text-sm font-medium">{{ $staff->unit ?? 'General Unit' }}</p>
                         
                         <div class="mt-8 pt-8 border-t border-white/10 flex items-center gap-4">
                             <div class="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center">
@@ -124,7 +124,7 @@
                             </div>
                             <div>
                                 <p class="text-[10px] font-bold text-indigo-300 uppercase tracking-widest">Supervisor</p>
-                                <p class="text-sm font-bold">Dr. Julian Vance</p>
+                                <p class="text-sm font-bold">{{ $staff->supervisor_name ?? 'N/A' }}</p>
                             </div>
                         </div>
                     </div>
@@ -181,7 +181,7 @@
                         <div class="bg-gray-50 p-4 rounded-2xl">
                             <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Rating</p>
                             <div class="flex items-center gap-1">
-                                <h4 class="text-2xl font-black text-emerald-500">4.9</h4>
+                                <h4 class="text-2xl font-black text-emerald-500">{{ number_format($staff->rating ?? 5.0, 1) }}</h4>
                                 <span class="text-xs font-bold text-gray-400">/5</span>
                             </div>
                         </div>
@@ -208,7 +208,7 @@
                     <div class="relative">
                         <x-icon name="quote" class="absolute -top-4 -left-4 w-8 h-8 text-indigo-50 opacity-10" />
                         <p class="text-sm font-medium text-gray-600 italic leading-relaxed">
-                            "Elena has shown exceptional leadership during the night shift transition periods. Highly recommended for the upcoming Head Nurse certification program. Her patient empathy scores are consistently in the top 5% of the department."
+                            "{{ $staff->bio ?? 'No administrative notes available for this staff member.' }}"
                         </p>
                         <div class="mt-6 flex items-center justify-between">
                             <p class="text-xs font-bold text-gray-400">— HR Admin, Sep 2023</p>
