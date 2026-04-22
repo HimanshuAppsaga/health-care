@@ -83,7 +83,11 @@
                                 <td class="px-8 py-5">
                                     <div class="flex items-center gap-4">
                                         <div class="w-12 h-12 rounded-2xl bg-indigo-50 flex items-center justify-center overflow-hidden">
-                                            <img src="https://ui-avatars.com/api/?name={{ urlencode($staff->name) }}&background=EEF2FF&color=4F46E5" alt="{{ $staff->name }}" class="w-full h-full object-cover">
+                                            @if($staff->profile_photo_path)
+                                                <img src="{{ asset('storage/' . $staff->profile_photo_path) }}" alt="{{ $staff->name }}" class="w-full h-full object-cover">
+                                            @else
+                                                <img src="https://ui-avatars.com/api/?name={{ urlencode($staff->name) }}&background=EEF2FF&color=4F46E5" alt="{{ $staff->name }}" class="w-full h-full object-cover">
+                                            @endif
                                         </div>
                                         <div>
                                             <p class="text-sm font-bold text-gray-900">{{ $staff->name }}</p>
