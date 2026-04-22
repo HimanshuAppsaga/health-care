@@ -107,7 +107,7 @@
                         </button>
                         <button type="submit" class="px-8 py-3 bg-[#4F46E5] hover:bg-[#4338CA] text-white font-bold rounded-2xl transition-all shadow-lg shadow-indigo-200 flex items-center gap-2">
                             <x-icon name="send" class="w-4 h-4" />
-                            Invite via Email / Save
+                             Save
                         </button>
                     </div>
                 </form>

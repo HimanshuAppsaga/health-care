@@ -87,42 +87,48 @@ class EditStaff extends Component
             'unit' => 'nullable|string|max:255',
             'supervisor_name' => 'nullable|string|max:255',
             'bio' => 'nullable|string|max:1000',
-            'photo' => 'nullable|image|max:2048', // 2MB Max
+            'photo' => 'nullable|image|max:2048',
         ]);
 
-        $user = User::where('clinic_id', Auth::user()->clinic_id)->findOrFail($this->userId);
+        try {
+            $user = User::where('clinic_id', Auth::user()->clinic_id)->findOrFail($this->userId);
 
-        $data = [
-            'name' => $this->name,
-            'email' => $this->email,
-            'phone' => $this->phone,
-            'department' => $this->department,
-            'joining_date' => $this->joining_date,
-            'is_active' => $this->is_active,
-            'emergency_contact_name' => $this->emergency_contact_name,
-            'emergency_contact_phone' => $this->emergency_contact_phone,
-            'address' => $this->address,
-            'unit' => $this->unit,
-            'supervisor_name' => $this->supervisor_name,
-            'bio' => $this->bio,
-        ];
+            $data = [
+                'name' => $this->name,
+                'email' => $this->email,
+                'phone' => $this->phone,
+                'department' => $this->department,
+                'joining_date' => $this->joining_date,
+                'bio' => $this->bio,
+                'is_active' => $this->is_active,
+                'emergency_contact_name' => $this->emergency_contact_name,
+                'emergency_contact_phone' => $this->emergency_contact_phone,
+                'address' => $this->address,
+                'unit' => $this->unit,
+                'supervisor_name' => $this->supervisor_name,
+                'rating' => $this->rating,
+            ];
 
-        if ($this->photo) {
-            $data['profile_photo_path'] = $this->photo->store('profile-photos', 'public');
+            if ($this->photo) {
+                $path = $this->photo->store('profile-photos', 'public');
+                $data['profile_photo_path'] = $path;
+            }
+
+            if ($this->password) {
+                $data['password'] = Hash::make($this->password);
+            }
+
+            $user->update($data);
+
+            // Sync Role
+            $user->syncRoles([Role::find($this->role_id)->name]);
+
+            session()->flash('success', 'Staff profile updated successfully.');
+
+            return $this->redirect(route('admin.staff.index'), navigate: true);
+        } catch (\Exception $e) {
+            session()->flash('error', 'Error updating staff: '.$e->getMessage());
         }
-
-        if ($this->password) {
-            $data['password'] = Hash::make($this->password);
-        }
-
-        $user->update($data);
-
-        // Update Role
-        $user->roles()->sync([$this->role_id]);
-
-        session()->flash('success', 'Staff member updated successfully.');
-
-        return $this->redirect(route('admin.staff.index'), navigate: true);
     }
 
     public function render()

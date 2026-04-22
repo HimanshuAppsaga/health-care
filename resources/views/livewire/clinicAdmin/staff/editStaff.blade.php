@@ -8,8 +8,15 @@
                 <span class="text-gray-900">Edit Staff Profile</span>
             </nav>
             <h1 class="text-3xl font-bold text-gray-900">Edit Staff Profile</h1>
-            <p class="text-gray-500 mt-1">Update information and access permissions for {{ $name }}.</p>
+            <p class="text-gray-500 mt-1">Update personal information and administrative details.</p>
         </div>
+
+        @if (session()->has('error'))
+            <div class="mb-6 p-4 bg-red-50 border border-red-100 rounded-2xl flex items-center gap-3 text-red-600">
+                <x-icon name="activity" class="w-5 h-5" />
+                <p class="text-sm font-bold">{{ session('error') }}</p>
+            </div>
+        @endif
 
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <!-- Form Card -->

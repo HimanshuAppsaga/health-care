@@ -78,6 +78,10 @@
                             <p class="text-xs text-gray-400 font-medium">{{ $staff->emergency_contact_phone ?? '' }}</p>
                         </div>
                         <div>
+                            <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Joined Date</p>
+                            <p class="text-sm font-bold text-gray-800">{{ $staff->joining_date ? \Carbon\Carbon::parse($staff->joining_date)->format('d M, Y') : $staff->created_at->format('d M, Y') }}</p>
+                        </div>
+                        <div>
                             <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Home Address</p>
                             <p class="text-sm font-bold text-gray-800">{!! nl2br(e($staff->address ?? 'Not provided')) !!}</p>
                         </div>
@@ -179,7 +183,7 @@
                     </h3>
                     <div class="grid grid-cols-2 gap-4 mb-8">
                         <div class="bg-gray-50 p-4 rounded-2xl">
-                            <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Appointments (All Time)</p>
+                            <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Appointments (Total)</p>
                             <h4 class="text-2xl font-black text-gray-900">{{ $appointmentCount }}</h4>
                         </div>
                         <div class="bg-gray-50 p-4 rounded-2xl">
@@ -190,17 +194,20 @@
                             </div>
                         </div>
                     </div>
-                    <!-- Small Sparkline Bar Chart placeholder -->
+                    <!-- Dynamic Sparkline Bar Chart -->
                     <div class="flex items-end justify-between gap-1 h-20">
-                        <div class="flex-1 bg-indigo-100 rounded-sm" style="height: 40%"></div>
-                        <div class="flex-1 bg-indigo-200 rounded-sm" style="height: 60%"></div>
-                        <div class="flex-1 bg-indigo-100 rounded-sm" style="height: 30%"></div>
-                        <div class="flex-1 bg-indigo-300 rounded-sm" style="height: 80%"></div>
-                        <div class="flex-1 bg-indigo-200 rounded-sm" style="height: 50%"></div>
-                        <div class="flex-1 bg-indigo-400 rounded-sm" style="height: 90%"></div>
-                        <div class="flex-1 bg-[#310E93] rounded-sm" style="height: 100%"></div>
+                        @php
+                            $maxActivity = max($weeklyActivity) ?: 1;
+                        @endphp
+                        @foreach($weeklyActivity as $count)
+                            <div class="flex-1 bg-indigo-100 rounded-sm hover:bg-[#310E93] transition-colors group relative" style="height: {{ ($count / $maxActivity) * 100 }}%">
+                                <div class="absolute -top-8 left-1/2 -translate-x-1/2 bg-gray-900 text-white text-[10px] py-1 px-2 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-20">
+                                    {{ $count }} appts
+                                </div>
+                            </div>
+                        @endforeach
                     </div>
-                    <p class="text-center text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-4">Weekly Activity Consistency</p>
+                    <p class="text-center text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-4">Activity in the last 7 days</p>
                 </div>
 
                 <!-- Admin Notes -->
@@ -215,7 +222,7 @@
                             "{{ $staff->bio ?? 'No administrative notes available for this staff member.' }}"
                         </p>
                         <div class="mt-6 flex items-center justify-between">
-                            <p class="text-xs font-bold text-gray-400">— HR Admin, Sep 2023</p>
+                            <p class="text-xs font-bold text-gray-400">— System Log, {{ $staff->updated_at->format('M Y') }}</p>
                             <button class="text-xs font-bold text-indigo-600 hover:underline">Edit Notes</button>
                         </div>
                     </div>

@@ -1,4 +1,4 @@
-@props(['name'])
+@props(['name', 'class' => 'w-5 h-5'])
 
 @php
 $icons = [
@@ -51,7 +51,7 @@ $icons = [
 @endphp
 
 <svg 
-    {{ $attributes->merge(['class' => 'w-5 h-5']) }}
+    {{ $attributes->merge(['class' => $class]) }}
     viewBox="0 0 24 24" 
     fill="none" 
     stroke="currentColor" 

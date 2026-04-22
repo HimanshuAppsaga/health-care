@@ -64,6 +64,21 @@
             </div>
         </div>
 
+        <!-- Success/Error Messages -->
+        @if (session()->has('success'))
+            <div class="mb-6 p-4 bg-emerald-50 border border-emerald-100 rounded-2xl flex items-center gap-3 text-emerald-600">
+                <x-icon name="check" class="w-5 h-5" />
+                <p class="text-sm font-bold">{{ session('success') }}</p>
+            </div>
+        @endif
+
+        @if (session()->has('error'))
+            <div class="mb-6 p-4 bg-red-50 border border-red-100 rounded-2xl flex items-center gap-3 text-red-600">
+                <x-icon name="activity" class="w-5 h-5" />
+                <p class="text-sm font-bold">{{ session('error') }}</p>
+            </div>
+        @endif
+
         <!-- Staff Table -->
         <div class="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
             <div class="overflow-x-auto">
@@ -111,11 +126,10 @@
                                     </span>
                                 </td>
                                 <td class="px-8 py-5">
-                                    <button wire:click="toggleStatus({{ $staff->id }})" class="flex items-center gap-2 group">
-                                        <div class="w-10 h-5 rounded-full p-1 transition-colors {{ $staff->is_active ? 'bg-indigo-600' : 'bg-gray-200' }} relative">
-                                            <div class="w-3 h-3 bg-white rounded-full transition-transform {{ $staff->is_active ? 'translate-x-5' : 'translate-x-0' }}"></div>
-                                        </div>
-                                        <span class="text-xs font-bold {{ $staff->is_active ? 'text-indigo-600' : 'text-gray-400' }}">
+                                    <button wire:click="toggleStatus({{ $staff->id }})" wire:loading.attr="disabled" class="relative inline-flex items-center group">
+                                        <div class="w-10 h-5 bg-gray-200 rounded-full transition-colors {{ $staff->is_active ? 'bg-indigo-600' : 'bg-gray-200' }}"></div>
+                                        <div class="absolute left-1 w-3 h-3 bg-white rounded-full transition-transform {{ $staff->is_active ? 'translate-x-5' : 'translate-x-0' }}"></div>
+                                        <span class="ml-3 text-xs font-bold {{ $staff->is_active ? 'text-indigo-600' : 'text-gray-400' }}">
                                             {{ $staff->is_active ? 'Active' : 'Inactive' }}
                                         </span>
                                     </button>
@@ -127,18 +141,21 @@
                                 </td>
                                 <td class="px-8 py-5">
                                     <div class="flex items-center justify-end gap-2">
-                                        <a href="{{ route('admin.staff.detail', $staff->id) }}" wire:navigate class="p-2 text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-all">
+                                        <a href="{{ route('admin.staff.detail', $staff->id) }}" wire:navigate class="p-2 text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-all" title="View Details">
                                             <x-icon name="eye" class="w-5 h-5" />
                                         </a>
-                                        <a href="{{ route('admin.staff.edit', $staff->id) }}" wire:navigate class="p-2 text-gray-400 hover:text-amber-600 hover:bg-amber-50 rounded-lg transition-all">
+                                        <a href="{{ route('admin.staff.edit', $staff->id) }}" wire:navigate class="p-2 text-gray-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition-all" title="Edit Staff">
                                             <x-icon name="pencil" class="w-5 h-5" />
                                         </a>
                                         <button 
                                             wire:click="deleteStaff({{ $staff->id }})" 
                                             wire:confirm="Are you sure you want to remove this staff member?"
-                                            class="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all"
+                                            wire:loading.attr="disabled"
+                                            class="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all" 
+                                            title="Delete Staff"
                                         >
-                                            <x-icon name="trash" class="w-5 h-5" />
+                                            <x-icon name="trash" class="w-5 h-5" wire:loading.remove wire:target="deleteStaff({{ $staff->id }})" />
+                                            <div wire:loading wire:target="deleteStaff({{ $staff->id }})" class="w-5 h-5 border-2 border-red-600 border-t-transparent rounded-full animate-spin"></div>
                                         </button>
                                     </div>
                                 </td>
