@@ -79,7 +79,7 @@
                     </thead>
                     <tbody class="divide-y divide-gray-50">
                         @forelse($staffMembers as $staff)
-                            <tr class="group hover:bg-gray-50/50 transition-colors">
+                            <tr wire:key="staff-{{ $staff->id }}" class="group hover:bg-gray-50/50 transition-colors">
                                 <td class="px-8 py-5">
                                     <div class="flex items-center gap-4">
                                         <div class="w-12 h-12 rounded-2xl bg-indigo-50 flex items-center justify-center overflow-hidden">
