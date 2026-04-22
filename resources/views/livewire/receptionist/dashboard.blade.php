@@ -59,7 +59,10 @@
                     <div class="flex items-center gap-3 mb-10">
                         <p class="text-sm font-bold text-gray-400 mr-2">NEXT TOKENS:</p>
                         @forelse($nextTokens as $token)
-                            <span class="px-4 py-2 bg-gray-100 text-gray-600 rounded-full font-black text-lg">{{ $token->token_number }}</span>
+                            <div class="flex items-center gap-2 px-4 py-2 bg-gray-100 text-gray-600 rounded-full shadow-sm">
+                                <span class="font-black text-lg">{{ $token->token_number }}</span>
+                                <span class="text-xs font-bold border-l border-gray-300 pl-2 max-w-[80px] truncate">{{ $token->appointment->name ?? 'Unknown' }}</span>
+                            </div>
                         @empty
                             <span class="px-4 py-2 bg-gray-100 text-gray-600 rounded-full font-black text-lg">None</span>
                         @endforelse

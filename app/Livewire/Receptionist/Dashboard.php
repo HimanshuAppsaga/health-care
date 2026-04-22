@@ -112,7 +112,8 @@ class Dashboard extends Component
             ->where('status', 'serving')
             ->first();
 
-        $nextTokens = Queue::whereDate('created_at', $today)
+        $nextTokens = Queue::with('appointment')
+            ->whereDate('created_at', $today)
             ->where('status', 'waiting')
             ->orderByRaw('CAST(token_number AS UNSIGNED) ASC')
             ->take(3)
