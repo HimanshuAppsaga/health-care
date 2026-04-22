@@ -11,7 +11,11 @@
                 <div class="flex items-center gap-6">
                     <div class="relative">
                         <div class="w-24 h-24 rounded-3xl bg-indigo-50 flex items-center justify-center overflow-hidden border-4 border-white shadow-xl shadow-indigo-100">
-                            <img src="https://ui-avatars.com/api/?name={{ urlencode($staff->name) }}&background=EEF2FF&color=4F46E5&size=128" alt="{{ $staff->name }}" class="w-full h-full object-cover">
+                            @if($staff->profile_photo_path)
+                                <img src="{{ asset('storage/' . $staff->profile_photo_path) }}" alt="{{ $staff->name }}" class="w-full h-full object-cover">
+                            @else
+                                <img src="https://ui-avatars.com/api/?name={{ urlencode($staff->name) }}&background=EEF2FF&color=4F46E5&size=128" alt="{{ $staff->name }}" class="w-full h-full object-cover">
+                            @endif
                         </div>
                         <div class="absolute -bottom-2 -right-2 px-3 py-1 {{ $staff->is_active ? 'bg-green-500' : 'bg-gray-500' }} text-white text-[10px] font-black uppercase tracking-widest rounded-full border-2 border-white shadow-sm">
                             {{ $staff->is_active ? 'Active' : 'Inactive' }}

@@ -82,19 +82,80 @@
                                 <option value="General Practice">General Practice</option>
                             </select>
                         </div>
+                    </div>
 
-                        <!-- Joining Date -->
-                        <div class="space-y-2">
-                            <label class="text-xs font-bold text-gray-400 uppercase tracking-widest">Joining Date</label>
-                            <input wire:model="joining_date" type="date" class="w-full bg-gray-50 border-none rounded-xl py-3 px-4 text-sm font-semibold text-gray-700 focus:ring-2 focus:ring-indigo-500/20">
-                            @error('joining_date') <span class="text-xs text-red-500 font-bold">{{ $message }}</span> @enderror
+                    <!-- Emergency & Address Section -->
+                    <div class="mt-12 pt-8 border-t border-gray-50">
+                        <h3 class="text-sm font-black text-gray-900 uppercase tracking-widest mb-6 flex items-center gap-2">
+                            <x-icon name="shield-check" class="w-4 h-4 text-indigo-600" />
+                            Emergency & Contact Details
+                        </h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                            <div class="space-y-2">
+                                <label class="text-xs font-bold text-gray-400 uppercase tracking-widest">Emergency Contact Name</label>
+                                <input wire:model="emergency_contact_name" type="text" placeholder="e.g. Jane Doe (Wife)" class="w-full bg-gray-50 border-none rounded-xl py-3 px-4 text-sm font-semibold text-gray-700 focus:ring-2 focus:ring-indigo-500/20">
+                                @error('emergency_contact_name') <span class="text-xs text-red-500 font-bold">{{ $message }}</span> @enderror
+                            </div>
+                            <div class="space-y-2">
+                                <label class="text-xs font-bold text-gray-400 uppercase tracking-widest">Emergency Contact Phone</label>
+                                <input wire:model="emergency_contact_phone" type="text" placeholder="+1 (555) 000-0000" class="w-full bg-gray-50 border-none rounded-xl py-3 px-4 text-sm font-semibold text-gray-700 focus:ring-2 focus:ring-indigo-500/20">
+                                @error('emergency_contact_phone') <span class="text-xs text-red-500 font-bold">{{ $message }}</span> @enderror
+                            </div>
+                            <div class="md:col-span-2 space-y-2">
+                                <label class="text-xs font-bold text-gray-400 uppercase tracking-widest">Home Address</label>
+                                <textarea wire:model="address" rows="3" placeholder="Enter full residential address" class="w-full bg-gray-50 border-none rounded-xl py-3 px-4 text-sm font-semibold text-gray-700 focus:ring-2 focus:ring-indigo-500/20 resize-none"></textarea>
+                                @error('address') <span class="text-xs text-red-500 font-bold">{{ $message }}</span> @enderror
+                            </div>
                         </div>
+                    </div>
 
-                        <!-- New Password -->
+                    <!-- Employment Details Section -->
+                    <div class="mt-12 pt-8 border-t border-gray-50">
+                        <h3 class="text-sm font-black text-gray-900 uppercase tracking-widest mb-6 flex items-center gap-2">
+                            <x-icon name="briefcase" class="w-4 h-4 text-indigo-600" />
+                            Employment Details
+                        </h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                            
+                            <div class="space-y-2">
+                                <label class="text-xs font-bold text-gray-400 uppercase tracking-widest">Assigned Unit</label>
+                                <input wire:model="unit" type="text" placeholder="e.g. Trauma Center / ICU" class="w-full bg-gray-50 border-none rounded-xl py-3 px-4 text-sm font-semibold text-gray-700 focus:ring-2 focus:ring-indigo-500/20">
+                                @error('unit') <span class="text-xs text-red-500 font-bold">{{ $message }}</span> @enderror
+                            </div>
+                            <div class="space-y-2">
+                                <label class="text-xs font-bold text-gray-400 uppercase tracking-widest">Supervisor Name</label>
+                                <input wire:model="supervisor_name" type="text" placeholder="e.g. Dr. Julian Vance" class="w-full bg-gray-50 border-none rounded-xl py-3 px-4 text-sm font-semibold text-gray-700 focus:ring-2 focus:ring-indigo-500/20">
+                                @error('supervisor_name') <span class="text-xs text-red-500 font-bold">{{ $message }}</span> @enderror
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Admin Notes Section -->
+                    <div class="mt-12 pt-8 border-t border-gray-50">
+                        <h3 class="text-sm font-black text-gray-900 uppercase tracking-widest mb-6 flex items-center gap-2">
+                            <x-icon name="sticky-note" class="w-4 h-4 text-indigo-600" />
+                            Administrative Notes
+                        </h3>
                         <div class="space-y-2">
-                            <label class="text-xs font-bold text-gray-400 uppercase tracking-widest">New Password</label>
-                            <input wire:model="password" type="password" placeholder="Leave blank to keep current" class="w-full bg-gray-50 border-none rounded-xl py-3 px-4 text-sm font-semibold text-gray-700 focus:ring-2 focus:ring-indigo-500/20">
-                            @error('password') <span class="text-xs text-red-500 font-bold">{{ $message }}</span> @enderror
+                            <label class="text-xs font-bold text-gray-400 uppercase tracking-widest">Bio / Performance Notes</label>
+                            <textarea wire:model="bio" rows="4" placeholder="Enter any administrative or performance notes..." class="w-full bg-gray-50 border-none rounded-xl py-3 px-4 text-sm font-semibold text-gray-700 focus:ring-2 focus:ring-indigo-500/20 resize-none"></textarea>
+                            @error('bio') <span class="text-xs text-red-500 font-bold">{{ $message }}</span> @enderror
+                        </div>
+                    </div>
+
+                    <!-- Security Section -->
+                    <div class="mt-12 pt-8 border-t border-gray-50">
+                        <h3 class="text-sm font-black text-gray-900 uppercase tracking-widest mb-6 flex items-center gap-2">
+                            <x-icon name="shield-check" class="w-4 h-4 text-red-600" />
+                            Security
+                        </h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                            <!-- New Password -->
+                            <div class="space-y-2">
+                                <label class="text-xs font-bold text-gray-400 uppercase tracking-widest">New Password</label>
+                                <input wire:model="password" type="password" placeholder="Leave blank to keep current" class="w-full bg-gray-50 border-none rounded-xl py-3 px-4 text-sm font-semibold text-gray-700 focus:ring-2 focus:ring-indigo-500/20">
+                                @error('password') <span class="text-xs text-red-500 font-bold">{{ $message }}</span> @enderror
+                            </div>
                         </div>
                     </div>
 
@@ -112,11 +173,35 @@
             <!-- Profile Overview Side -->
             <div class="space-y-8">
                 <div class="bg-white p-8 rounded-3xl shadow-sm border border-gray-100 flex flex-col items-center">
-                    <div class="w-32 h-32 rounded-3xl bg-indigo-50 flex items-center justify-center overflow-hidden mb-6 border-4 border-indigo-50">
-                        <img src="https://ui-avatars.com/api/?name={{ urlencode($name) }}&background=EEF2FF&color=4F46E5&size=128" alt="{{ $name }}" class="w-full h-full object-cover">
+                    <div class="relative group">
+                        <div class="w-32 h-32 rounded-3xl bg-indigo-50 flex items-center justify-center overflow-hidden mb-6 border-4 border-indigo-50 shadow-inner">
+                            @if ($photo)
+                                <img src="{{ $photo->temporaryUrl() }}" class="w-full h-full object-cover">
+                            @elseif($currentPhoto)
+                                <img src="{{ asset('storage/' . $currentPhoto) }}" class="w-full h-full object-cover">
+                            @else
+                                <img src="https://ui-avatars.com/api/?name={{ urlencode($name) }}&background=EEF2FF&color=4F46E5&size=128" alt="{{ $name }}" class="w-full h-full object-cover">
+                            @endif
+                            
+                            <!-- Loading Overlay -->
+                            <div wire:loading wire:target="photo" class="absolute inset-0 bg-white/80 flex items-center justify-center rounded-3xl">
+                                <div class="w-6 h-6 border-2 border-indigo-600 border-t-transparent rounded-full animate-spin"></div>
+                            </div>
+                        </div>
+
+                        <!-- Upload Button -->
+                        <label class="absolute -bottom-2 -right-2 w-10 h-10 bg-white rounded-2xl shadow-lg border border-gray-100 flex items-center justify-center cursor-pointer hover:bg-gray-50 transition-all group-hover:scale-110 active:scale-95">
+                            <x-icon name="plus" class="w-5 h-5 text-indigo-600" />
+                            <input type="file" wire:model="photo" class="hidden" accept="image/*">
+                        </label>
                     </div>
-                    <h3 class="text-xl font-bold text-gray-900">{{ $name }}</h3>
-                    <p class="text-sm font-semibold text-indigo-600">{{ $employee_id }}</p>
+
+                    <div class="text-center">
+                        <h3 class="text-xl font-bold text-gray-900">{{ $name }}</h3>
+                        <p class="text-sm font-semibold text-indigo-600 mb-2">{{ $employee_id }}</p>
+                        <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Profile Photo</p>
+                        @error('photo') <p class="text-[10px] text-red-500 font-bold mt-1">{{ $message }}</p> @enderror
+                    </div>
                 </div>
             </div>
         </div>
