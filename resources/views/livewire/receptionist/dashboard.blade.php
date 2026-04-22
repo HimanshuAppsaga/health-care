@@ -28,26 +28,7 @@
                 <span class="material-symbols-outlined text-3xl" style="font-variation-settings: 'FILL' 1;">how_to_reg</span>
             </div>
         </div>
-        
-        <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex items-center justify-between hover:border-orange-200 transition-all">
-            <div>
-                <p class="text-sm font-medium text-gray-500 mb-1">Pending Arrivals</p>
-                <h3 class="text-3xl font-black text-orange-500">{{ str_pad($pendingArrivals, 2, '0', STR_PAD_LEFT) }}</h3>
-            </div>
-            <div class="w-14 h-14 bg-orange-50 rounded-2xl flex items-center justify-center text-orange-500">
-                <span class="material-symbols-outlined text-3xl" style="font-variation-settings: 'FILL' 1;">pending_actions</span>
-            </div>
-        </div>
-        
-        <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex items-center justify-between hover:border-green-200 transition-all">
-            <div>
-                <p class="text-sm font-medium text-gray-500 mb-1">Revenue Today</p>
-                <h3 class="text-3xl font-black text-green-600">${{ number_format($revenueToday, 2) }}</h3>
-            </div>
-            <div class="w-14 h-14 bg-green-50 rounded-2xl flex items-center justify-center text-green-600">
-                <span class="material-symbols-outlined text-3xl" style="font-variation-settings: 'FILL' 1;">account_balance_wallet</span>
-            </div>
-        </div>
+
     </div>
 
     <div class="grid grid-cols-12 gap-8 px-8 pb-12">
@@ -60,7 +41,7 @@
                         Live Queue Manager
                     </h2>
                     @if($nowServing && $nowServing->appointment && $nowServing->appointment->doctor)
-                        <span class="text-xs font-bold text-gray-400 tracking-widest uppercase">Room 102 • Dr. {{ $nowServing->appointment->doctor->user->name ?? 'Unknown' }}</span>
+                        <span class="text-xs font-bold text-gray-400 tracking-widest uppercase">{{ $nowServing->appointment->doctor->user->department ?? 'General Dept' }} • Dr. {{ $nowServing->appointment->doctor->user->name ?? 'Unknown' }}</span>
                     @endif
                 </div>
                 <div class="p-8 flex flex-col items-center justify-center text-center">
@@ -84,13 +65,26 @@
                         @endforelse
                     </div>
                     
-                    <div class="flex gap-4 w-full max-w-md">
-                        <button class="flex-1 py-4 bg-[#0fbda6] text-white rounded-2xl font-black text-lg shadow-lg shadow-[#0fbda6]/30 hover:bg-[#0da692] transition-all active:scale-95 flex items-center justify-center gap-2">
+                    <div class="flex gap-4 w-full max-w-2xl">
+                        <button wire:click="callNextPatient" 
+                            @if($nowServing) disabled @endif 
+                            class="flex-1 py-4 bg-[#0fbda6] text-white rounded-2xl font-black text-lg shadow-lg shadow-[#0fbda6]/30 transition-all flex items-center justify-center gap-2 
+                            @if($nowServing) opacity-50 cursor-not-allowed @else hover:bg-[#0da692] active:scale-95 @endif">
                             <span class="material-symbols-outlined">campaign</span>
                             Call Next Patient
                         </button>
-                        <button class="flex-1 py-4 bg-white border-2 border-gray-200 text-[#1c1b1b] rounded-2xl font-black text-lg hover:border-[#5200cc] hover:text-[#5200cc] transition-all active:scale-95">
+                        <button wire:click="markAsDone" 
+                            @if(!$nowServing) disabled @endif 
+                            class="flex-1 py-4 bg-white border-2 border-gray-200 text-[#1c1b1b] rounded-2xl font-black text-lg transition-all flex items-center justify-center gap-2 
+                            @if(!$nowServing) opacity-50 cursor-not-allowed @else hover:border-[#5200cc] hover:text-[#5200cc] active:scale-95 @endif">
                             Mark as Done
+                        </button>
+                        <button wire:click="transferToken" 
+                            @if(!$nowServing) disabled @endif 
+                            class="flex-1 py-4 bg-orange-50 border-2 border-orange-200 text-orange-500 rounded-2xl font-black text-lg transition-all flex items-center justify-center gap-2 
+                            @if(!$nowServing) opacity-50 cursor-not-allowed @else hover:border-orange-500 hover:text-orange-600 active:scale-95 @endif">
+                            <span class="material-symbols-outlined">forward_5</span>
+                            Transfer Token
                         </button>
                     </div>
                 </div>
@@ -108,7 +102,7 @@
                             <tr>
                                 <th class="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider">Time</th>
                                 <th class="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider">Patient Name</th>
-                                <th class="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider">Doctor</th>
+                                <th class="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider">Token</th>
                                 <th class="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider text-right">Status</th>
                             </tr>
                         </thead>
@@ -117,7 +111,7 @@
                             <tr class="hover:bg-gray-50 transition-colors">
                                 <td class="px-6 py-4 font-bold text-[#5200cc]">{{ \Carbon\Carbon::parse($appointment->start_time)->format('h:i A') }}</td>
                                 <td class="px-6 py-4 font-medium text-[#1c1b1b]">{{ $appointment->name ?? 'Unknown' }}</td>
-                                <td class="px-6 py-4 text-gray-600">Dr. {{ $appointment->doctor->user->name ?? 'Unknown' }}</td>
+                                <td class="px-6 py-4 text-gray-600 font-bold">{{ $appointment->token ?? '--' }}</td>
                                 <td class="px-6 py-4 text-right">
                                     @if($appointment->status === 'confirmed')
                                         <span class="px-3 py-1 bg-green-100 text-green-700 text-xs font-bold rounded-full">Confirmed</span>
@@ -165,22 +159,6 @@
                         <span>Generate Token</span>
                     </button>
                 </div>
-            </div>
-
-            <div class="bg-[#5200cc] rounded-2xl p-6 text-white shadow-xl shadow-[#5200cc]/20 relative overflow-hidden">
-                <div class="relative z-10">
-                    <div class="flex items-center gap-2 mb-4">
-                        <span class="material-symbols-outlined text-[#0fbda6]">lightbulb</span>
-                        <h4 class="font-bold text-sm tracking-widest uppercase">Receptionist Tip</h4>
-                    </div>
-                    <p class="text-sm font-medium leading-relaxed mb-4 opacity-90">
-                        Check pending arrivals and ensure the waitlist is moving efficiently.
-                    </p>
-                    <button class="text-xs font-black px-4 py-2 bg-white/10 hover:bg-white/20 rounded-lg transition-colors">
-                        Dismiss Tip
-                    </button>
-                </div>
-                <div class="absolute -right-10 -bottom-10 w-40 h-40 bg-white/5 rounded-full"></div>
             </div>
 
             <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">

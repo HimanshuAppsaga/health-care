@@ -14,6 +14,55 @@ use Illuminate\Support\Facades\DB;
 #[Title('Receptionist Dashboard | ClinicOS')]
 class Dashboard extends Component
 {
+    public function callNextPatient()
+    {
+        $today = Carbon::today();
+        
+        $current = Queue::whereDate('created_at', $today)->where('status', 'serving')->first();
+        if ($current) {
+            $current->update(['status' => 'completed']);
+        }
+        
+        $next = Queue::whereDate('created_at', $today)
+            ->where('status', 'waiting')
+            ->orderByRaw('CAST(token_number AS UNSIGNED) ASC')
+            ->first();
+        if ($next) {
+            $next->update(['status' => 'serving', 'called_at' => now()]);
+        }
+    }
+
+    public function markAsDone()
+    {
+        $today = Carbon::today();
+        $current = Queue::whereDate('created_at', $today)->where('status', 'serving')->first();
+        if ($current) {
+            $current->update(['status' => 'completed']);
+            if ($current->appointment) {
+                $current->appointment->update(['status' => 'completed']);
+            }
+        }
+    }
+
+    public function transferToken()
+    {
+        $today = Carbon::today();
+        $current = Queue::whereDate('created_at', $today)->where('status', 'serving')->first();
+        if ($current) {
+            $currentTokenNum = (int) $current->token_number;
+            $newTokenStr = (string) ($currentTokenNum + 5);
+            
+            $current->update([
+                'token_number' => $newTokenStr,
+                'status' => 'waiting'
+            ]);
+            
+            if ($current->appointment) {
+                $current->appointment->update(['token' => $newTokenStr]);
+            }
+        }
+    }
+
     public function render()
 
     {
@@ -47,7 +96,7 @@ class Dashboard extends Component
 
         $nextTokens = Queue::whereDate('created_at', $today)
             ->where('status', 'waiting')
-            ->orderBy('id', 'asc')
+            ->orderByRaw('CAST(token_number AS UNSIGNED) ASC')
             ->take(3)
             ->get();
 
@@ -59,7 +108,7 @@ class Dashboard extends Component
         $waitlist = Queue::with('appointment')
             ->whereDate('created_at', $today)
             ->where('status', 'waiting')
-            ->orderBy('id', 'asc')
+            ->orderByRaw('CAST(token_number AS UNSIGNED) ASC')
             ->take(3)
             ->get();
 
