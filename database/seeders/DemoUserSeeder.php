@@ -18,7 +18,6 @@ class DemoUserSeeder extends Seeder
         ]);
 
         $roles = [
-            'clinic_admin' => ['email' => 'admin@clinic.com', 'phone' => '1111111111'],
             'doctor' => ['email' => 'doctor@clinic.com', 'phone' => '2222222222'],
             'receptionist' => ['email' => 'receptionist@clinic.com', 'phone' => '3333333333'],
             'patient' => ['email' => 'patient@clinic.com', 'phone' => '4444444444'],

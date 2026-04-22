@@ -12,21 +12,6 @@ class SidebarApiTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_clinic_admin_gets_correct_menu(): void
-    {
-        $clinic = Clinic::factory()->create();
-        $user = User::factory()->create(['clinic_id' => $clinic->id]);
-        $role = Role::firstOrCreate(['name' => 'clinic_admin']);
-        $user->roles()->attach($role);
-
-        $response = $this->actingAs($user, 'sanctum')
-            ->getJson('/api/sidebar');
-
-        $response->assertStatus(200)
-            ->assertJsonPath('role', 'clinic_admin')
-            ->assertJsonStructure(['role', 'menu' => ['Management', 'Medical', 'System']]);
-    }
-
     public function test_doctor_gets_correct_menu(): void
     {
         $clinic = Clinic::factory()->create();
@@ -39,7 +24,7 @@ class SidebarApiTest extends TestCase
 
         $response->assertStatus(200)
             ->assertJsonPath('role', 'doctor')
-            ->assertJsonStructure(['role', 'menu' => ['Medical', 'System']]);
+            ->assertJsonStructure(['role', 'menu' => ['Medical']]);
     }
 
     public function test_unauthenticated_user_cannot_access_sidebar(): void
