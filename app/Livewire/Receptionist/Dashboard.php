@@ -36,7 +36,7 @@ class Dashboard extends Component
     public function markAsDone()
     {
         $today = Carbon::today();
-        $current = Queue::whereDate('created_at', $today)->where('status', 'serving')->first();
+        $current = Queue::whereDate('created_at', $today)->whereIn('status', ['serving', 'hold'])->first();
         if ($current) {
             $current->update(['status' => 'completed']);
             if ($current->appointment) {
@@ -113,7 +113,7 @@ class Dashboard extends Component
 
         $nowServing = Queue::with('appointment')
             ->whereDate('created_at', $today)
-            ->where('status', 'serving')
+            ->whereIn('status', ['serving', 'hold'])
             ->first();
 
         $nextTokens = Queue::with('appointment')
@@ -128,10 +128,14 @@ class Dashboard extends Component
             ->orderBy('start_time', 'asc')
             ->get();
 
-
         $waitingCount = Queue::whereDate('created_at', $today)
             ->where('status', 'waiting')
             ->count();
+
+        $isDoctorOnHold = false;
+        if ($nowServing && $nowServing->appointment && $nowServing->appointment->doctor) {
+            $isDoctorOnHold = $nowServing->appointment->doctor->is_on_hold;
+        }
 
         return view('livewire.receptionist.dashboard', [
             'totalAppointments' => $totalAppointments,
@@ -143,6 +147,7 @@ class Dashboard extends Component
             'nowServing' => $nowServing,
             'nextTokens' => $nextTokens,
             'todaysAppointments' => $todaysAppointments,
+            'isDoctorOnHold' => $isDoctorOnHold,
         ]);
     }
 }

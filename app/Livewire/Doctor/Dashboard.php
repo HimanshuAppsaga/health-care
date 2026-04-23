@@ -36,11 +36,26 @@ class Dashboard extends Component
     public function markAsDone()
     {
         $today = Carbon::today();
-        $current = Queue::whereDate('created_at', $today)->where('status', 'serving')->first();
+        $current = Queue::whereDate('created_at', $today)->whereIn('status', ['serving', 'hold'])->first();
         if ($current) {
             $current->update(['status' => 'completed']);
             if ($current->appointment) {
                 $current->appointment->update(['status' => 'completed']);
+            }
+        }
+    }
+
+    public function toggleHold()
+    {
+        $doctor = auth()->user()->doctor;
+        if ($doctor) {
+            $doctor->update(['is_on_hold' => ! $doctor->is_on_hold]);
+
+            // If toggling hold while serving, also update the queue status for better reflection
+            $today = Carbon::today();
+            $current = Queue::whereDate('created_at', $today)->whereIn('status', ['serving', 'hold'])->first();
+            if ($current) {
+                $current->update(['status' => $doctor->is_on_hold ? 'hold' : 'serving']);
             }
         }
     }
@@ -113,7 +128,7 @@ class Dashboard extends Component
 
         $nowServing = Queue::with('appointment')
             ->whereDate('created_at', $today)
-            ->where('status', 'serving')
+            ->whereIn('status', ['serving', 'hold'])
             ->first();
 
         $nextTokens = Queue::with('appointment')
@@ -132,6 +147,9 @@ class Dashboard extends Component
             ->where('status', 'waiting')
             ->count();
 
+        $doctor = auth()->user()->doctor;
+        $isDoctorOnHold = $doctor ? $doctor->is_on_hold : false;
+
         return view('livewire.doctor.dashboard', [
             'totalAppointments' => $totalAppointments,
             'checkedIn' => $checkedIn,
@@ -142,6 +160,7 @@ class Dashboard extends Component
             'nowServing' => $nowServing,
             'nextTokens' => $nextTokens,
             'todaysAppointments' => $todaysAppointments,
+            'isDoctorOnHold' => $isDoctorOnHold,
         ]);
     }
 }

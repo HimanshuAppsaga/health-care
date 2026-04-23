@@ -46,8 +46,11 @@
             <div class="bg-white rounded-[2rem] shadow-sm border border-gray-100 overflow-hidden">
                 <div class="p-8 border-b border-gray-50 flex justify-between items-center bg-[#fcf9f8]">
                     <h2 class="text-xl font-black flex items-center gap-2">
-                        <span class="w-2 h-2 rounded-full bg-red-500 animate-pulse"></span>
+                        <span class="w-2 h-2 rounded-full {{ $isDoctorOnHold ? 'bg-orange-500' : 'bg-red-500 animate-pulse' }}"></span>
                         Live Queue Manager
+                        @if($isDoctorOnHold)
+                            <span class="ml-2 px-2 py-0.5 bg-orange-100 text-orange-600 text-[10px] font-black uppercase rounded-md border border-orange-200">On Hold</span>
+                        @endif
                     </h2>
                     @if($nowServing && $nowServing->appointment && $nowServing->appointment->doctor)
                         <span class="text-xs font-bold text-gray-400 tracking-widest uppercase">{{ $nowServing->appointment->doctor->user->department ?? 'General Dept' }} • Dr. {{ $nowServing->appointment->doctor->user->name ?? 'Unknown' }}</span>
@@ -57,9 +60,14 @@
                     <p class="text-sm font-bold text-gray-400 uppercase tracking-widest mb-2">Now Serving</p>
                     <div class="relative">
                         <div class="absolute -inset-8 bg-[#0fbda6]/10 blur-3xl rounded-full"></div>
-                        <div class="relative text-9xl font-black text-[#0fbda6] tracking-tighter mb-4">
+                        <div class="relative text-9xl font-black {{ $nowServing && $nowServing->status === 'hold' ? 'text-orange-500' : 'text-[#0fbda6]' }} tracking-tighter mb-4">
                             {{ $nowServing ? $nowServing->token_number : '--' }}
                         </div>
+                        @if($nowServing && $nowServing->status === 'hold')
+                            <div class="absolute top-0 right-0 -mr-12 bg-orange-500 text-white text-xs font-black px-3 py-1 rounded-full shadow-lg animate-bounce">
+                                ON HOLD
+                            </div>
+                        @endif
                     </div>
                     <h4 class="text-2xl font-bold text-[#1c1b1b] mb-8">
                         {{ $nowServing ? ($nowServing->appointment->name ?? 'Unknown Patient') : 'No Patient Assigned' }}
@@ -91,12 +99,10 @@
                             @if(!$nowServing) opacity-50 cursor-not-allowed @else hover:border-[#5200cc] hover:text-[#5200cc] active:scale-95 @endif">
                             Mark as Done
                         </button>
-                        <button wire:click="transferToken" 
-                            @if(!$nowServing) disabled @endif 
-                            class="flex-1 py-4 bg-orange-50 border-2 border-orange-200 text-orange-500 rounded-2xl font-black text-lg transition-all flex items-center justify-center gap-2 
-                            @if(!$nowServing) opacity-50 cursor-not-allowed @else hover:border-orange-500 hover:text-orange-600 active:scale-95 @endif">
-                            <span class="material-symbols-outlined">forward_5</span>
-                            Transfer Token
+                        <button wire:click="toggleHold" 
+                            class="flex-1 py-4 {{ $isDoctorOnHold ? 'bg-orange-500 text-white' : 'bg-white border-2 border-orange-200 text-orange-500' }} rounded-2xl font-black text-lg transition-all flex items-center justify-center gap-2 hover:border-orange-500 active:scale-95">
+                            <span class="material-symbols-outlined">{{ $isDoctorOnHold ? 'play_arrow' : 'pause' }}</span>
+                            {{ $isDoctorOnHold ? 'Resume' : 'Hold' }}
                         </button>
                     </div>
                 </div>
