@@ -20,6 +20,8 @@ class Dashboard extends Component
 
     public $lastIsOnHoldStatus;
 
+    public $lastStatus;
+
     public function mount()
     {
         $today = Carbon::today();
@@ -28,6 +30,7 @@ class Dashboard extends Component
             ->first();
 
         $this->lastTokenNumber = $nowServing ? $nowServing->token_number : null;
+        $this->lastStatus = $nowServing ? $nowServing->status : null;
 
         $this->lastIsOnHoldStatus = Doctor::where('clinic_id', auth()->user()->clinic_id)
             ->where('is_on_hold', true)
@@ -170,17 +173,33 @@ class Dashboard extends Component
             ->where('is_on_hold', true)
             ->exists();
 
-        // Sound Notification Logic
-        if ($this->lastTokenNumber !== ($nowServing ? $nowServing->token_number : null)) {
-            if ($nowServing && $nowServing->token_number) {
+        $currentStatus = $nowServing ? $nowServing->status : null;
+        $currentToken = $nowServing ? $nowServing->token_number : null;
+
+        // 1. Check for Next Patient (Token change)
+        if ($this->lastTokenNumber !== $currentToken) {
+            if ($currentToken) {
                 $this->dispatch('play-sound', type: 'next');
             }
-            $this->lastTokenNumber = $nowServing ? $nowServing->token_number : null;
+            $this->lastTokenNumber = $currentToken;
+            $this->lastStatus = $currentStatus;
+        }
+        // 2. Check for Hold/Continue (Status change on same token)
+        elseif ($this->lastStatus !== $currentStatus) {
+            if ($currentStatus === 'hold') {
+                $this->dispatch('play-sound', type: 'hold');
+            } elseif ($currentStatus === 'serving' && $this->lastStatus === 'hold') {
+                $this->dispatch('play-sound', type: 'continue');
+            }
+            $this->lastStatus = $currentStatus;
         }
 
+        // 3. Fallback: Check for Doctor Hold status (if no active queue or other changes)
         if ($this->lastIsOnHoldStatus !== $isDoctorOnHold) {
-            // Only play if it's not the initial state (handled by mount, but just in case)
-            $this->dispatch('play-sound', type: $isDoctorOnHold ? 'hold' : 'continue');
+            // Only trigger if we didn't already trigger via queue status
+            if ($this->lastStatus === $currentStatus) {
+                $this->dispatch('play-sound', type: $isDoctorOnHold ? 'hold' : 'continue');
+            }
             $this->lastIsOnHoldStatus = $isDoctorOnHold;
         }
 
