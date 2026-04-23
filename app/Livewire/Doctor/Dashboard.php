@@ -12,7 +12,7 @@ use Livewire\Attributes\Title;
 use Livewire\Component;
 
 #[Layout('components.layouts.app')]
-#[Title('Receptionist Dashboard | ClinicOS')]
+#[Title('Doctor Dashboard | ClinicOS')]
 class Dashboard extends Component
 {
     public function callNextPatient()
@@ -128,7 +128,6 @@ class Dashboard extends Component
             ->orderBy('start_time', 'asc')
             ->get();
 
-
         $waitingCount = Queue::whereDate('created_at', $today)
             ->where('status', 'waiting')
             ->count();
@@ -143,7 +142,6 @@ class Dashboard extends Component
             'nowServing' => $nowServing,
             'nextTokens' => $nextTokens,
             'todaysAppointments' => $todaysAppointments,
-            'waitlist' => $waitlist,
         ]);
     }
 }
