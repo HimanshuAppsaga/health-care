@@ -3,44 +3,153 @@
 namespace App\Livewire\Doctor;
 
 use App\Models\Appointment;
+use App\Models\Invoice;
+use App\Models\Payment;
+use App\Models\Queue;
 use Carbon\Carbon;
-use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
 use Livewire\Component;
 
 #[Layout('components.layouts.app')]
-#[Title('Doctor Dashboard | ClinicOS')]
+#[Title('Receptionist Dashboard | ClinicOS')]
 class Dashboard extends Component
 {
+    public function callNextPatient()
+    {
+        $today = Carbon::today();
+
+        $current = Queue::whereDate('created_at', $today)->where('status', 'serving')->first();
+        if ($current) {
+            $current->update(['status' => 'completed']);
+        }
+
+        $next = Queue::whereDate('created_at', $today)
+            ->where('status', 'waiting')
+            ->orderByRaw('CAST(token_number AS UNSIGNED) ASC')
+            ->first();
+        if ($next) {
+            $next->update(['status' => 'serving', 'called_at' => now()]);
+        }
+    }
+
+    public function markAsDone()
+    {
+        $today = Carbon::today();
+        $current = Queue::whereDate('created_at', $today)->where('status', 'serving')->first();
+        if ($current) {
+            $current->update(['status' => 'completed']);
+            if ($current->appointment) {
+                $current->appointment->update(['status' => 'completed']);
+            }
+        }
+    }
+
+    public function transferToken()
+    {
+        $today = Carbon::today();
+        $current = Queue::whereDate('created_at', $today)->where('status', 'serving')->first();
+        if ($current) {
+            $currentTokenNum = (int) $current->token_number;
+            $newTokenStr = (string) ($currentTokenNum + 6);
+
+            // Shift the next 6 tokens down by 1
+            $nextTokensToShift = Queue::whereDate('created_at', $today)
+                ->where('status', 'waiting')
+                ->whereRaw('CAST(token_number AS UNSIGNED) > ?', [$currentTokenNum])
+                ->orderByRaw('CAST(token_number AS UNSIGNED) ASC')
+                ->take(6)
+                ->get();
+
+            foreach ($nextTokensToShift as $q) {
+                $num = (int) $q->token_number;
+                $newNumStr = (string) ($num - 1);
+                $q->update(['token_number' => $newNumStr]);
+                if ($q->appointment) {
+                    $q->appointment->update(['token' => $newNumStr]);
+                }
+            }
+
+            // Update the transferred token
+            $current->update([
+                'token_number' => $newTokenStr,
+                'status' => 'waiting',
+            ]);
+
+            if ($current->appointment) {
+                $current->appointment->update(['token' => $newTokenStr]);
+            }
+        }
+    }
+
     public function render()
     {
         $today = Carbon::today();
-        $doctor = Auth::user()->doctor;
 
-        if (! $doctor) {
-            return view('livewire.doctor.dashboard', [
-                'totalAppointments' => 0,
-                'pendingPatients' => 0,
-                'completedToday' => 0,
-                'todaysAppointments' => collect([]),
-            ]);
+        $totalAppointments = Appointment::whereDate('appointment_date', $today)->count();
+
+        $checkedIn = Queue::whereDate('created_at', $today)
+            ->whereIn('status', ['waiting', 'serving', 'completed'])
+            ->count();
+
+        $pendingArrivals = Appointment::whereDate('appointment_date', $today)
+            ->where('status', 'confirmed')
+            ->count();
+
+        $completedToday = Appointment::whereDate('appointment_date', $today)
+            ->where('status', 'completed')
+            ->count();
+
+        $revenueToday = 0;
+        if (class_exists(Payment::class)) {
+            $revenueToday = Payment::whereDate('paid_at', $today)
+                ->where('status', 'paid')
+                ->sum('amount');
+        } elseif (class_exists(Invoice::class)) {
+            $revenueToday = Invoice::whereDate('issued_at', $today)
+                ->where('status', 'paid')
+                ->sum('total_amount');
         }
 
-        $todaysAppointments = Appointment::where('doctor_id', $doctor->id)
+        $nowServing = Queue::with('appointment')
+            ->whereDate('created_at', $today)
+            ->where('status', 'serving')
+            ->first();
+
+        $nextTokens = Queue::with('appointment')
+            ->whereDate('created_at', $today)
+            ->where('status', 'waiting')
+            ->orderByRaw('CAST(token_number AS UNSIGNED) ASC')
+            ->take(3)
+            ->get();
+
+        $todaysAppointments = Appointment::with(['doctor.user'])
             ->whereDate('appointment_date', $today)
             ->orderBy('start_time', 'asc')
             ->get();
 
-        $totalAppointments = $todaysAppointments->count();
-        $completedToday = $todaysAppointments->where('status', 'completed')->count();
-        $pendingPatients = $todaysAppointments->whereIn('status', ['confirmed', 'pending'])->count();
+        $waitlist = Queue::with('appointment')
+            ->whereDate('created_at', $today)
+            ->where('status', 'waiting')
+            ->orderByRaw('CAST(token_number AS UNSIGNED) ASC')
+            ->take(3)
+            ->get();
+
+        $waitingCount = Queue::whereDate('created_at', $today)
+            ->where('status', 'waiting')
+            ->count();
 
         return view('livewire.doctor.dashboard', [
             'totalAppointments' => $totalAppointments,
-            'pendingPatients' => $pendingPatients,
+            'checkedIn' => $checkedIn,
+            'pendingArrivals' => $pendingArrivals,
+            'waitingCount' => $waitingCount,
+            'revenueToday' => $revenueToday,
             'completedToday' => $completedToday,
+            'nowServing' => $nowServing,
+            'nextTokens' => $nextTokens,
             'todaysAppointments' => $todaysAppointments,
+            'waitlist' => $waitlist,
         ]);
     }
 }
