@@ -227,7 +227,7 @@ class Appointment extends Component
 
         $appointment = AppointmentModel::create([
             'clinic_id' => $this->selectedClinicId ?? 1,
-            'doctor_id' => $this->selectedDoctorId ?? 1,
+            'doctor_id' => $this->selectedDoctorId,
             'patient_id' => $patient->id,
             'name' => $this->name,
             'phone' => $this->phone,
