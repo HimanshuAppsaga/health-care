@@ -18,12 +18,8 @@ class Dashboard extends Component
 {
     public function callNextPatient()
     {
-        $nowServing = Queue::with('appointment.doctor')
-            ->whereDate('created_at', Carbon::today())
-            ->whereIn('status', ['serving', 'hold'])
-            ->first();
-
-        if ($nowServing && $nowServing->appointment && $nowServing->appointment->doctor && $nowServing->appointment->doctor->is_on_hold) {
+        $isDoctorOnHold = Doctor::where('clinic_id', auth()->user()->clinic_id)->where('is_on_hold', true)->exists();
+        if ($isDoctorOnHold) {
             return;
         }
 
@@ -45,12 +41,8 @@ class Dashboard extends Component
 
     public function markAsDone()
     {
-        $nowServing = Queue::with('appointment.doctor')
-            ->whereDate('created_at', Carbon::today())
-            ->whereIn('status', ['serving', 'hold'])
-            ->first();
-
-        if ($nowServing && $nowServing->appointment && $nowServing->appointment->doctor && $nowServing->appointment->doctor->is_on_hold) {
+        $isDoctorOnHold = Doctor::where('clinic_id', auth()->user()->clinic_id)->where('is_on_hold', true)->exists();
+        if ($isDoctorOnHold) {
             return;
         }
 
@@ -66,6 +58,11 @@ class Dashboard extends Component
 
     public function transferToken()
     {
+        $isDoctorOnHold = Doctor::where('clinic_id', auth()->user()->clinic_id)->where('is_on_hold', true)->exists();
+        if ($isDoctorOnHold) {
+            return;
+        }
+
         $today = Carbon::today();
         $current = Queue::whereDate('created_at', $today)->where('status', 'serving')->first();
         if ($current) {

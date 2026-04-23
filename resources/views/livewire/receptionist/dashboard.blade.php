@@ -48,13 +48,18 @@
                     <h2 class="text-xl font-black flex items-center gap-2">
                         <span class="w-2 h-2 rounded-full {{ $isDoctorOnHold ? 'bg-orange-500' : 'bg-red-500 animate-pulse' }}"></span>
                         Live Queue Manager
-                        @if($isDoctorOnHold)
-                            <span class="ml-2 px-2 py-0.5 bg-orange-100 text-orange-600 text-[10px] font-black uppercase rounded-md border border-orange-200">Doctor on Hold</span>
-                        @endif
                     </h2>
-                    @if($nowServing && $nowServing->appointment && $nowServing->appointment->doctor)
-                        <span class="text-xs font-bold text-gray-400 tracking-widest uppercase">{{ $nowServing->appointment->doctor->user->department ?? 'General Dept' }} • Dr. {{ $nowServing->appointment->doctor->user->name ?? 'Unknown' }}</span>
-                    @endif
+                    <div class="flex items-center gap-4">
+                        @if($isDoctorOnHold)
+                            <div class="flex items-center gap-2 bg-orange-100 text-orange-600 px-4 py-2 rounded-xl border border-orange-200 animate-pulse">
+                                <span class="material-symbols-outlined text-lg">pause_circle</span>
+                                <span class="text-xs font-black uppercase tracking-tighter">Doctor on Hold</span>
+                            </div>
+                        @endif
+                        @if($nowServing && $nowServing->appointment && $nowServing->appointment->doctor)
+                            <span class="text-xs font-bold text-gray-400 tracking-widest uppercase">{{ $nowServing->appointment->doctor->user->department ?? 'General Dept' }} • Dr. {{ $nowServing->appointment->doctor->user->name ?? 'Unknown' }}</span>
+                        @endif
+                    </div>
                 </div>
                 <div class="p-8 flex flex-col items-center justify-center text-center">
                     <p class="text-sm font-bold text-gray-400 uppercase tracking-widest mb-2">Now Serving</p>
@@ -72,6 +77,13 @@
                     <h4 class="text-2xl font-bold text-[#1c1b1b] mb-8">
                         {{ $nowServing ? ($nowServing->appointment->name ?? 'Unknown Patient') : 'No Patient Assigned' }}
                     </h4>
+
+                    @if($isDoctorOnHold)
+                        <div class="mb-8 px-6 py-2 bg-orange-50 text-orange-600 rounded-full border border-orange-100 flex items-center gap-2 animate-pulse mx-auto">
+                            <span class="material-symbols-outlined text-sm">info</span>
+                            <span class="text-xs font-black uppercase tracking-tight">Session is paused by doctor</span>
+                        </div>
+                    @endif
                     
                     <div class="flex items-center gap-3 mb-10">
                         <p class="text-sm font-bold text-gray-400 mr-2">NEXT TOKENS:</p>
@@ -87,22 +99,22 @@
                     
                     <div class="flex gap-4 w-full max-w-2xl">
                         <button wire:click="callNextPatient" 
-                            @if($nowServing) disabled @endif 
+                            @if($nowServing || $isDoctorOnHold) disabled @endif 
                             class="flex-1 py-4 bg-[#0fbda6] text-white rounded-2xl font-black text-lg shadow-lg shadow-[#0fbda6]/30 transition-all flex items-center justify-center gap-2 
-                            @if($nowServing) opacity-50 cursor-not-allowed @else hover:bg-[#0da692] active:scale-95 @endif">
+                            @if($nowServing || $isDoctorOnHold) opacity-50 cursor-not-allowed @else hover:bg-[#0da692] active:scale-95 @endif">
                             <span class="material-symbols-outlined">campaign</span>
                             Call Next Patient
                         </button>
                         <button wire:click="markAsDone" 
-                            @if(!$nowServing) disabled @endif 
+                            @if(!$nowServing || $isDoctorOnHold) disabled @endif 
                             class="flex-1 py-4 bg-white border-2 border-gray-200 text-[#1c1b1b] rounded-2xl font-black text-lg transition-all flex items-center justify-center gap-2 
-                            @if(!$nowServing) opacity-50 cursor-not-allowed @else hover:border-[#5200cc] hover:text-[#5200cc] active:scale-95 @endif">
+                            @if(!$nowServing || $isDoctorOnHold) opacity-50 cursor-not-allowed @else hover:border-[#5200cc] hover:text-[#5200cc] active:scale-95 @endif">
                             Mark as Done
                         </button>
                         <button wire:click="transferToken" 
-                            @if(!$nowServing) disabled @endif 
+                            @if(!$nowServing || $isDoctorOnHold) disabled @endif 
                             class="flex-1 py-4 bg-orange-50 border-2 border-orange-200 text-orange-500 rounded-2xl font-black text-lg transition-all flex items-center justify-center gap-2 
-                            @if(!$nowServing) opacity-50 cursor-not-allowed @else hover:border-orange-500 hover:text-orange-600 active:scale-95 @endif">
+                            @if(!$nowServing || $isDoctorOnHold) opacity-50 cursor-not-allowed @else hover:border-orange-500 hover:text-orange-600 active:scale-95 @endif">
                             <span class="material-symbols-outlined">forward_5</span>
                             Transfer Token
                         </button>
@@ -171,20 +183,4 @@
             </div>
         </div>
     </div>
-    @if($isDoctorOnHold)
-        <div class="fixed inset-0 z-50 flex items-center justify-center bg-[#1c1b1b]/60 backdrop-blur-sm">
-            <div class="bg-white p-12 rounded-[3rem] shadow-2xl border-4 border-orange-200 text-center transform transition-all animate-in zoom-in duration-300">
-                <div class="w-24 h-24 bg-orange-100 rounded-full flex items-center justify-center text-orange-500 mx-auto mb-6 animate-pulse">
-                    <span class="material-symbols-outlined text-5xl" style="font-variation-settings: 'FILL' 1;">pause_circle</span>
-                </div>
-                <h2 class="text-4xl font-black text-[#1c1b1b] mb-4 tracking-tight">PLEASE HOLD</h2>
-                <p class="text-gray-500 font-medium max-w-xs mx-auto">The doctor has paused the session. Please wait for them to continue.</p>
-                <div class="mt-8 flex justify-center gap-2">
-                    <span class="w-2 h-2 rounded-full bg-orange-400 animate-bounce"></span>
-                    <span class="w-2 h-2 rounded-full bg-orange-400 animate-bounce [animation-delay:0.2s]"></span>
-                    <span class="w-2 h-2 rounded-full bg-orange-400 animate-bounce [animation-delay:0.4s]"></span>
-                </div>
-            </div>
-        </div>
-    @endif
 </div>
