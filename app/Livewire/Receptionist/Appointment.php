@@ -68,6 +68,12 @@ class Appointment extends Component
                 $this->name = $patient->name;
                 $this->phone = $patient->phone;
             }
+
+            // Auto-assign clinic and doctor if user is linked to a clinic
+            if ($user->clinic_id) {
+                $this->selectedClinicId = $user->clinic_id;
+                $this->selectedDoctorId = Doctor::where('clinic_id', $this->selectedClinicId)->first()?->id;
+            }
         }
     }
 
@@ -191,14 +197,24 @@ class Appointment extends Component
     public function bookAppointment()
     {
         $this->validate([
-            // 'selectedClinicId' => 'required',
-            // 'selectedDoctorId' => 'required',
-            // 'selectedDate' => 'required',
-            // 'selectedSlot' => 'required',
             'name' => 'required|string|max:191',
             'phone' => 'required|string|max:20',
-            // 'reason' => 'required',
         ]);
+
+        // Ensure doctor is selected (fallback to first doctor of clinic if still null)
+        if (! $this->selectedClinicId && auth()->user()->clinic_id) {
+            $this->selectedClinicId = auth()->user()->clinic_id;
+        }
+
+        if (! $this->selectedDoctorId && $this->selectedClinicId) {
+            $this->selectedDoctorId = Doctor::where('clinic_id', $this->selectedClinicId)->first()?->id;
+        }
+
+        if (! $this->selectedDoctorId) {
+            session()->flash('error', 'No doctor available to assign this appointment.');
+
+            return;
+        }
 
         // Find or create patient record by phone
         $patient = Patient::where('phone', $this->phone)->first();
@@ -226,7 +242,7 @@ class Appointment extends Component
         $tokenNumber = Queue::whereDate('created_at', Carbon::today())->count() + 1;
 
         $appointment = AppointmentModel::create([
-            'clinic_id' => $this->selectedClinicId ?? 1,
+            'clinic_id' => $this->selectedClinicId,
             'doctor_id' => $this->selectedDoctorId,
             'patient_id' => $patient->id,
             'name' => $this->name,
