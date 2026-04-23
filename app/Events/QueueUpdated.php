@@ -22,7 +22,7 @@ class QueueUpdated implements ShouldBroadcast
     public function broadcastOn(): array
     {
         return [
-            new PrivateChannel('queue-updates.' . $this->clinicId),
+            new Channel('queue-updates.' . $this->clinicId),
         ];
     }
 

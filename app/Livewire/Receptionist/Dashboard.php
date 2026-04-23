@@ -26,7 +26,7 @@ class Dashboard extends Component
     public function getListeners()
     {
         return [
-            "echo-private:queue-updates." . auth()->user()->clinic_id . ",QueueUpdated" => '$refresh',
+            "echo:queue-updates." . auth()->user()->clinic_id . ",QueueUpdated" => '$refresh',
         ];
     }
 

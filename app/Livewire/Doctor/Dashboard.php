@@ -22,7 +22,7 @@ class Dashboard extends Component
     {
         $clinicId = auth()->user()->clinic_id;
         return [
-            "echo-private:queue-updates.{$clinicId},QueueUpdated" => '$refresh',
+            "echo:queue-updates.{$clinicId},QueueUpdated" => '$refresh',
         ];
     }
 
