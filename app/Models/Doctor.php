@@ -13,7 +13,15 @@ class Doctor extends Model
         'qualification',
         'experience_years',
         'consultation_fee',
+        'is_on_hold',
     ];
+
+    protected function casts(): array
+    {
+        return [
+            'is_on_hold' => 'boolean',
+        ];
+    }
 
     public function clinic()
     {

@@ -3,6 +3,7 @@
 namespace App\Livewire\Receptionist;
 
 use App\Models\Appointment;
+use App\Models\Doctor;
 use App\Models\Invoice;
 use App\Models\Payment;
 use App\Models\Queue;
@@ -150,10 +151,9 @@ class Dashboard extends Component
             ->where('status', 'waiting')
             ->count();
 
-        $isDoctorOnHold = false;
-        if ($nowServing && $nowServing->appointment && $nowServing->appointment->doctor) {
-            $isDoctorOnHold = $nowServing->appointment->doctor->is_on_hold;
-        }
+        $isDoctorOnHold = Doctor::where('clinic_id', auth()->user()->clinic_id)
+            ->where('is_on_hold', true)
+            ->exists();
 
         return view('livewire.receptionist.dashboard', [
             'totalAppointments' => $totalAppointments,
