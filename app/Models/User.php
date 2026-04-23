@@ -65,4 +65,17 @@ class User extends Authenticatable
     {
         return $this->hasOne(Doctor::class);
     }
+
+    public function getDashboardRouteName(): string
+    {
+        if ($this->hasRole('receptionist')) {
+            return 'receptionist.dashboard';
+        }
+
+        if ($this->hasRole('patient')) {
+            return 'patient.dashboard';
+        }
+
+        return 'login'; // Fallback
+    }
 }

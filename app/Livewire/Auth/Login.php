@@ -27,7 +27,7 @@ class Login extends Component
         if (Auth::attempt(['email' => $this->email, 'password' => $this->password], $this->remember)) {
             session()->regenerate();
 
-            return redirect()->intended('/dashboard');
+            return redirect()->intended(route(auth()->user()->getDashboardRouteName()));
         }
 
         $this->addError('email', trans('auth.failed'));
