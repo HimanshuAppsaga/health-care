@@ -76,6 +76,10 @@ class User extends Authenticatable
             return 'patient.dashboard';
         }
 
+        if ($this->hasRole('doctor')) {
+            return 'doctor.dashboard';
+        }
+
         return 'login'; // Fallback
     }
 }
