@@ -179,54 +179,39 @@
                         </div>
                         <span>Book Appointment</span>
                     </a>
+
+                    <!-- Test Sound Button -->
+                    <button type="button" wire:click="$dispatch('notify', { type: 'test' })" class="w-full flex items-center gap-4 p-4 rounded-2xl bg-[#ede7ff] text-[#5200cc] font-bold hover:bg-[#5200cc] hover:text-white transition-all group">
+                        <div class="w-10 h-10 rounded-xl bg-white/50 flex items-center justify-center group-hover:bg-[#5200cc]">
+                            <span class="material-symbols-outlined">volume_up</span>
+                        </div>
+                        <span>Test Notification Sound</span>
+                    </button>
                 </div>
             </div>
         </div>
     </div>
 </div>
 
-<script>
-    document.addEventListener('livewire:init', () => {
-        const soundUrl = 'https://assets.mixkit.co/active_storage/sfx/2358/2358-preview.mp3';
-        const audio = new Audio(soundUrl);
-        audio.load(); // Pre-load the sound
+<script data-navigate-once>
+    console.log('Receptionist Sound Script Loaded');
+    
+    window.addEventListener('notify', event => {
+        console.log('Sound notification triggered:', event.detail);
         
-        const playSound = (type) => {
-            console.log('Attempting to play sound for:', type);
-            
-            // Show a temporary visual indicator (Toast)
-            const toast = document.createElement('div');
-            toast.innerText = `🔔 Doctor Action: ${type.toUpperCase()}`;
-            toast.style.position = 'fixed';
-            toast.style.bottom = '20px';
-            toast.style.right = '20px';
-            toast.style.backgroundColor = '#5200cc';
-            toast.style.color = 'white';
-            toast.style.padding = '12px 24px';
-            toast.style.borderRadius = '12px';
-            toast.style.boxShadow = '0 10px 15px -3px rgba(0, 0, 0, 0.1)';
-            toast.style.zIndex = '9999';
-            toast.style.fontWeight = 'bold';
-            document.body.appendChild(toast);
-            setTimeout(() => toast.remove(), 3000);
-
-            // Play the sound
-            const playback = new Audio(soundUrl);
-            playback.play().then(() => {
-                console.log('Sound played successfully');
-            }).catch(error => {
-                console.error("Audio playback failed.", error);
-            });
-        };
-
-        // Listen for browser event
-        window.addEventListener('play-sound', (event) => {
-            playSound(event.detail.type || 'notification');
+        // Play the sound - using the exact pattern from your example
+        const soundUrl = 'https://assets.mixkit.co/active_storage/sfx/2857/2857-preview.mp3';
+        const audio = new Audio(soundUrl);
+        audio.play().catch(error => {
+            console.error("Audio play failed:", error);
         });
 
-        // Fallback: Listen for Livewire event directly
-        Livewire.on('play-sound', (data) => {
-            playSound(data.type || 'notification');
-        });
+        // Show a simple visual toast as well
+        const type = (event.detail && event.detail.type) ? event.detail.type : 'notification';
+        const toast = document.createElement('div');
+        toast.innerText = `🔔 Action: ${type.toUpperCase()}`;
+        toast.style.cssText = "position:fixed; bottom:20px; right:20px; background:#5200cc; color:white; padding:12px 24px; border-radius:12px; z-index:9999; font-weight:bold; box-shadow: 0 4px 6px rgba(0,0,0,0.1);";
+        document.body.appendChild(toast);
+        setTimeout(() => toast.remove(), 3000);
     });
 </script>

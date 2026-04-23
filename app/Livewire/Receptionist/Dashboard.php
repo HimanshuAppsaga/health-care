@@ -196,8 +196,8 @@ class Dashboard extends Component
         }
 
         if ($shouldPlaySound) {
-            \Log::info("Sound: Dispatching $reason event");
-            $this->dispatch('play-sound', type: $reason);
+            \Log::info("Sound: Dispatching $reason event via notify");
+            $this->dispatch('notify', type: $reason);
         }
 
         $this->lastIsOnHoldStatus = $isDoctorOnHold; // Keep track regardless
