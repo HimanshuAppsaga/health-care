@@ -17,26 +17,25 @@
                 <span class="material-symbols-outlined text-3xl" style="font-variation-settings: 'FILL' 1;">calendar_month</span>
             </div>
         </div>
-        
-        <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex items-center justify-between hover:border-[#0fbda6]/30 transition-all">
-            <div>
-                <p class="text-sm font-medium text-gray-500 mb-1">Checked-in</p>
-                <h3 class="text-3xl font-black text-[#0fbda6]">{{ $checkedIn }}</h3>
-                <p class="text-xs text-gray-400 font-medium mt-2 italic">{{ $waitlist->count() }} in waiting area</p>
-            </div>
-            <div class="w-14 h-14 bg-[#e6fffb] rounded-2xl flex items-center justify-center text-[#0fbda6]">
-                <span class="material-symbols-outlined text-3xl" style="font-variation-settings: 'FILL' 1;">how_to_reg</span>
-            </div>
-        </div>
 
         <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex items-center justify-between hover:border-orange-200 transition-all">
             <div>
-                <p class="text-sm font-medium text-gray-500 mb-1">Completed</p>
+                <p class="text-sm font-medium text-gray-500 mb-1">Completed Today</p>
                 <h3 class="text-3xl font-black text-orange-500">{{ $completedToday }}</h3>
                 <p class="text-xs text-gray-400 font-medium mt-2 italic">Done for today</p>
             </div>
             <div class="w-14 h-14 bg-orange-50 rounded-2xl flex items-center justify-center text-orange-500">
                 <span class="material-symbols-outlined text-3xl" style="font-variation-settings: 'FILL' 1;">task_alt</span>
+            </div>
+        </div>
+
+        <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex items-center justify-between hover:border-[#0fbda6]/30 transition-all">
+            <div>
+                <p class="text-sm font-medium text-gray-500 mb-1">Pending Patients</p>
+                <h3 class="text-3xl font-black text-[#0fbda6]">{{ $waitingCount }}</h3>
+            </div>
+            <div class="w-14 h-14 bg-[#e6fffb] rounded-2xl flex items-center justify-center text-[#0fbda6]">
+                <span class="material-symbols-outlined text-3xl" style="font-variation-settings: 'FILL' 1;">pending_actions</span>
             </div>
         </div>
     </div>

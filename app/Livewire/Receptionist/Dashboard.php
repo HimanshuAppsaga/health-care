@@ -2,13 +2,14 @@
 
 namespace App\Livewire\Receptionist;
 
-use Livewire\Component;
-use Livewire\Attributes\Layout;
-use Livewire\Attributes\Title;
 use App\Models\Appointment;
+use App\Models\Invoice;
+use App\Models\Payment;
 use App\Models\Queue;
 use Carbon\Carbon;
-use Illuminate\Support\Facades\DB;
+use Livewire\Attributes\Layout;
+use Livewire\Attributes\Title;
+use Livewire\Component;
 
 #[Layout('components.layouts.app')]
 #[Title('Receptionist Dashboard | ClinicOS')]
@@ -17,12 +18,12 @@ class Dashboard extends Component
     public function callNextPatient()
     {
         $today = Carbon::today();
-        
+
         $current = Queue::whereDate('created_at', $today)->where('status', 'serving')->first();
         if ($current) {
             $current->update(['status' => 'completed']);
         }
-        
+
         $next = Queue::whereDate('created_at', $today)
             ->where('status', 'waiting')
             ->orderByRaw('CAST(token_number AS UNSIGNED) ASC')
@@ -51,7 +52,7 @@ class Dashboard extends Component
         if ($current) {
             $currentTokenNum = (int) $current->token_number;
             $newTokenStr = (string) ($currentTokenNum + 6);
-            
+
             // Shift the next 6 tokens down by 1
             $nextTokensToShift = Queue::whereDate('created_at', $today)
                 ->where('status', 'waiting')
@@ -59,7 +60,7 @@ class Dashboard extends Component
                 ->orderByRaw('CAST(token_number AS UNSIGNED) ASC')
                 ->take(6)
                 ->get();
-                
+
             foreach ($nextTokensToShift as $q) {
                 $num = (int) $q->token_number;
                 $newNumStr = (string) ($num - 1);
@@ -68,13 +69,13 @@ class Dashboard extends Component
                     $q->appointment->update(['token' => $newNumStr]);
                 }
             }
-            
+
             // Update the transferred token
             $current->update([
                 'token_number' => $newTokenStr,
-                'status' => 'waiting'
+                'status' => 'waiting',
             ]);
-            
+
             if ($current->appointment) {
                 $current->appointment->update(['token' => $newTokenStr]);
             }
@@ -82,12 +83,11 @@ class Dashboard extends Component
     }
 
     public function render()
-
     {
         $today = Carbon::today();
 
         $totalAppointments = Appointment::whereDate('appointment_date', $today)->count();
-        
+
         $checkedIn = Queue::whereDate('created_at', $today)
             ->whereIn('status', ['waiting', 'serving', 'completed'])
             ->count();
@@ -101,12 +101,12 @@ class Dashboard extends Component
             ->count();
 
         $revenueToday = 0;
-        if (class_exists(\App\Models\Payment::class)) {
-            $revenueToday = \App\Models\Payment::whereDate('paid_at', $today)
+        if (class_exists(Payment::class)) {
+            $revenueToday = Payment::whereDate('paid_at', $today)
                 ->where('status', 'paid')
                 ->sum('amount');
-        } elseif (class_exists(\App\Models\Invoice::class)) {
-            $revenueToday = \App\Models\Invoice::whereDate('issued_at', $today)
+        } elseif (class_exists(Invoice::class)) {
+            $revenueToday = Invoice::whereDate('issued_at', $today)
                 ->where('status', 'paid')
                 ->sum('total_amount');
         }
@@ -135,10 +135,15 @@ class Dashboard extends Component
             ->take(3)
             ->get();
 
+        $waitingCount = Queue::whereDate('created_at', $today)
+            ->where('status', 'waiting')
+            ->count();
+
         return view('livewire.receptionist.dashboard', [
             'totalAppointments' => $totalAppointments,
             'checkedIn' => $checkedIn,
             'pendingArrivals' => $pendingArrivals,
+            'waitingCount' => $waitingCount,
             'revenueToday' => $revenueToday,
             'completedToday' => $completedToday,
             'nowServing' => $nowServing,
