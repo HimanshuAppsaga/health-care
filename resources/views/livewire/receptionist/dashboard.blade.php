@@ -159,30 +159,7 @@
                         </div>
                         <span>Book Appointment</span>
                     </a>
-                    
                 </div>
-            </div>
-
-            <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
-                <h3 class="text-lg font-black text-[#1c1b1b] mb-4">Waitlist ({{ $waitlist->count() }})</h3>
-                <div class="space-y-4">
-                    @forelse($waitlist as $item)
-                        <div class="flex items-center justify-between p-3 rounded-xl border border-dashed border-gray-200">
-                            <div>
-                                <p class="text-sm font-bold text-[#1c1b1b]">{{ $item->appointment->name ?? 'Unknown' }}</p>
-                                <p class="text-[10px] text-gray-500 font-bold uppercase">Token: {{ $item->token_number }}</p>
-                            </div>
-                            <span class="text-xs font-black text-gray-400">{{ \Carbon\Carbon::parse($item->created_at)->diffForHumans(null, true) }} wait</span>
-                        </div>
-                    @empty
-                        <p class="text-sm text-gray-500 text-center py-4">No patients in the waitlist.</p>
-                    @endforelse
-                </div>
-                @if($waitlist->count() > 0)
-                    <button class="w-full mt-6 text-sm font-bold text-gray-400 hover:text-[#5200cc] transition-colors">
-                        View Full Waitlist
-                    </button>
-                @endif
             </div>
         </div>
     </div>

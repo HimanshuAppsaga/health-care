@@ -128,12 +128,6 @@ class Dashboard extends Component
             ->orderBy('start_time', 'asc')
             ->get();
 
-        $waitlist = Queue::with('appointment')
-            ->whereDate('created_at', $today)
-            ->where('status', 'waiting')
-            ->orderByRaw('CAST(token_number AS UNSIGNED) ASC')
-            ->take(3)
-            ->get();
 
         $waitingCount = Queue::whereDate('created_at', $today)
             ->where('status', 'waiting')
@@ -149,7 +143,6 @@ class Dashboard extends Component
             'nowServing' => $nowServing,
             'nextTokens' => $nextTokens,
             'todaysAppointments' => $todaysAppointments,
-            'waitlist' => $waitlist,
         ]);
     }
 }
