@@ -255,7 +255,7 @@ class Appointment extends Component
 
     public function render()
     {
-        return view('livewire.patient.appointment')
+        return view('livewire.receptionist.appointment')
             ->layout('components.layouts.app');
     }
 }
