@@ -171,4 +171,20 @@
             </div>
         </div>
     </div>
+    @if($isDoctorOnHold)
+        <div class="fixed inset-0 z-50 flex items-center justify-center bg-[#1c1b1b]/60 backdrop-blur-sm">
+            <div class="bg-white p-12 rounded-[3rem] shadow-2xl border-4 border-orange-200 text-center transform transition-all animate-in zoom-in duration-300">
+                <div class="w-24 h-24 bg-orange-100 rounded-full flex items-center justify-center text-orange-500 mx-auto mb-6 animate-pulse">
+                    <span class="material-symbols-outlined text-5xl" style="font-variation-settings: 'FILL' 1;">pause_circle</span>
+                </div>
+                <h2 class="text-4xl font-black text-[#1c1b1b] mb-4 tracking-tight">PLEASE HOLD</h2>
+                <p class="text-gray-500 font-medium max-w-xs mx-auto">The doctor has paused the session. Please wait for them to continue.</p>
+                <div class="mt-8 flex justify-center gap-2">
+                    <span class="w-2 h-2 rounded-full bg-orange-400 animate-bounce"></span>
+                    <span class="w-2 h-2 rounded-full bg-orange-400 animate-bounce [animation-delay:0.2s]"></span>
+                    <span class="w-2 h-2 rounded-full bg-orange-400 animate-bounce [animation-delay:0.4s]"></span>
+                </div>
+            </div>
+        </div>
+    @endif
 </div>

@@ -87,23 +87,31 @@
                     
                     <div class="flex gap-4 w-full max-w-2xl">
                         <button wire:click="callNextPatient" 
-                            @if($nowServing) disabled @endif 
+                            @if($nowServing || $isDoctorOnHold) disabled @endif 
                             class="flex-1 py-4 bg-[#0fbda6] text-white rounded-2xl font-black text-lg shadow-lg shadow-[#0fbda6]/30 transition-all flex items-center justify-center gap-2 
-                            @if($nowServing) opacity-50 cursor-not-allowed @else hover:bg-[#0da692] active:scale-95 @endif">
+                            @if($nowServing || $isDoctorOnHold) opacity-50 cursor-not-allowed @else hover:bg-[#0da692] active:scale-95 @endif">
                             <span class="material-symbols-outlined">campaign</span>
                             Call Next Patient
                         </button>
                         <button wire:click="markAsDone" 
-                            @if(!$nowServing) disabled @endif 
+                            @if(!$nowServing || $isDoctorOnHold) disabled @endif 
                             class="flex-1 py-4 bg-white border-2 border-gray-200 text-[#1c1b1b] rounded-2xl font-black text-lg transition-all flex items-center justify-center gap-2 
-                            @if(!$nowServing) opacity-50 cursor-not-allowed @else hover:border-[#5200cc] hover:text-[#5200cc] active:scale-95 @endif">
+                            @if(!$nowServing || $isDoctorOnHold) opacity-50 cursor-not-allowed @else hover:border-[#5200cc] hover:text-[#5200cc] active:scale-95 @endif">
                             Mark as Done
                         </button>
-                        <button wire:click="toggleHold" 
-                            class="flex-1 py-4 {{ $isDoctorOnHold ? 'bg-orange-500 text-white' : 'bg-white border-2 border-orange-200 text-orange-500' }} rounded-2xl font-black text-lg transition-all flex items-center justify-center gap-2 hover:border-orange-500 active:scale-95">
-                            <span class="material-symbols-outlined">{{ $isDoctorOnHold ? 'play_arrow' : 'pause' }}</span>
-                            {{ $isDoctorOnHold ? 'Resume' : 'Hold' }}
-                        </button>
+                        @if($isDoctorOnHold)
+                            <button wire:click="toggleHold" 
+                                class="flex-1 py-4 bg-orange-500 text-white rounded-2xl font-black text-lg shadow-lg shadow-orange-500/30 transition-all flex items-center justify-center gap-2 hover:bg-orange-600 active:scale-95">
+                                <span class="material-symbols-outlined">play_arrow</span>
+                                Continue
+                            </button>
+                        @else
+                            <button wire:click="toggleHold" 
+                                class="flex-1 py-4 bg-white border-2 border-orange-200 text-orange-500 rounded-2xl font-black text-lg transition-all flex items-center justify-center gap-2 hover:border-orange-500 hover:text-orange-600 active:scale-95">
+                                <span class="material-symbols-outlined">pause</span>
+                                Hold
+                            </button>
+                        @endif
                     </div>
                 </div>
             </div>
