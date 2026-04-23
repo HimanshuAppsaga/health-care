@@ -1,4 +1,4 @@
-<div>
+<div wire:poll.3s>
     <style>
         .bg-background { background-color: #fcf9f8; }
         .text-on-surface { color: #1c1b1b; }
@@ -184,3 +184,26 @@
         </div>
     </div>
 </div>
+
+<script>
+    document.addEventListener('livewire:init', () => {
+        Livewire.on('play-sound', (event) => {
+            const sounds = {
+                'next': 'https://assets.mixkit.co/active_storage/sfx/2358/2358-preview.mp3',
+                'hold': 'https://assets.mixkit.co/active_storage/sfx/2354/2354-preview.mp3',
+                'continue': 'https://assets.mixkit.co/active_storage/sfx/2353/2353-preview.mp3'
+            };
+            
+            // In Livewire v3, the event object structure can vary
+            const type = event.type || (Array.isArray(event) ? event[0].type : null);
+            const soundUrl = sounds[type];
+            
+            if (soundUrl) {
+                const audio = new Audio(soundUrl);
+                audio.play().catch(error => {
+                    console.warn("Audio playback failed (browser may require user interaction first):", error);
+                });
+            }
+        });
+    });
+</script>

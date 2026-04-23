@@ -16,6 +16,24 @@ use Livewire\Component;
 #[Title('Receptionist Dashboard | ClinicOS')]
 class Dashboard extends Component
 {
+    public $lastTokenNumber;
+
+    public $lastIsOnHoldStatus;
+
+    public function mount()
+    {
+        $today = Carbon::today();
+        $nowServing = Queue::whereDate('created_at', $today)
+            ->whereIn('status', ['serving', 'hold'])
+            ->first();
+
+        $this->lastTokenNumber = $nowServing ? $nowServing->token_number : null;
+
+        $this->lastIsOnHoldStatus = Doctor::where('clinic_id', auth()->user()->clinic_id)
+            ->where('is_on_hold', true)
+            ->exists();
+    }
+
     public function callNextPatient()
     {
         $isDoctorOnHold = Doctor::where('clinic_id', auth()->user()->clinic_id)->where('is_on_hold', true)->exists();
@@ -151,6 +169,20 @@ class Dashboard extends Component
         $isDoctorOnHold = Doctor::where('clinic_id', auth()->user()->clinic_id)
             ->where('is_on_hold', true)
             ->exists();
+
+        // Sound Notification Logic
+        if ($this->lastTokenNumber !== ($nowServing ? $nowServing->token_number : null)) {
+            if ($nowServing && $nowServing->token_number) {
+                $this->dispatch('play-sound', type: 'next');
+            }
+            $this->lastTokenNumber = $nowServing ? $nowServing->token_number : null;
+        }
+
+        if ($this->lastIsOnHoldStatus !== $isDoctorOnHold) {
+            // Only play if it's not the initial state (handled by mount, but just in case)
+            $this->dispatch('play-sound', type: $isDoctorOnHold ? 'hold' : 'continue');
+            $this->lastIsOnHoldStatus = $isDoctorOnHold;
+        }
 
         return view('livewire.receptionist.dashboard', [
             'totalAppointments' => $totalAppointments,
