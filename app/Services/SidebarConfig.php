@@ -11,8 +11,6 @@ class SidebarConfig
                 'Medical' => [
                     ['name' => 'Dashboard', 'route' => 'doctor.dashboard', 'icon' => 'layout-dashboard'],
                     ['name' => 'Appointments', 'route' => 'doctor.appointments', 'icon' => 'calendar'],
-                    ['name' => 'Patients', 'route' => 'doctor.patients', 'icon' => 'user-group'],
-                    ['name' => 'Prescriptions', 'route' => 'doctor.prescriptions', 'icon' => 'file-text'],
                     ['name' => 'Schedule', 'route' => 'doctor.schedule', 'icon' => 'clock'],
                 ],
             ],
