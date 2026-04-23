@@ -25,9 +25,12 @@ class Dashboard extends Component
     public function mount()
     {
         $today = Carbon::today();
-        $nowServing = Queue::whereDate('created_at', $today)
-            ->whereIn('status', ['serving', 'hold'])
-            ->first();
+        $nowServing = Queue::whereHas('appointment', function($query) use ($today) {
+            $query->where('clinic_id', auth()->user()->clinic_id)
+                  ->whereDate('appointment_date', $today);
+        })
+        ->whereIn('status', ['serving', 'hold'])
+        ->first();
 
         $this->lastTokenNumber = $nowServing ? $nowServing->token_number : null;
         $this->lastStatus = $nowServing ? $nowServing->status : null;
@@ -149,59 +152,78 @@ class Dashboard extends Component
         }
 
         $nowServing = Queue::with('appointment')
-            ->whereDate('created_at', $today)
+            ->whereHas('appointment', function ($query) use ($today) {
+                $query->where('clinic_id', auth()->user()->clinic_id)
+                    ->whereDate('appointment_date', $today);
+            })
             ->whereIn('status', ['serving', 'hold'])
             ->first();
 
+        $currentStatus = $nowServing ? $nowServing->status : null;
+        $currentToken = $nowServing ? $nowServing->token_number : null;
+
+        $isDoctorOnHold = Doctor::where('clinic_id', auth()->user()->clinic_id)
+            ->where('is_on_hold', true)
+            ->exists();
+
+        // Detection Logic
+        $shouldPlaySound = false;
+        $reason = '';
+
+        // 1. Check for Next Patient (Token change)
+        if ($this->lastTokenNumber !== $currentToken) {
+            if ($currentToken) {
+                $shouldPlaySound = true;
+                $reason = 'next';
+            }
+            $this->lastTokenNumber = $currentToken;
+            $this->lastStatus = $currentStatus;
+        }
+        // 2. Check for Status change on same token
+        elseif ($this->lastStatus !== $currentStatus) {
+            if ($currentStatus === 'hold' || $currentStatus === 'serving') {
+                $shouldPlaySound = true;
+                $reason = $currentStatus === 'hold' ? 'hold' : 'continue';
+            }
+            $this->lastStatus = $currentStatus;
+        }
+
+        // 3. Fallback: Check for Doctor table Hold status (if no active queue or other changes)
+        if (! $shouldPlaySound && $this->lastIsOnHoldStatus !== $isDoctorOnHold) {
+            $shouldPlaySound = true;
+            $reason = $isDoctorOnHold ? 'hold' : 'continue';
+            $this->lastIsOnHoldStatus = $isDoctorOnHold;
+        }
+
+        if ($shouldPlaySound) {
+            \Log::info("Sound: Dispatching $reason event");
+            $this->dispatch('play-sound', type: $reason);
+        }
+
+        $this->lastIsOnHoldStatus = $isDoctorOnHold; // Keep track regardless
+
         $nextTokens = Queue::with('appointment')
-            ->whereDate('created_at', $today)
+            ->whereHas('appointment', function ($query) use ($today) {
+                $query->where('clinic_id', auth()->user()->clinic_id)
+                    ->whereDate('appointment_date', $today);
+            })
             ->where('status', 'waiting')
             ->orderByRaw('CAST(token_number AS UNSIGNED) ASC')
             ->take(3)
             ->get();
 
         $todaysAppointments = Appointment::with(['doctor.user'])
+            ->where('clinic_id', auth()->user()->clinic_id)
             ->whereDate('appointment_date', $today)
             ->orderBy('start_time', 'asc')
             ->get();
 
-        $waitingCount = Queue::whereDate('created_at', $today)
+        $waitingCount = Queue::whereHas('appointment', function ($query) use ($today) {
+            $query->where('clinic_id', auth()->user()->clinic_id)
+                ->whereDate('appointment_date', $today);
+        })
             ->where('status', 'waiting')
             ->count();
-
-        $isDoctorOnHold = Doctor::where('clinic_id', auth()->user()->clinic_id)
-            ->where('is_on_hold', true)
-            ->exists();
-
-        $currentStatus = $nowServing ? $nowServing->status : null;
-        $currentToken = $nowServing ? $nowServing->token_number : null;
-
-        // 1. Check for Next Patient (Token change)
-        if ($this->lastTokenNumber !== $currentToken) {
-            if ($currentToken) {
-                $this->dispatch('play-sound', type: 'next');
-            }
-            $this->lastTokenNumber = $currentToken;
-            $this->lastStatus = $currentStatus;
-        }
-        // 2. Check for Hold/Continue (Status change on same token)
-        elseif ($this->lastStatus !== $currentStatus) {
-            if ($currentStatus === 'hold') {
-                $this->dispatch('play-sound', type: 'hold');
-            } elseif ($currentStatus === 'serving' && $this->lastStatus === 'hold') {
-                $this->dispatch('play-sound', type: 'continue');
-            }
-            $this->lastStatus = $currentStatus;
-        }
-
-        // 3. Fallback: Check for Doctor Hold status (if no active queue or other changes)
-        if ($this->lastIsOnHoldStatus !== $isDoctorOnHold) {
-            // Only trigger if we didn't already trigger via queue status
-            if ($this->lastStatus === $currentStatus) {
-                $this->dispatch('play-sound', type: $isDoctorOnHold ? 'hold' : 'continue');
-            }
-            $this->lastIsOnHoldStatus = $isDoctorOnHold;
-        }
 
         return view('livewire.receptionist.dashboard', [
             'totalAppointments' => $totalAppointments,

@@ -187,24 +187,46 @@
 
 <script>
     document.addEventListener('livewire:init', () => {
+        const soundUrl = 'https://assets.mixkit.co/active_storage/sfx/2358/2358-preview.mp3';
+        const audio = new Audio(soundUrl);
+        audio.load(); // Pre-load the sound
+        
+        const playSound = (type) => {
+            console.log('Attempting to play sound for:', type);
+            
+            // Show a temporary visual indicator (Toast)
+            const toast = document.createElement('div');
+            toast.innerText = `🔔 Doctor Action: ${type.toUpperCase()}`;
+            toast.style.position = 'fixed';
+            toast.style.bottom = '20px';
+            toast.style.right = '20px';
+            toast.style.backgroundColor = '#5200cc';
+            toast.style.color = 'white';
+            toast.style.padding = '12px 24px';
+            toast.style.borderRadius = '12px';
+            toast.style.boxShadow = '0 10px 15px -3px rgba(0, 0, 0, 0.1)';
+            toast.style.zIndex = '9999';
+            toast.style.fontWeight = 'bold';
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 3000);
+
+            // Play the sound
+            const playback = new Audio(soundUrl);
+            playback.play().then(() => {
+                console.log('Sound played successfully');
+            }).catch(error => {
+                console.error("Audio playback failed.", error);
+            });
+        };
+
+        // Listen for browser event
         window.addEventListener('play-sound', (event) => {
-            const sounds = {
-                'next': 'https://assets.mixkit.co/active_storage/sfx/2358/2358-preview.mp3',
-                'hold': 'https://assets.mixkit.co/active_storage/sfx/2354/2354-preview.mp3',
-                'continue': 'https://assets.mixkit.co/active_storage/sfx/2353/2353-preview.mp3'
-            };
-            
-            const type = event.detail.type;
-            const soundUrl = sounds[type];
-            
-            console.log('Playing sound:', type, soundUrl);
-            
-            if (soundUrl) {
-                const audio = new Audio(soundUrl);
-                audio.play().catch(error => {
-                    console.warn("Audio playback failed (browser may require user interaction first):", error);
-                });
-            }
+            playSound(event.detail.type || 'notification');
+        });
+
+        // Fallback: Listen for Livewire event directly
+        Livewire.on('play-sound', (data) => {
+            playSound(data.type || 'notification');
         });
     });
 </script>
