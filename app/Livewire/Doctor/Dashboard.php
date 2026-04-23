@@ -6,6 +6,7 @@ use App\Models\Appointment;
 use App\Models\Invoice;
 use App\Models\Payment;
 use App\Models\Queue;
+use App\Events\QueueUpdated;
 use Carbon\Carbon;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
@@ -16,6 +17,14 @@ use Livewire\Component;
 class Dashboard extends Component
 {
     public bool $isDoctorOnHold = false;
+
+    public function getListeners()
+    {
+        $clinicId = auth()->user()->clinic_id;
+        return [
+            "echo-private:queue-updates.{$clinicId},QueueUpdated" => '$refresh',
+        ];
+    }
 
     public function mount()
     {
@@ -41,6 +50,7 @@ class Dashboard extends Component
             ->first();
         if ($next) {
             $next->update(['status' => 'serving', 'called_at' => now()]);
+            broadcast(new QueueUpdated(auth()->user()->clinic_id, 'next'))->toOthers();
         }
     }
 
@@ -57,6 +67,7 @@ class Dashboard extends Component
             if ($current->appointment) {
                 $current->appointment->update(['status' => 'completed']);
             }
+            broadcast(new QueueUpdated(auth()->user()->clinic_id, 'completed'))->toOthers();
         }
     }
 
@@ -76,6 +87,7 @@ class Dashboard extends Component
             if ($current) {
                 $current->update(['status' => $this->isDoctorOnHold ? 'hold' : 'serving']);
             }
+            broadcast(new QueueUpdated(auth()->user()->clinic_id, $this->isDoctorOnHold ? 'hold' : 'continue'))->toOthers();
         }
     }
 
@@ -117,6 +129,7 @@ class Dashboard extends Component
             if ($current->appointment) {
                 $current->appointment->update(['token' => $newTokenStr]);
             }
+            broadcast(new QueueUpdated(auth()->user()->clinic_id, 'transfer'))->toOthers();
         }
     }
 

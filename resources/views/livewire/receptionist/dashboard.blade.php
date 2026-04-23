@@ -1,4 +1,4 @@
-<div wire:poll.3s>
+<div>
     <style>
         .bg-background { background-color: #fcf9f8; }
         .text-on-surface { color: #1c1b1b; }
@@ -104,12 +104,6 @@
                             @if($nowServing || $isDoctorOnHold) opacity-50 cursor-not-allowed @else hover:bg-[#0da692] active:scale-95 @endif">
                             <span class="material-symbols-outlined">campaign</span>
                             Call Next Patient
-                        </button>
-                        <button wire:click="markAsDone" 
-                            @if(!$nowServing || $isDoctorOnHold) disabled @endif 
-                            class="flex-1 py-4 bg-white border-2 border-gray-200 text-[#1c1b1b] rounded-2xl font-black text-lg transition-all flex items-center justify-center gap-2 
-                            @if(!$nowServing || $isDoctorOnHold) opacity-50 cursor-not-allowed @else hover:border-[#5200cc] hover:text-[#5200cc] active:scale-95 @endif">
-                            Mark as Done
                         </button>
                         <button wire:click="transferToken" 
                             @if(!$nowServing || $isDoctorOnHold) disabled @endif 
