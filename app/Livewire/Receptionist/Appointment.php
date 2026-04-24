@@ -69,6 +69,7 @@ class Appointment extends Component
     {
         $this->clinics = Clinic::where('is_active', true)->get();
         $this->selectedDate = Carbon::today()->format('Y-m-d');
+        $this->generateSlots();
 
         if (Auth::check()) {
             $user = Auth::user();
@@ -85,9 +86,25 @@ class Appointment extends Component
             if ($user->clinic_id) {
                 $this->selectedClinicId = $user->clinic_id;
                 $this->selectedClinic = Clinic::find($this->selectedClinicId);
-                $this->selectedDoctorId = Doctor::where('clinic_id', $this->selectedClinicId)->first()?->id;
+                $this->doctors = Doctor::with('user')->where('clinic_id', $this->selectedClinicId)->get();
+
+                // Try to pick a doctor who has a schedule today
+                $dayOfWeek = Carbon::today()->dayOfWeek;
+                $this->selectedDoctorId = Doctor::where('clinic_id', $this->selectedClinicId)
+                    ->whereHas('schedules', function ($query) use ($dayOfWeek) {
+                        $query->where('day_of_week', $dayOfWeek);
+                    })->first()?->id;
+
+                // Fallback to first doctor if no one has a schedule today
+                if (! $this->selectedDoctorId) {
+                    $this->selectedDoctorId = $this->doctors->first()?->id;
+                }
+
                 if ($this->selectedDoctorId) {
                     $this->selectedDoctor = Doctor::with('user')->find($this->selectedDoctorId);
+                    $this->fee = $this->selectedDoctor->consultation_fee;
+                    $this->updateTotal();
+                    $this->generateSlots();
                 }
             }
         }
@@ -118,6 +135,7 @@ class Appointment extends Component
 
     public function updatedSelectedDate()
     {
+        $this->selectedDate = Carbon::today()->format('Y-m-d'); // Force today
         $this->generateSlots();
     }
 
@@ -135,17 +153,13 @@ class Appointment extends Component
         // Typically Laravel/Carbon uses 0=Sunday, 1=Monday...
         // Let's check DoctorSchedule day_of_week
 
-        $schedule = DoctorSchedule::where('doctor_id', $this->selectedDoctorId)
+        $schedules = DoctorSchedule::where('doctor_id', $this->selectedDoctorId)
             ->where('day_of_week', $dayOfWeek)
-            ->first();
+            ->get();
 
-        if (! $schedule) {
+        if ($schedules->isEmpty()) {
             return;
         }
-
-        $start = Carbon::createFromFormat('H:i:s', $schedule->start_time);
-        $end = Carbon::createFromFormat('H:i:s', $schedule->end_time);
-        $duration = $schedule->slot_duration ?: 30;
 
         // Fetch already booked slots
         $bookedSlots = AppointmentModel::where('doctor_id', $this->selectedDoctorId)
@@ -155,12 +169,36 @@ class Appointment extends Component
             ->map(fn ($time) => Carbon::parse($time)->format('H:i'))
             ->toArray();
 
-        while ($start->copy()->addMinutes($duration)->lte($end)) {
-            $timeSlot = $start->format('H:i');
-            if (! in_array($timeSlot, $bookedSlots)) {
-                $this->availableSlots[] = $timeSlot;
+        foreach ($schedules as $schedule) {
+            $start = Carbon::createFromFormat('H:i:s', $schedule->start_time);
+            $end = Carbon::createFromFormat('H:i:s', $schedule->end_time);
+            $duration = $schedule->slot_duration ?: 30;
+
+            while ($start->copy()->addMinutes($duration)->lte($end)) {
+                $timeSlot = $start->format('H:i');
+
+                if (! in_array($timeSlot, $bookedSlots)) {
+                    $this->availableSlots[] = $timeSlot;
+                }
+                $start->addMinutes($duration);
             }
-            $start->addMinutes($duration);
+        }
+
+        // Sort slots by time
+        sort($this->availableSlots);
+
+        // Auto-select the first available slot that is not in the past
+        if (empty($this->selectedSlot)) {
+            foreach ($this->availableSlots as $slot) {
+                if (Carbon::parse($slot)->isAfter(now()->subMinutes(15))) { // Small grace for "now"
+                    $this->selectedSlot = $slot;
+                    break;
+                }
+            }
+            // If all slots are in the past, pick the last one or none
+            if (empty($this->selectedSlot) && ! empty($this->availableSlots)) {
+                $this->selectedSlot = end($this->availableSlots);
+            }
         }
     }
 
@@ -212,10 +250,22 @@ class Appointment extends Component
 
     public function bookAppointment()
     {
+        $this->selectedDate = Carbon::today()->format('Y-m-d'); // Force today
         $this->validate([
             'name' => 'required|string|max:191',
             'phone' => 'required|string|max:20',
+            'selectedSlot' => 'required',
         ]);
+
+        // Double check slot availability
+        if (! in_array($this->selectedSlot, $this->availableSlots)) {
+            $this->generateSlots(); // Refresh slots
+            if (! in_array($this->selectedSlot, $this->availableSlots)) {
+                session()->flash('error', 'Selected slot is no longer available. Please pick another one.');
+
+                return;
+            }
+        }
 
         try {
             return DB::transaction(function () {

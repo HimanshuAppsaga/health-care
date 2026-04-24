@@ -29,6 +29,15 @@
                     </div>
                 @else
                 <div class="space-y-4">
+                    @if(empty($availableSlots))
+                        <div class="mb-6">
+                            <div class="p-3 bg-red-50 text-red-500 rounded-xl text-xs font-bold border border-red-100 flex items-center gap-2">
+                                <span class="material-symbols-outlined text-sm">event_busy</span>
+                                No slots available for today.
+                            </div>
+                        </div>
+                    @endif
+
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
                             <label class="block text-xs font-bold text-slate-500 mb-2 uppercase tracking-wider">Full Name</label>
