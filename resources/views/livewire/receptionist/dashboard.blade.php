@@ -6,6 +6,7 @@
         .text-on-primary { color: #ffffff; }
     </style>
 
+
     <!-- Stats Grid -->
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8 mt-6 px-8">
         <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex items-center justify-between group hover:border-[#5200cc]/30 transition-all">
@@ -56,8 +57,11 @@
                                 <span class="text-xs font-black uppercase tracking-tighter">Doctor on Hold</span>
                             </div>
                         @endif
-                        @if($nowServing && $nowServing->appointment && $nowServing->appointment->doctor)
-                            <span class="text-xs font-bold text-gray-400 tracking-widest uppercase">{{ $nowServing->appointment->doctor->user->department ?? 'General Dept' }} • Dr. {{ $nowServing->appointment->doctor->user->name ?? 'Unknown' }}</span>
+                        @php
+                            $selectedDoctor = $doctors->firstWhere('id', $selectedDoctorId);
+                        @endphp
+                        @if($selectedDoctor)
+                            <span class="text-xs font-bold text-gray-400 tracking-widest uppercase">{{ $selectedDoctor->user->department ?? 'General Dept' }} • Dr. {{ $selectedDoctor->user->name ?? 'Unknown' }}</span>
                         @endif
                     </div>
                 </div>
