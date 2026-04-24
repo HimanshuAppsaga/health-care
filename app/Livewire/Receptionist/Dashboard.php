@@ -39,7 +39,7 @@ class Dashboard extends Component
     public function mount()
     {
         $clinicId = auth()->user()->clinic_id;
-        $this->doctors = Doctor::with('user')->where('clinic_id', $clinicId)->get();
+        $this->doctors = Doctor::whereHas('user')->where('clinic_id', $clinicId)->get();
 
         if (empty($this->selectedDoctorId) && $this->doctors->isNotEmpty()) {
             $this->selectedDoctorId = $this->doctors->first()->id;
@@ -322,8 +322,9 @@ class Dashboard extends Component
             ->count();
 
         $doctorSchedules = DoctorSchedule::with(['doctor.user'])
-            ->whereHas('doctor', function ($query) {
-                $query->where('clinic_id', auth()->user()->clinic_id);
+            ->whereHas('doctor', function ($query) use ($doctorId) {
+                $query->where('clinic_id', auth()->user()->clinic_id)
+                    ->when($doctorId, fn ($q) => $q->where('id', $doctorId));
             })
             ->where('day_of_week', $today->dayOfWeek)
             ->orderBy('start_time', 'asc')

@@ -86,7 +86,7 @@ class Appointment extends Component
             if ($user->clinic_id) {
                 $this->selectedClinicId = $user->clinic_id;
                 $this->selectedClinic = Clinic::find($this->selectedClinicId);
-                $this->doctors = Doctor::with('user')->where('clinic_id', $this->selectedClinicId)->get();
+                $this->doctors = Doctor::whereHas('user')->where('clinic_id', $this->selectedClinicId)->get();
 
                 // Try to pick a doctor who has a schedule today
                 $dayOfWeek = Carbon::today()->dayOfWeek;
@@ -113,7 +113,7 @@ class Appointment extends Component
     public function updatedSelectedClinicId($value)
     {
         $this->selectedClinic = Clinic::find($value);
-        $this->doctors = Doctor::with('user')
+        $this->doctors = Doctor::whereHas('user')
             ->where('clinic_id', $value)
             ->get();
 
@@ -286,7 +286,7 @@ class Appointment extends Component
 
                 // Ensure doctor is selected
                 if (! $this->selectedDoctorId) {
-                    $this->selectedDoctorId = Doctor::where('clinic_id', $this->selectedClinicId)->first()?->id;
+                    $this->selectedDoctorId = Doctor::whereHas('user')->where('clinic_id', $this->selectedClinicId)->first()?->id;
                 }
 
                 if (! $this->selectedDoctorId) {

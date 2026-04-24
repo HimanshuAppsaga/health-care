@@ -57,12 +57,15 @@
                                 <span class="text-xs font-black uppercase tracking-tighter">Doctor on Hold</span>
                             </div>
                         @endif
-                        @php
-                            $selectedDoctor = $doctors->firstWhere('id', $selectedDoctorId);
-                        @endphp
-                        @if($selectedDoctor)
-                            <span class="text-xs font-bold text-gray-400 tracking-widest uppercase">{{ $selectedDoctor->user->department ?? 'General Dept' }} • Dr. {{ $selectedDoctor->user->name ?? 'Unknown' }}</span>
-                        @endif
+                        
+                        <div class="flex flex-col items-end">
+                            <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Select Doctor</label>
+                            <select wire:model.live="selectedDoctorId" class="bg-white border border-gray-200 rounded-xl px-4 py-2 text-sm font-bold text-[#5200cc] focus:ring-2 focus:ring-[#5200cc]/20 focus:border-[#5200cc] outline-none shadow-sm transition-all cursor-pointer">
+                                @foreach($doctors as $doctor)
+                                    <option value="{{ $doctor->id }}">Dr. {{ $doctor->user->name }}</option>
+                                @endforeach
+                            </select>
+                        </div>
                     </div>
                 </div>
                 <div class="p-8 flex flex-col items-center justify-center text-center">
