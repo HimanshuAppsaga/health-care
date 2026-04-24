@@ -160,6 +160,49 @@
                 </div>
             </div>
         </div>
+
+        <!-- Right Column: Quick Actions & Alerts -->
+        <div class="col-span-12 lg:col-span-4 space-y-6">
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+                <h3 class="text-lg font-black text-[#1c1b1b] mb-6">Quick Actions</h3>
+                <div class="space-y-4">
+                    
+                    <a href="{{ route('doctor.schedule') }}" wire:navigate class="w-full flex items-center gap-4 p-4 rounded-2xl bg-[#ede7ff] text-[#5200cc] font-bold hover:bg-[#5200cc] hover:text-white transition-all group">
+                        <div class="w-10 h-10 rounded-xl bg-white/50 flex items-center justify-center group-hover:bg-[#5200cc]">
+                            <span class="material-symbols-outlined">calendar_month</span>
+                        </div>
+                        <span>Manage Schedule</span>
+                    </a>
+
+                </div>
+            </div>
+
+            <!-- Doctor Schedules Section -->
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+                <div class="flex items-center justify-between mb-6">
+                    <h3 class="text-lg font-black text-[#1c1b1b]">My Schedule Today</h3>
+                    <span class="px-2 py-1 bg-[#5200cc]/10 text-[#5200cc] text-[10px] font-black uppercase rounded-md tracking-tighter">Availability</span>
+                </div>
+                <div class="space-y-4">
+                    @forelse($doctorSchedules as $schedule)
+                        <div class="p-4 rounded-xl bg-gray-50 border border-gray-100 group hover:border-[#5200cc]/30 transition-all">
+                            <div class="flex items-center gap-3">
+                                <div class="flex items-center gap-1 text-gray-500 text-sm">
+                                    <span class="material-symbols-outlined text-sm">schedule</span>
+                                    <span class="font-bold">{{ \Carbon\Carbon::parse($schedule->start_time)->format('h:i A') }} - {{ \Carbon\Carbon::parse($schedule->end_time)->format('h:i A') }}</span>
+                                </div>
+                            </div>
+                        </div>
+                    @empty
+                        <div class="py-8 text-center text-gray-400">
+                            <span class="material-symbols-outlined text-4xl mb-2 block">event_busy</span>
+                            <p class="text-xs font-bold uppercase tracking-widest">No schedule for today</p>
+                            <a href="{{ route('doctor.schedule') }}" class="text-[#5200cc] text-xs font-bold hover:underline mt-2 inline-block">Create Schedule</a>
+                        </div>
+                    @endforelse
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 

@@ -4,6 +4,7 @@ namespace App\Livewire\Doctor;
 
 use App\Events\QueueUpdated;
 use App\Models\Appointment;
+use App\Models\DoctorSchedule;
 use App\Models\Invoice;
 use App\Models\Payment;
 use App\Models\Queue;
@@ -309,6 +310,20 @@ class Dashboard extends Component
 
         $isDoctorOnHold = $this->isDoctorOnHold;
 
+        $doctorSchedules = DoctorSchedule::where('doctor_id', $doctorId)
+            ->where('day_of_week', $today->dayOfWeek)
+            ->orderBy('start_time', 'asc')
+            ->get()
+            ->map(function ($schedule) use ($today) {
+                $schedule->booked_count = Appointment::where('doctor_id', $schedule->doctor_id)
+                    ->whereDate('appointment_date', $today)
+                    ->whereTime('start_time', '>=', $schedule->start_time)
+                    ->whereTime('start_time', '<', $schedule->end_time)
+                    ->count();
+
+                return $schedule;
+            });
+
         return view('livewire.doctor.dashboard', [
             'totalAppointments' => $totalAppointments,
             'checkedIn' => $checkedIn,
@@ -320,6 +335,7 @@ class Dashboard extends Component
             'nextTokens' => $nextTokens,
             'todaysAppointments' => $todaysAppointments,
             'isDoctorOnHold' => $isDoctorOnHold,
+            'doctorSchedules' => $doctorSchedules,
         ]);
     }
 }
