@@ -1,116 +1,77 @@
-<div class="p-8 max-w-7xl mx-auto">
+<div class="p-8 max-w-5xl mx-auto space-y-10 animate-in fade-in duration-500">
     <!-- Hero Action Bar -->
-    <section class="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
+    <section class="flex flex-col md:flex-row md:items-end justify-between gap-6">
         <div>
-            <h3 class="text-4xl font-extrabold text-on-surface tracking-tighter mb-2">Doctor Schedule Management</h3>
-            <p class="text-on-surface-variant font-medium">Weekly operational planning for surgical and clinical staff.</p>
+            <h3 class="text-5xl font-black text-on-surface tracking-tighter mb-2">My Schedule</h3>
+            <p class="text-slate-500 font-medium text-lg">Weekly clinical availability and session planning.</p>
         </div>
         <div class="flex items-center gap-4">
-            <a href="{{ route('doctor.schedule.edit') }}" class="bg-primary-container text-on-primary font-bold px-6 py-3 rounded-lg flex items-center gap-2 hover:bg-on-primary-fixed-variant transition-all active:scale-95 shadow-lg shadow-primary/10">
-                <span class="material-symbols-outlined" data-icon="add">add</span>
-                Create Schedule
+            <a href="{{ route('doctor.schedule.edit') }}" class="bg-primary-container text-white font-black px-8 py-4 rounded-2xl flex items-center gap-3 hover:scale-[1.02] active:scale-95 transition-all shadow-2xl shadow-primary/20">
+                <span class="material-symbols-outlined">edit_calendar</span>
+                Manage Schedule
             </a>
         </div>
     </section>
 
     @if (session()->has('message'))
-        <div class="mb-6 p-4 bg-secondary-container text-on-secondary-container rounded-xl font-bold flex items-center gap-2">
+        <div class="p-4 bg-secondary-container text-on-secondary-container rounded-xl font-bold flex items-center gap-2">
             <span class="material-symbols-outlined">check_circle</span>
             {{ session('message') }}
         </div>
     @endif
 
-    <!-- Weekly Calendar View -->
-    <div class="bg-surface-container-lowest rounded-2xl overflow-hidden shadow-xl shadow-slate-200/50">
-        <!-- Calendar Header -->
-        <div class="grid grid-cols-7 border-b border-surface-variant/30">
-            @php
-                $days = [
-                    1 => 'Mon',
-                    2 => 'Tue',
-                    3 => 'Wed',
-                    4 => 'Thu',
-                    5 => 'Fri',
-                    6 => 'Sat',
-                    0 => 'Sun',
-                ];
-                $today = now()->dayOfWeek;
-                $startOfWeek = now()->startOfWeek(\Carbon\Carbon::MONDAY);
-            @endphp
-            @foreach($days as $index => $name)
-                @php
-                    $dayOffset = ($index === 0) ? 6 : ($index - 1);
-                    $currentDayDate = $startOfWeek->copy()->addDays($dayOffset);
-                @endphp
-                <div class="p-6 text-center border-r border-surface-variant/30 {{ $today == $index ? 'bg-primary/5' : 'bg-surface-container-low/50' }}">
-                    <span class="block text-xs font-black uppercase {{ $today == $index ? 'text-primary' : 'text-outline' }} tracking-widest mb-1">{{ $name }}</span>
-                    <span class="text-2xl font-extrabold {{ $today == $index ? 'text-primary' : '' }}">
-                        {{ $currentDayDate->day }}
-                    </span>
-                </div>
-            @endforeach
-        </div>
+    <!-- Weekly List View -->
+    <div class="space-y-6">
+        @php
+            $days = [
+                1 => 'Monday',
+                2 => 'Tuesday',
+                3 => 'Wednesday',
+                4 => 'Thursday',
+                5 => 'Friday',
+                6 => 'Saturday',
+                0 => 'Sunday',
+            ];
+            $today = now()->dayOfWeek;
+        @endphp
 
-        <!-- Calendar Content Grid -->
-        <div class="grid grid-cols-7 h-[600px] overflow-y-auto">
-            @foreach($days as $index => $name)
-                <div class="p-4 border-r border-surface-variant/10 space-y-3 {{ $today == $index ? 'bg-primary/5' : '' }}">
+        @foreach($days as $index => $name)
+            <div class="grid grid-cols-1 md:grid-cols-[200px_1fr] gap-6 items-start p-6 rounded-3xl transition-all {{ $today == $index ? 'bg-primary-container/5 border-2 border-primary-container/10' : 'bg-surface-container-lowest border-2 border-transparent' }}">
+                <!-- Day Label -->
+                <div class="flex items-center gap-3 md:block">
+                    <h4 class="text-2xl font-black {{ $today == $index ? 'text-primary-container' : 'text-on-surface' }}">{{ $name }}</h4>
+                    @if($today == $index)
+                        <span class="px-3 py-1 bg-primary-container text-white text-[10px] font-black uppercase tracking-widest rounded-full">Today</span>
+                    @endif
+                </div>
+
+                <!-- Sessions List -->
+                <div class="flex flex-wrap gap-4">
                     @if(isset($schedules[$index]) && count($schedules[$index]) > 0)
                         @foreach($schedules[$index] as $schedule)
-                            <div class="bg-primary-fixed/30 p-3 rounded-xl border-l-4 border-primary group relative">
-                                <div class="flex justify-between items-start mb-1">
-                                    <p class="text-[10px] font-bold text-primary uppercase">Consultation</p>
-                                    <div class="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                        <a href="{{ route('doctor.schedule.edit', $schedule->id) }}" class="text-primary hover:text-on-primary-fixed-variant">
-                                            <span class="material-symbols-outlined text-sm">edit</span>
-                                        </a>
-                                        <button wire:click="confirmScheduleDeletion({{ $schedule->id }})" class="text-error hover:text-on-error-container">
-                                            <span class="material-symbols-outlined text-sm">delete</span>
-                                        </button>
-                                    </div>
+                            <div class="flex items-center gap-4 bg-surface-container-low px-6 py-4 rounded-2xl border border-surface-variant/20 shadow-sm group">
+                                <div class="flex items-center gap-2">
+                                    <span class="material-symbols-outlined text-primary-container text-sm">schedule</span>
+                                    <span class="text-lg font-bold text-on-surface">
+                                        {{ \Carbon\Carbon::parse($schedule->start_time)->format('h:i A') }}
+                                    </span>
+                                    <span class="text-slate-300 font-black px-1">—</span>
+                                    <span class="text-lg font-bold text-on-surface">
+                                        {{ \Carbon\Carbon::parse($schedule->end_time)->format('h:i A') }}
+                                    </span>
                                 </div>
-                                <p class="text-sm font-semibold text-on-surface">
-                                    {{ \Carbon\Carbon::parse($schedule->start_time)->format('h:i A') }} - 
-                                    {{ \Carbon\Carbon::parse($schedule->end_time)->format('h:i A') }}
-                                </p>
                             </div>
                         @endforeach
                     @else
-                        <div class="h-full flex items-center justify-center border-2 border-dashed border-outline-variant/30 rounded-2xl p-4">
-                            <p class="text-[10px] font-bold text-outline uppercase tracking-widest -rotate-90">No Schedule</p>
+                        <div class="flex items-center gap-2 text-slate-400 font-medium italic py-2">
+                            <span class="material-symbols-outlined text-sm">block</span>
+                            <span>No clinical sessions scheduled</span>
                         </div>
                     @endif
                 </div>
-            @endforeach
-        </div>
-    </div>
-
-    <!-- Delete Confirmation Modal -->
-    @if($confirmingScheduleDeletion)
-        <div class="fixed inset-0 z-[100] flex items-center justify-center glass-overlay">
-            <div class="w-full max-w-md bg-surface-container-lowest rounded-xl p-8 space-y-8 animate-in fade-in zoom-in duration-300">
-                <div class="flex flex-col items-center text-center space-y-4">
-                    <div class="w-16 h-16 rounded-full bg-error-container flex items-center justify-center text-error">
-                        <span class="material-symbols-outlined text-4xl" style="font-variation-settings: 'FILL' 1;">warning</span>
-                    </div>
-                    <div class="space-y-2">
-                        <h2 class="text-2xl font-headline font-extrabold tracking-tight text-on-surface">Delete Schedule?</h2>
-                        <p class="text-on-surface-variant leading-relaxed px-4">
-                            This will remove your availability for the selected day. This action cannot be undone and may affect existing appointments.
-                        </p>
-                    </div>
-                </div>
-                <div class="flex flex-col gap-3">
-                    <button wire:click="deleteSchedule" class="w-full py-4 bg-error text-on-error font-bold rounded-lg hover:bg-on-error-container transition-colors shadow-lg shadow-error/10">
-                        Delete Schedule
-                    </button>
-                    <button wire:click="cancelScheduleDeletion" class="w-full py-4 bg-transparent text-slate-600 font-semibold rounded-lg hover:bg-slate-100 transition-colors">
-                        Cancel
-                    </button>
-                </div>
             </div>
-        </div>
-    @endif
+        @endforeach
+    </div>
 </div>
 
 <style>

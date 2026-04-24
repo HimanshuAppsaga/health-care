@@ -2,7 +2,6 @@
 
 namespace App\Livewire\Doctor;
 
-use App\Events\ScheduleUpdated;
 use App\Models\DoctorSchedule;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Layout;
@@ -14,10 +13,6 @@ use Livewire\Component;
 class Schedule extends Component
 {
     public $schedules = [];
-
-    public $confirmingScheduleDeletion = false;
-
-    public $scheduleIdBeingDeleted = null;
 
     public function getListeners()
     {
@@ -48,48 +43,12 @@ class Schedule extends Component
 
         // Initialize empty array for all days 0-6
         $this->schedules = [
-            0 => [], 1 => [], 2 => [], 3 => [], 4 => [], 5 => [], 6 => [],
+            1 => [], 2 => [], 3 => [], 4 => [], 5 => [], 6 => [], 0 => [],
         ];
 
         foreach ($allSchedules as $schedule) {
             $this->schedules[$schedule->day_of_week][] = $schedule;
         }
-    }
-
-    public function confirmScheduleDeletion($id)
-    {
-        $this->confirmingScheduleDeletion = true;
-        $this->scheduleIdBeingDeleted = $id;
-    }
-
-    public function cancelScheduleDeletion()
-    {
-        $this->confirmingScheduleDeletion = false;
-        $this->scheduleIdBeingDeleted = null;
-    }
-
-    public function deleteSchedule()
-    {
-        $schedule = DoctorSchedule::findOrFail($this->scheduleIdBeingDeleted);
-
-        // Ensure the doctor can only delete their own schedule
-        if ($schedule->doctor_id !== Auth::user()->doctor->id) {
-            $this->cancelScheduleDeletion();
-
-            return;
-        }
-
-        $clinicId = Auth::user()->clinic_id;
-        $schedule->delete();
-
-        if ($clinicId) {
-            broadcast(new ScheduleUpdated($clinicId, 'deleted'))->toOthers();
-        }
-
-        $this->loadSchedules();
-        $this->cancelScheduleDeletion();
-
-        session()->flash('message', 'Schedule deleted successfully.');
     }
 
     public function render()

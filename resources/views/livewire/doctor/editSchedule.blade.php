@@ -1,129 +1,124 @@
-<div class="fixed inset-0 z-[100] flex items-center justify-end glass-overlay">
-    <!-- Side Panel Modal -->
-    <div class="w-full max-w-xl h-full bg-surface-container-lowest shadow-2xl flex flex-col animate-in slide-in-from-right duration-300">
-        <!-- Modal Header -->
-        <div class="p-8 border-none flex justify-between items-center bg-surface-container-low">
-            <div>
-                <h2 class="font-headline text-3xl font-extrabold text-on-surface tracking-tight">{{ $scheduleId ? 'Edit' : 'Create' }} Schedule</h2>
-                <p class="text-slate-500 text-sm font-medium">Update slot availability and consultation rules.</p>
-            </div>
-            <a href="{{ route('doctor.schedule') }}" class="w-10 h-10 flex items-center justify-center rounded-full bg-surface-container-highest/50 hover:bg-surface-container-highest transition-colors">
-                <span class="material-symbols-outlined text-on-surface-variant">close</span>
+<div class="p-8 max-w-4xl mx-auto space-y-8 animate-in fade-in duration-500">
+    <!-- Header Section -->
+    <header class="space-y-2">
+        <div class="flex justify-between items-center">
+            <h2 class="text-4xl font-black text-on-surface tracking-tighter">Schedule Management</h2>
+            <a href="{{ route('doctor.schedule') }}" class="text-slate-500 hover:text-on-surface transition-colors">
+                <span class="material-symbols-outlined text-3xl">close</span>
             </a>
         </div>
-        
-        <!-- Form Content -->
-        <form wire:submit.prevent="save" class="flex-1 overflow-y-auto p-8 space-y-10">
-            <!-- Day Selector -->
-            <div class="space-y-3">
-                <label class="text-xs font-black uppercase tracking-widest text-primary/70 block">Recurrence Day</label>
-                <div class="flex flex-wrap gap-2">
-                    @php
-                        $days = [
-                            1 => 'M',
-                            2 => 'T',
-                            3 => 'W',
-                            4 => 'T',
-                            5 => 'F',
-                            6 => 'S',
-                            0 => 'S'
-                        ];
-                    @endphp
-                    @foreach($days as $index => $label)
-                        <button type="button" 
-                                wire:click="$set('day_of_week', {{ $index }})"
-                                class="w-12 h-12 rounded-xl flex items-center justify-center font-bold transition-all border-2 
-                                {{ $day_of_week === $index 
-                                    ? 'border-primary-container text-white bg-primary-container shadow-md' 
-                                    : 'border-surface-variant text-slate-400 hover:border-primary/30' }}">
-                            {{ $label }}
+        <p class="text-slate-500 font-medium">All times are in Indian Standard Time (IST)</p>
+    </header>
+
+    @if (session()->has('message'))
+        <div class="p-4 bg-secondary-container text-on-secondary-container rounded-xl font-bold flex items-center gap-2">
+            <span class="material-symbols-outlined">check_circle</span>
+            {{ session('message') }}
+        </div>
+    @endif
+
+    <form wire:submit.prevent="save" class="space-y-12">
+        @php
+            $days = [
+                1 => 'Monday',
+                2 => 'Tuesday',
+                3 => 'Wednesday',
+                4 => 'Thursday',
+                5 => 'Friday',
+                6 => 'Saturday',
+                0 => 'Sunday'
+            ];
+        @endphp
+
+        <div class="space-y-10">
+            @foreach($days as $dayNumber => $dayName)
+                <div class="grid grid-cols-1 md:grid-cols-[200px_1fr] gap-6 items-start">
+                    <!-- Day Label -->
+                    <div class="pt-3">
+                        <h3 class="text-2xl font-extrabold text-on-surface">{{ $dayName }}</h3>
+                    </div>
+
+                    <!-- Sessions Container -->
+                    <div class="space-y-6">
+                        @foreach($weekly_schedules[$dayNumber] as $index => $session)
+                            <div class="flex items-center gap-4 group animate-in slide-in-from-left-4 duration-300">
+                                <!-- Time Picker Wrapper -->
+                                <div class="flex items-center gap-3">
+                                    <!-- Start Time -->
+                                    <div class="flex items-center gap-2 bg-surface-container-low px-4 py-3 rounded-xl border-2 border-transparent focus-within:border-primary-container transition-all shadow-sm">
+                                        <select wire:model="weekly_schedules.{{ $dayNumber }}.{{ $index }}.start_hour" class="bg-transparent border-none p-0 font-bold text-lg focus:ring-0 cursor-pointer">
+                                            @foreach(range(1, 12) as $h)
+                                                <option value="{{ str_pad($h, 2, '0', STR_PAD_LEFT) }}">{{ str_pad($h, 2, '0', STR_PAD_LEFT) }}</option>
+                                            @endforeach
+                                        </select>
+                                        <span class="font-bold text-slate-400">:</span>
+                                        <select wire:model="weekly_schedules.{{ $dayNumber }}.{{ $index }}.start_min" class="bg-transparent border-none p-0 font-bold text-lg focus:ring-0 cursor-pointer">
+                                            @foreach(['00', '15', '30', '45'] as $m)
+                                                <option value="{{ $m }}">{{ $m }}</option>
+                                            @endforeach
+                                        </select>
+                                        <select wire:model="weekly_schedules.{{ $dayNumber }}.{{ $index }}.start_period" class="bg-transparent border-none p-0 font-bold text-sm text-primary uppercase focus:ring-0 cursor-pointer ml-1">
+                                            <option value="AM">AM</option>
+                                            <option value="PM">PM</option>
+                                        </select>
+                                        <span class="material-symbols-outlined text-slate-400 text-sm">expand_more</span>
+                                    </div>
+
+                                    <span class="text-slate-300 font-black">—</span>
+
+                                    <!-- End Time -->
+                                    <div class="flex items-center gap-2 bg-surface-container-low px-4 py-3 rounded-xl border-2 border-transparent focus-within:border-primary-container transition-all shadow-sm">
+                                        <select wire:model="weekly_schedules.{{ $dayNumber }}.{{ $index }}.end_hour" class="bg-transparent border-none p-0 font-bold text-lg focus:ring-0 cursor-pointer">
+                                            @foreach(range(1, 12) as $h)
+                                                <option value="{{ str_pad($h, 2, '0', STR_PAD_LEFT) }}">{{ str_pad($h, 2, '0', STR_PAD_LEFT) }}</option>
+                                            @endforeach
+                                        </select>
+                                        <span class="font-bold text-slate-400">:</span>
+                                        <select wire:model="weekly_schedules.{{ $dayNumber }}.{{ $index }}.end_min" class="bg-transparent border-none p-0 font-bold text-lg focus:ring-0 cursor-pointer">
+                                            @foreach(['00', '15', '30', '45'] as $m)
+                                                <option value="{{ $m }}">{{ $m }}</option>
+                                            @endforeach
+                                        </select>
+                                        <select wire:model="weekly_schedules.{{ $dayNumber }}.{{ $index }}.end_period" class="bg-transparent border-none p-0 font-bold text-sm text-primary uppercase focus:ring-0 cursor-pointer ml-1">
+                                            <option value="AM">AM</option>
+                                            <option value="PM">PM</option>
+                                        </select>
+                                        <span class="material-symbols-outlined text-slate-400 text-sm">expand_more</span>
+                                    </div>
+                                </div>
+
+                                <!-- Remove Button -->
+                                <button type="button" wire:click="removeSession({{ $dayNumber }}, {{ $index }})" class="text-slate-300 hover:text-error transition-colors p-2 rounded-full hover:bg-error-container/20">
+                                    <span class="material-symbols-outlined">close</span>
+                                </button>
+                            </div>
+                        @endforeach
+
+                        <!-- Add Button -->
+                        <button type="button" wire:click="addSession({{ $dayNumber }})" class="flex items-center justify-center w-10 h-10 rounded-full border-2 border-primary-container/20 text-primary-container hover:bg-primary-container hover:text-white transition-all active:scale-90 shadow-sm">
+                            <span class="material-symbols-outlined">add</span>
                         </button>
-                    @endforeach
-                </div>
-                @error('day_of_week') <p class="text-error text-xs font-bold mt-1">{{ $message }}</p> @enderror
-            </div>
-
-            <!-- Shift Times -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <!-- Shift Start -->
-                <div class="space-y-3">
-                    <label class="text-xs font-black uppercase tracking-widest text-primary/70 block">Shift Start</label>
-                    <div class="flex items-center gap-2">
-                        <select wire:model="start_hour" class="bg-transparent border-none border-b-2 border-surface-variant py-2 px-1 font-bold text-xl focus:ring-0 cursor-pointer">
-                            @foreach(range(1, 12) as $h)
-                                <option value="{{ str_pad($h, 2, '0', STR_PAD_LEFT) }}">{{ str_pad($h, 2, '0', STR_PAD_LEFT) }}</option>
-                            @endforeach
-                        </select>
-                        <span class="font-black text-xl text-slate-400">:</span>
-                        <select wire:model="start_min" class="bg-transparent border-none border-b-2 border-surface-variant py-2 px-1 font-bold text-xl focus:ring-0 cursor-pointer">
-                            @foreach(['00', '15', '30', '45'] as $m)
-                                <option value="{{ $m }}">{{ $m }}</option>
-                            @endforeach
-                        </select>
-                        <div class="flex bg-surface-container-high rounded-lg p-1 ml-2">
-                            <button type="button" wire:click="$set('start_period', 'AM')" 
-                                    class="px-3 py-1 text-xs font-black rounded-md transition-all {{ $start_period === 'AM' ? 'bg-primary-container text-white shadow-sm' : 'text-slate-400 hover:text-slate-600' }}">
-                                AM
-                            </button>
-                            <button type="button" wire:click="$set('start_period', 'PM')" 
-                                    class="px-3 py-1 text-xs font-black rounded-md transition-all {{ $start_period === 'PM' ? 'bg-primary-container text-white shadow-sm' : 'text-slate-400 hover:text-slate-600' }}">
-                                PM
-                            </button>
-                        </div>
                     </div>
-                    @error('start_hour') <p class="text-error text-xs font-bold mt-1">{{ $message }}</p> @enderror
                 </div>
+            @endforeach
+        </div>
 
-                <!-- Shift End -->
-                <div class="space-y-3">
-                    <label class="text-xs font-black uppercase tracking-widest text-primary/70 block">Shift End</label>
-                    <div class="flex items-center gap-2">
-                        <select wire:model="end_hour" class="bg-transparent border-none border-b-2 border-surface-variant py-2 px-1 font-bold text-xl focus:ring-0 cursor-pointer">
-                            @foreach(range(1, 12) as $h)
-                                <option value="{{ str_pad($h, 2, '0', STR_PAD_LEFT) }}">{{ str_pad($h, 2, '0', STR_PAD_LEFT) }}</option>
-                            @endforeach
-                        </select>
-                        <span class="font-black text-xl text-slate-400">:</span>
-                        <select wire:model="end_min" class="bg-transparent border-none border-b-2 border-surface-variant py-2 px-1 font-bold text-xl focus:ring-0 cursor-pointer">
-                            @foreach(['00', '15', '30', '45'] as $m)
-                                <option value="{{ $m }}">{{ $m }}</option>
-                            @endforeach
-                        </select>
-                        <div class="flex bg-surface-container-high rounded-lg p-1 ml-2">
-                            <button type="button" wire:click="$set('end_period', 'AM')" 
-                                    class="px-3 py-1 text-xs font-black rounded-md transition-all {{ $end_period === 'AM' ? 'bg-primary-container text-white shadow-sm' : 'text-slate-400 hover:text-slate-600' }}">
-                                AM
-                            </button>
-                            <button type="button" wire:click="$set('end_period', 'PM')" 
-                                    class="px-3 py-1 text-xs font-black rounded-md transition-all {{ $end_period === 'PM' ? 'bg-primary-container text-white shadow-sm' : 'text-slate-400 hover:text-slate-600' }}">
-                                PM
-                            </button>
-                        </div>
-                    </div>
-                    @error('end_hour') <p class="text-error text-xs font-bold mt-1">{{ $message }}</p> @enderror
-                </div>
-            </div>
-
-            <!-- Modal Footer -->
-            <div class="pt-10 border-none flex gap-4">
-                <a href="{{ route('doctor.schedule') }}" class="flex-1 py-4 px-6 rounded-xl font-bold text-slate-600 hover:bg-slate-100 transition-colors text-center">
-                    Cancel
-                </a>
-                <button type="submit" class="flex-[2] py-4 px-6 rounded-xl font-bold bg-primary-container text-white shadow-xl shadow-primary/20 hover:scale-[1.02] active:scale-95 transition-all">
-                    Save Schedule
-                </button>
-            </div>
-        </form>
-    </div>
+        <!-- Sticky Footer Action -->
+        <div class="pt-12 border-t border-surface-variant/20 flex justify-end gap-4">
+            <a href="{{ route('doctor.schedule') }}" class="px-8 py-4 rounded-2xl font-bold text-slate-500 hover:bg-surface-container-low transition-colors">
+                Cancel
+            </a>
+            <button type="submit" class="px-12 py-4 bg-primary-container text-white font-black rounded-2xl shadow-2xl shadow-primary/30 hover:scale-[1.02] active:scale-95 transition-all">
+                Save Weekly Schedule
+            </button>
+        </div>
+    </form>
 </div>
 
 <style>
-    .glass-overlay {
-        background-color: rgba(57, 0, 146, 0.08);
-        backdrop-filter: blur(12px);
-    }
-    input:focus {
-        outline: none;
-        border-bottom-color: #390092 !important;
+    select {
+        appearance: none;
+        -webkit-appearance: none;
+        background-image: none !important;
     }
 </style>

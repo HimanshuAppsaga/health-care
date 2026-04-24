@@ -14,107 +14,102 @@ use Livewire\Component;
 #[Title('Edit Schedule | ClinicOS')]
 class EditSchedule extends Component
 {
-    public $scheduleId = null;
-
-    public $day_of_week;
-
-    public $start_time;
-
-    public $end_time;
-
-    public $max_patients = 1;
-
-    public $slot_duration = 15;
-
-    public $start_hour = '09';
-
-    public $start_min = '00';
-
-    public $start_period = 'AM';
-
-    public $end_hour = '05';
-
-    public $end_min = '00';
-
-    public $end_period = 'PM';
+    public $weekly_schedules = [];
 
     public function mount($id = null)
     {
-        if ($id) {
-            $schedule = DoctorSchedule::findOrFail($id);
+        $doctor = Auth::user()->doctor;
 
-            // Security check
-            if ($schedule->doctor_id !== Auth::user()->doctor->id) {
-                return redirect()->route('doctor.schedule');
-            }
-
-            $this->scheduleId = $id;
-            $this->day_of_week = $schedule->day_of_week;
-
-            // Parse start time
-            $start = Carbon::parse($schedule->start_time);
-            $this->start_hour = $start->format('h');
-            $this->start_min = $start->format('i');
-            $this->start_period = $start->format('A');
-
-            // Parse end time
-            $end = Carbon::parse($schedule->end_time);
-            $this->end_hour = $end->format('h');
-            $this->end_min = $end->format('i');
-            $this->end_period = $end->format('A');
-
-            $this->max_patients = $schedule->max_patients;
-            $this->slot_duration = $schedule->slot_duration;
+        if (! $doctor) {
+            return redirect()->route('doctor.dashboard');
         }
+
+        // Initialize all days (1=Mon, ..., 6=Sat, 0=Sun)
+        $days = [1, 2, 3, 4, 5, 6, 0];
+        foreach ($days as $day) {
+            $this->weekly_schedules[$day] = [];
+        }
+
+        $schedules = DoctorSchedule::where('doctor_id', $doctor->id)
+            ->orderBy('day_of_week')
+            ->orderBy('start_time')
+            ->get();
+
+        foreach ($schedules as $s) {
+            $start = Carbon::parse($s->start_time);
+            $end = Carbon::parse($s->end_time);
+
+            $this->weekly_schedules[$s->day_of_week][] = [
+                'id' => $s->id,
+                'start_hour' => $start->format('h'),
+                'start_min' => $start->format('i'),
+                'start_period' => $start->format('A'),
+                'end_hour' => $end->format('h'),
+                'end_min' => $end->format('i'),
+                'end_period' => $end->format('A'),
+            ];
+        }
+
+        // If no sessions for a day, maybe add an empty one?
+        // The image shows days even without sessions? No, it shows sessions for every day.
+        // I'll leave them empty if they are empty, but the user can add them.
+    }
+
+    public function addSession($day)
+    {
+        $this->weekly_schedules[$day][] = [
+            'id' => null,
+            'start_hour' => '09',
+            'start_min' => '00',
+            'start_period' => 'AM',
+            'end_hour' => '05',
+            'end_min' => '00',
+            'end_period' => 'PM',
+        ];
+    }
+
+    public function removeSession($day, $index)
+    {
+        unset($this->weekly_schedules[$day][$index]);
+        $this->weekly_schedules[$day] = array_values($this->weekly_schedules[$day]);
     }
 
     public function save()
     {
-        $this->validate([
-            'day_of_week' => 'required|integer|between:0,6',
-            'start_hour' => 'required',
-            'start_min' => 'required',
-            'start_period' => 'required',
-            'end_hour' => 'required',
-            'end_min' => 'required',
-            'end_period' => 'required',
-        ]);
-
         $doctor = Auth::user()->doctor;
 
         if (! $doctor) {
             return;
         }
 
-        // Re-assemble 24h format
-        $this->start_time = Carbon::createFromFormat('h:i A', "{$this->start_hour}:{$this->start_min} {$this->start_period}")->format('H:i:s');
-        $this->end_time = Carbon::createFromFormat('h:i A', "{$this->end_hour}:{$this->end_min} {$this->end_period}")->format('H:i:s');
+        // Transaction for atomic update
+        \DB::transaction(function () use ($doctor) {
+            // Clear existing schedules for this doctor
+            DoctorSchedule::where('doctor_id', $doctor->id)->delete();
 
-        $data = [
-            'doctor_id' => $doctor->id,
-            'day_of_week' => $this->day_of_week,
-            'start_time' => $this->start_time,
-            'end_time' => $this->end_time,
-            'max_patients' => $this->max_patients,
-            'slot_duration' => $this->slot_duration,
-        ];
+            foreach ($this->weekly_schedules as $day => $sessions) {
+                foreach ($sessions as $session) {
+                    $startTime = Carbon::createFromFormat('h:i A', "{$session['start_hour']}:{$session['start_min']} {$session['start_period']}")->format('H:i:s');
+                    $endTime = Carbon::createFromFormat('h:i A', "{$session['end_hour']}:{$session['end_min']} {$session['end_period']}")->format('H:i:s');
+
+                    DoctorSchedule::create([
+                        'doctor_id' => $doctor->id,
+                        'day_of_week' => $day,
+                        'start_time' => $startTime,
+                        'end_time' => $endTime,
+                        'max_patients' => 1,
+                        'slot_duration' => 15,
+                    ]);
+                }
+            }
+        });
 
         $clinicId = $doctor->clinic_id;
-
-        if ($this->scheduleId) {
-            $schedule = DoctorSchedule::findOrFail($this->scheduleId);
-            $schedule->update($data);
-            if ($clinicId) {
-                broadcast(new ScheduleUpdated($clinicId, 'updated'))->toOthers();
-            }
-            session()->flash('message', 'Schedule updated successfully.');
-        } else {
-            DoctorSchedule::create($data);
-            if ($clinicId) {
-                broadcast(new ScheduleUpdated($clinicId, 'created'))->toOthers();
-            }
-            session()->flash('message', 'Schedule created successfully.');
+        if ($clinicId) {
+            broadcast(new ScheduleUpdated($clinicId, 'updated'))->toOthers();
         }
+
+        session()->flash('message', 'Weekly schedule updated successfully.');
 
         return redirect()->route('doctor.schedule');
     }
