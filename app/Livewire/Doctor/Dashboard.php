@@ -28,6 +28,7 @@ class Dashboard extends Component
 
         return [
             "echo:queue-updates.{$clinicId},QueueUpdated" => '$refresh',
+            "echo:schedule-updates.{$clinicId},ScheduleUpdated" => '$refresh',
         ];
     }
 

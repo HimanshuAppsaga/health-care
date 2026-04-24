@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Patient;
 
+use App\Events\QueueUpdated;
 use App\Models\Appointment as AppointmentModel;
 use App\Models\Clinic;
 use App\Models\Doctor;
@@ -52,6 +53,15 @@ class Appointment extends Component
     public $tax = 0;
 
     public $total = 0;
+
+    public function getListeners()
+    {
+        $clinicId = $this->selectedClinicId ?? 1;
+
+        return [
+            "echo:schedule-updates.{$clinicId},ScheduleUpdated" => 'generateSlots',
+        ];
+    }
 
     public function mount()
     {
@@ -248,6 +258,9 @@ class Appointment extends Component
         $this->generatedToken = $tokenNumber;
 
         session()->flash('message', 'Appointment booked successfully! Your Token: '.$tokenNumber);
+
+        $clinicId = $this->selectedClinicId ?? 1;
+        broadcast(new QueueUpdated($clinicId, 'booked'))->toOthers();
 
         // Do not redirect to make it dynamic
         // return redirect()->route('patient.dashboard');

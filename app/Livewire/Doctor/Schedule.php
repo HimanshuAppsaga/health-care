@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Doctor;
 
+use App\Events\ScheduleUpdated;
 use App\Models\DoctorSchedule;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Layout;
@@ -17,6 +18,15 @@ class Schedule extends Component
     public $confirmingScheduleDeletion = false;
 
     public $scheduleIdBeingDeleted = null;
+
+    public function getListeners()
+    {
+        $clinicId = Auth::user()->clinic_id;
+
+        return [
+            "echo:schedule-updates.{$clinicId},ScheduleUpdated" => 'loadSchedules',
+        ];
+    }
 
     public function mount()
     {
@@ -69,7 +79,13 @@ class Schedule extends Component
             return;
         }
 
+        $clinicId = Auth::user()->clinic_id;
         $schedule->delete();
+
+        if ($clinicId) {
+            broadcast(new ScheduleUpdated($clinicId, 'deleted'))->toOthers();
+        }
+
         $this->loadSchedules();
         $this->cancelScheduleDeletion();
 

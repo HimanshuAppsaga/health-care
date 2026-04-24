@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Doctor;
 
+use App\Events\ScheduleUpdated;
 use App\Models\DoctorSchedule;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
@@ -98,12 +99,20 @@ class EditSchedule extends Component
             'slot_duration' => $this->slot_duration,
         ];
 
+        $clinicId = $doctor->clinic_id;
+
         if ($this->scheduleId) {
             $schedule = DoctorSchedule::findOrFail($this->scheduleId);
             $schedule->update($data);
+            if ($clinicId) {
+                broadcast(new ScheduleUpdated($clinicId, 'updated'))->toOthers();
+            }
             session()->flash('message', 'Schedule updated successfully.');
         } else {
             DoctorSchedule::create($data);
+            if ($clinicId) {
+                broadcast(new ScheduleUpdated($clinicId, 'created'))->toOthers();
+            }
             session()->flash('message', 'Schedule created successfully.');
         }
 

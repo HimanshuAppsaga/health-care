@@ -56,6 +56,15 @@ class Appointment extends Component
 
     public $total = 0;
 
+    public function getListeners()
+    {
+        $clinicId = Auth::user()->clinic_id;
+
+        return [
+            "echo:schedule-updates.{$clinicId},ScheduleUpdated" => 'generateSlots',
+        ];
+    }
+
     public function mount()
     {
         $this->clinics = Clinic::where('is_active', true)->get();

@@ -28,6 +28,7 @@ class Dashboard extends Component
     {
         return [
             'echo:queue-updates.'.auth()->user()->clinic_id.',QueueUpdated' => '$refresh',
+            'echo:schedule-updates.'.auth()->user()->clinic_id.',ScheduleUpdated' => '$refresh',
         ];
     }
 
