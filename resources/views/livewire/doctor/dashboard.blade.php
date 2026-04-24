@@ -179,3 +179,29 @@
         </div>
     </div>
 </div>
+
+<script data-navigate-once>
+    console.log('Doctor Sound Script Loaded');
+    
+    window.addEventListener('notify', event => {
+        // Only play sound if the user is a doctor
+        @if(auth()->user()->hasRole('doctor'))
+            console.log('Doctor notification triggered:', event.detail);
+            
+            // Play the sound
+            const soundUrl = 'https://assets.mixkit.co/active_storage/sfx/2857/2857-preview.mp3';
+            const audio = new Audio(soundUrl);
+            audio.play().catch(error => {
+                console.error("Audio play failed:", error);
+            });
+
+            // Show a visual toast
+            const type = (event.detail && event.detail.type) ? event.detail.type : 'notification';
+            const toast = document.createElement('div');
+            toast.innerText = `🔔 Action: ${type.toUpperCase()}`;
+            toast.style.cssText = "position:fixed; bottom:20px; right:20px; background:#5200cc; color:white; padding:12px 24px; border-radius:12px; z-index:9999; font-weight:bold; box-shadow: 0 4px 6px rgba(0,0,0,0.1);";
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 3000);
+        @endif
+    });
+</script>

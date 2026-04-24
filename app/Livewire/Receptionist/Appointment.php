@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Receptionist;
 
+use App\Events\QueueUpdated;
 use App\Models\Appointment as AppointmentModel;
 use App\Models\Clinic;
 use App\Models\Doctor;
@@ -285,6 +286,8 @@ class Appointment extends Component
                 ]);
 
                 session()->flash('message', 'Appointment booked successfully! Your Token: '.$tokenNumber);
+
+                broadcast(new QueueUpdated($this->selectedClinicId, 'booked'))->toOthers();
             });
         } catch (\Exception $e) {
             Log::error('Failed to book appointment: '.$e->getMessage(), [
