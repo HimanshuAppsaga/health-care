@@ -2,12 +2,13 @@
 
 namespace App\Livewire\Receptionist;
 
+use App\Events\QueueUpdated;
 use App\Models\Appointment;
 use App\Models\Doctor;
+use App\Models\DoctorSchedule;
 use App\Models\Invoice;
 use App\Models\Payment;
 use App\Models\Queue;
-use App\Events\QueueUpdated;
 use Carbon\Carbon;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
@@ -26,19 +27,19 @@ class Dashboard extends Component
     public function getListeners()
     {
         return [
-            "echo:queue-updates." . auth()->user()->clinic_id . ",QueueUpdated" => '$refresh',
+            'echo:queue-updates.'.auth()->user()->clinic_id.',QueueUpdated' => '$refresh',
         ];
     }
 
     public function mount()
     {
         $today = Carbon::today();
-        $nowServing = Queue::whereHas('appointment', function($query) use ($today) {
+        $nowServing = Queue::whereHas('appointment', function ($query) use ($today) {
             $query->where('clinic_id', auth()->user()->clinic_id)
-                  ->whereDate('appointment_date', $today);
+                ->whereDate('appointment_date', $today);
         })
-        ->whereIn('status', ['serving', 'hold'])
-        ->first();
+            ->whereIn('status', ['serving', 'hold'])
+            ->first();
 
         $this->lastTokenNumber = $nowServing ? $nowServing->token_number : null;
         $this->lastStatus = $nowServing ? $nowServing->status : null;
@@ -236,6 +237,14 @@ class Dashboard extends Component
             ->where('status', 'waiting')
             ->count();
 
+        $doctorSchedules = DoctorSchedule::with(['doctor.user'])
+            ->whereHas('doctor', function ($query) {
+                $query->where('clinic_id', auth()->user()->clinic_id);
+            })
+            ->where('day_of_week', $today->dayOfWeek)
+            ->orderBy('start_time', 'asc')
+            ->get();
+
         return view('livewire.receptionist.dashboard', [
             'totalAppointments' => $totalAppointments,
             'checkedIn' => $checkedIn,
@@ -247,6 +256,7 @@ class Dashboard extends Component
             'nextTokens' => $nextTokens,
             'todaysAppointments' => $todaysAppointments,
             'isDoctorOnHold' => $isDoctorOnHold,
+            'doctorSchedules' => $doctorSchedules,
         ]);
     }
 }
