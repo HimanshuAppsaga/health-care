@@ -43,45 +43,64 @@
                 @error('day_of_week') <p class="text-error text-xs font-bold mt-1">{{ $message }}</p> @enderror
             </div>
 
-            <!-- Time Ranges -->
-            <div class="grid grid-cols-2 gap-8">
+            <!-- Shift Times -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <!-- Shift Start -->
                 <div class="space-y-3">
                     <label class="text-xs font-black uppercase tracking-widest text-primary/70 block">Shift Start</label>
-                    <input wire:model="start_time" class="w-full bg-transparent border-none border-b-2 border-surface-variant py-3 px-0 font-bold text-xl focus:ring-0" type="time"/>
-                    @error('start_time') <p class="text-error text-xs font-bold mt-1">{{ $message }}</p> @enderror
+                    <div class="flex items-center gap-2">
+                        <select wire:model="start_hour" class="bg-transparent border-none border-b-2 border-surface-variant py-2 px-1 font-bold text-xl focus:ring-0 cursor-pointer">
+                            @foreach(range(1, 12) as $h)
+                                <option value="{{ str_pad($h, 2, '0', STR_PAD_LEFT) }}">{{ str_pad($h, 2, '0', STR_PAD_LEFT) }}</option>
+                            @endforeach
+                        </select>
+                        <span class="font-black text-xl text-slate-400">:</span>
+                        <select wire:model="start_min" class="bg-transparent border-none border-b-2 border-surface-variant py-2 px-1 font-bold text-xl focus:ring-0 cursor-pointer">
+                            @foreach(['00', '15', '30', '45'] as $m)
+                                <option value="{{ $m }}">{{ $m }}</option>
+                            @endforeach
+                        </select>
+                        <div class="flex bg-surface-container-high rounded-lg p-1 ml-2">
+                            <button type="button" wire:click="$set('start_period', 'AM')" 
+                                    class="px-3 py-1 text-xs font-black rounded-md transition-all {{ $start_period === 'AM' ? 'bg-primary-container text-white shadow-sm' : 'text-slate-400 hover:text-slate-600' }}">
+                                AM
+                            </button>
+                            <button type="button" wire:click="$set('start_period', 'PM')" 
+                                    class="px-3 py-1 text-xs font-black rounded-md transition-all {{ $start_period === 'PM' ? 'bg-primary-container text-white shadow-sm' : 'text-slate-400 hover:text-slate-600' }}">
+                                PM
+                            </button>
+                        </div>
+                    </div>
+                    @error('start_hour') <p class="text-error text-xs font-bold mt-1">{{ $message }}</p> @enderror
                 </div>
+
+                <!-- Shift End -->
                 <div class="space-y-3">
                     <label class="text-xs font-black uppercase tracking-widest text-primary/70 block">Shift End</label>
-                    <input wire:model="end_time" class="w-full bg-transparent border-none border-b-2 border-surface-variant py-3 px-0 font-bold text-xl focus:ring-0" type="time"/>
-                    @error('end_time') <p class="text-error text-xs font-bold mt-1">{{ $message }}</p> @enderror
-                </div>
-            </div>
-
-            <!-- Consultation Settings -->
-            <div class="grid grid-cols-2 gap-8">
-                <div class="space-y-3">
-                    <label class="text-xs font-black uppercase tracking-widest text-primary/70 block">Slot Duration</label>
-                    <div class="flex gap-2">
-                        @foreach([15, 20, 30] as $duration)
-                            <button type="button" 
-                                    wire:click="$set('slot_duration', {{ $duration }})"
-                                    class="flex-1 py-3 rounded-xl border-2 transition-all
-                                    {{ $slot_duration == $duration 
-                                        ? 'border-primary-container bg-primary-container/5 text-primary font-bold' 
-                                        : 'border-surface-variant text-slate-500 font-bold hover:border-primary/30' }}">
-                                {{ $duration }}m
+                    <div class="flex items-center gap-2">
+                        <select wire:model="end_hour" class="bg-transparent border-none border-b-2 border-surface-variant py-2 px-1 font-bold text-xl focus:ring-0 cursor-pointer">
+                            @foreach(range(1, 12) as $h)
+                                <option value="{{ str_pad($h, 2, '0', STR_PAD_LEFT) }}">{{ str_pad($h, 2, '0', STR_PAD_LEFT) }}</option>
+                            @endforeach
+                        </select>
+                        <span class="font-black text-xl text-slate-400">:</span>
+                        <select wire:model="end_min" class="bg-transparent border-none border-b-2 border-surface-variant py-2 px-1 font-bold text-xl focus:ring-0 cursor-pointer">
+                            @foreach(['00', '15', '30', '45'] as $m)
+                                <option value="{{ $m }}">{{ $m }}</option>
+                            @endforeach
+                        </select>
+                        <div class="flex bg-surface-container-high rounded-lg p-1 ml-2">
+                            <button type="button" wire:click="$set('end_period', 'AM')" 
+                                    class="px-3 py-1 text-xs font-black rounded-md transition-all {{ $end_period === 'AM' ? 'bg-primary-container text-white shadow-sm' : 'text-slate-400 hover:text-slate-600' }}">
+                                AM
                             </button>
-                        @endforeach
+                            <button type="button" wire:click="$set('end_period', 'PM')" 
+                                    class="px-3 py-1 text-xs font-black rounded-md transition-all {{ $end_period === 'PM' ? 'bg-primary-container text-white shadow-sm' : 'text-slate-400 hover:text-slate-600' }}">
+                                PM
+                            </button>
+                        </div>
                     </div>
-                    @error('slot_duration') <p class="text-error text-xs font-bold mt-1">{{ $message }}</p> @enderror
-                </div>
-                <div class="space-y-3">
-                    <label class="text-xs font-black uppercase tracking-widest text-primary/70 block">Patients per Slot</label>
-                    <div class="relative">
-                        <input wire:model="max_patients" class="w-full bg-transparent border-none border-b-2 border-surface-variant py-3 px-0 font-bold text-xl focus:ring-0" min="1" type="number"/>
-                        <span class="absolute right-0 top-3 text-slate-400 text-xs font-bold uppercase">Max</span>
-                    </div>
-                    @error('max_patients') <p class="text-error text-xs font-bold mt-1">{{ $message }}</p> @enderror
+                    @error('end_hour') <p class="text-error text-xs font-bold mt-1">{{ $message }}</p> @enderror
                 </div>
             </div>
 

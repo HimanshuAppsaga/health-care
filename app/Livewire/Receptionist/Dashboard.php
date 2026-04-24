@@ -243,7 +243,17 @@ class Dashboard extends Component
             })
             ->where('day_of_week', $today->dayOfWeek)
             ->orderBy('start_time', 'asc')
-            ->get();
+            ->get()
+            ->map(function ($schedule) use ($today) {
+                // Count appointments for this doctor today that fall within this schedule's time range
+                $schedule->booked_count = Appointment::where('doctor_id', $schedule->doctor_id)
+                    ->whereDate('appointment_date', $today)
+                    ->whereTime('start_time', '>=', $schedule->start_time)
+                    ->whereTime('start_time', '<', $schedule->end_time)
+                    ->count();
+
+                return $schedule;
+            });
 
         return view('livewire.receptionist.dashboard', [
             'totalAppointments' => $totalAppointments,

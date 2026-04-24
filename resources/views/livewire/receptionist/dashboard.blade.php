@@ -187,29 +187,16 @@
             <!-- Doctor Schedules Section -->
             <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
                 <div class="flex items-center justify-between mb-6">
-                    <h3 class="text-lg font-black text-[#1c1b1b]">Doctor Availability</h3>
-                    <span class="px-2 py-1 bg-[#5200cc]/10 text-[#5200cc] text-[10px] font-black uppercase rounded-md tracking-tighter">Today</span>
+                    <h3 class="text-lg font-black text-[#1c1b1b]">Today's Schedule</h3>
+                    <span class="px-2 py-1 bg-[#5200cc]/10 text-[#5200cc] text-[10px] font-black uppercase rounded-md tracking-tighter">Availability</span>
                 </div>
                 <div class="space-y-4">
                     @forelse($doctorSchedules as $schedule)
                         <div class="p-4 rounded-xl bg-gray-50 border border-gray-100 group hover:border-[#5200cc]/30 transition-all">
-                            <div class="flex items-center gap-3 mb-3">
-                                <div class="w-10 h-10 rounded-full bg-[#5200cc]/10 flex items-center justify-center text-[#5200cc]">
-                                    <span class="material-symbols-outlined text-xl">stethoscope</span>
-                                </div>
-                                <div>
-                                    <p class="text-sm font-black text-[#1c1b1b]">Dr. {{ $schedule->doctor->user->name }}</p>
-                                    <p class="text-[10px] font-bold text-gray-400 uppercase tracking-tight">{{ $schedule->doctor->user->department ?? 'General' }}</p>
-                                </div>
-                            </div>
-                            <div class="flex items-center justify-between text-xs">
-                                <div class="flex items-center gap-1 text-gray-500">
+                            <div class="flex items-center gap-3 mb-2">
+                                <div class="flex items-center gap-1 text-gray-500 text-sm">
                                     <span class="material-symbols-outlined text-sm">schedule</span>
                                     <span class="font-bold">{{ \Carbon\Carbon::parse($schedule->start_time)->format('h:i A') }} - {{ \Carbon\Carbon::parse($schedule->end_time)->format('h:i A') }}</span>
-                                </div>
-                                <div class="flex items-center gap-1 text-[#0fbda6]">
-                                    <span class="material-symbols-outlined text-sm">group</span>
-                                    <span class="font-black">{{ $schedule->max_patients }} Max</span>
                                 </div>
                             </div>
                         </div>

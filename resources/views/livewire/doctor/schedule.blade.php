@@ -32,15 +32,20 @@
                     4 => 'Thu',
                     5 => 'Fri',
                     6 => 'Sat',
-                    0 => 'Sun'
+                    0 => 'Sun',
                 ];
                 $today = now()->dayOfWeek;
+                $startOfWeek = now()->startOfWeek(\Carbon\Carbon::MONDAY);
             @endphp
             @foreach($days as $index => $name)
+                @php
+                    $dayOffset = ($index === 0) ? 6 : ($index - 1);
+                    $currentDayDate = $startOfWeek->copy()->addDays($dayOffset);
+                @endphp
                 <div class="p-6 text-center border-r border-surface-variant/30 {{ $today == $index ? 'bg-primary/5' : 'bg-surface-container-low/50' }}">
                     <span class="block text-xs font-black uppercase {{ $today == $index ? 'text-primary' : 'text-outline' }} tracking-widest mb-1">{{ $name }}</span>
                     <span class="text-2xl font-extrabold {{ $today == $index ? 'text-primary' : '' }}">
-                        {{ now()->startOfWeek($index)->day }}
+                        {{ $currentDayDate->day }}
                     </span>
                 </div>
             @endforeach
@@ -65,11 +70,8 @@
                                     </div>
                                 </div>
                                 <p class="text-sm font-semibold text-on-surface">
-                                    {{ \Carbon\Carbon::parse($schedule->start_time)->format('H:i') }} - 
-                                    {{ \Carbon\Carbon::parse($schedule->end_time)->format('H:i') }}
-                                </p>
-                                <p class="text-[10px] text-on-surface-variant font-medium mt-1">
-                                    {{ $schedule->slot_duration }}m slots • Max {{ $schedule->max_patients }}
+                                    {{ \Carbon\Carbon::parse($schedule->start_time)->format('h:i A') }} - 
+                                    {{ \Carbon\Carbon::parse($schedule->end_time)->format('h:i A') }}
                                 </p>
                             </div>
                         @endforeach

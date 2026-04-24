@@ -3,10 +3,10 @@
 namespace App\Livewire\Doctor;
 
 use App\Models\DoctorSchedule;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
-use Livewire\Attributes\Validate;
 use Livewire\Component;
 
 #[Layout('components.layouts.app')]
@@ -15,20 +15,27 @@ class EditSchedule extends Component
 {
     public $scheduleId = null;
 
-    #[Validate('required|integer|between:0,6')]
     public $day_of_week;
 
-    #[Validate('required')]
     public $start_time;
 
-    #[Validate('required')]
     public $end_time;
 
-    #[Validate('required|integer|min:1')]
     public $max_patients = 1;
 
-    #[Validate('required|integer|min:5')]
     public $slot_duration = 15;
+
+    public $start_hour = '09';
+
+    public $start_min = '00';
+
+    public $start_period = 'AM';
+
+    public $end_hour = '05';
+
+    public $end_min = '00';
+
+    public $end_period = 'PM';
 
     public function mount($id = null)
     {
@@ -42,8 +49,19 @@ class EditSchedule extends Component
 
             $this->scheduleId = $id;
             $this->day_of_week = $schedule->day_of_week;
-            $this->start_time = $schedule->start_time;
-            $this->end_time = $schedule->end_time;
+
+            // Parse start time
+            $start = Carbon::parse($schedule->start_time);
+            $this->start_hour = $start->format('h');
+            $this->start_min = $start->format('i');
+            $this->start_period = $start->format('A');
+
+            // Parse end time
+            $end = Carbon::parse($schedule->end_time);
+            $this->end_hour = $end->format('h');
+            $this->end_min = $end->format('i');
+            $this->end_period = $end->format('A');
+
             $this->max_patients = $schedule->max_patients;
             $this->slot_duration = $schedule->slot_duration;
         }
@@ -51,13 +69,25 @@ class EditSchedule extends Component
 
     public function save()
     {
-        $this->validate();
+        $this->validate([
+            'day_of_week' => 'required|integer|between:0,6',
+            'start_hour' => 'required',
+            'start_min' => 'required',
+            'start_period' => 'required',
+            'end_hour' => 'required',
+            'end_min' => 'required',
+            'end_period' => 'required',
+        ]);
 
         $doctor = Auth::user()->doctor;
 
         if (! $doctor) {
             return;
         }
+
+        // Re-assemble 24h format
+        $this->start_time = Carbon::createFromFormat('h:i A', "{$this->start_hour}:{$this->start_min} {$this->start_period}")->format('H:i:s');
+        $this->end_time = Carbon::createFromFormat('h:i A', "{$this->end_hour}:{$this->end_min} {$this->end_period}")->format('H:i:s');
 
         $data = [
             'doctor_id' => $doctor->id,
