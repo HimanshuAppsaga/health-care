@@ -175,7 +175,15 @@ class Appointment extends Component
             while ($start->copy()->addMinutes($duration)->lte($end)) {
                 $timeSlot = $start->format('H:i');
 
-                if (! in_array($timeSlot, $bookedSlots)) {
+                // Filter out past slots if the date is today
+                $isPast = false;
+                if ($this->selectedDate === Carbon::today()->format('Y-m-d')) {
+                    if ($start->copy()->addMinutes($duration)->isBefore(now())) {
+                        $isPast = true;
+                    }
+                }
+
+                if (! $isPast && ! in_array($timeSlot, $bookedSlots)) {
                     $this->availableSlots[] = $timeSlot;
                 }
                 $start->addMinutes($duration);
@@ -185,18 +193,13 @@ class Appointment extends Component
         // Sort slots by time
         sort($this->availableSlots);
 
-        // Auto-select the first available slot that is not in the past
-        if (empty($this->selectedSlot)) {
-            foreach ($this->availableSlots as $slot) {
-                if (Carbon::parse($slot)->isAfter(now()->subMinutes(15))) { // Small grace for "now"
-                    $this->selectedSlot = $slot;
-                    break;
-                }
+        // Auto-select the first available slot
+        if (! empty($this->availableSlots)) {
+            if (empty($this->selectedSlot) || ! in_array($this->selectedSlot, $this->availableSlots)) {
+                $this->selectedSlot = $this->availableSlots[0];
             }
-            // If all slots are in the past, pick the last one or none
-            if (empty($this->selectedSlot) && ! empty($this->availableSlots)) {
-                $this->selectedSlot = end($this->availableSlots);
-            }
+        } else {
+            $this->selectedSlot = null;
         }
     }
 
