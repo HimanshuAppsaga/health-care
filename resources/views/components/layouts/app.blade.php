@@ -53,16 +53,17 @@
             {{ $slot }}
         @endauth
 
-        <!-- Pusher & Echo CDN Fallback -->
-        <script src="https://js.pusher.com/8.0.1/pusher.min.js"></script>
-        <script src="https://cdn.jsdelivr.net/npm/laravel-echo@1.15.3/dist/echo.iife.js"></script>
+        <!-- Pusher & Echo CDN -->
+        <script src="https://js.pusher.com/8.4.0/pusher.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/laravel-echo@1.16.1/dist/echo.iife.js"></script>
         <script>
             window.Pusher = Pusher;
             window.Echo = new Echo({
                 broadcaster: 'pusher',
-                key: '{{ env('PUSHER_KEY') }}',
-                cluster: '{{ env('PUSHER_CLUSTER') }}',
-                forceTLS: true
+                key: '{{ config('broadcasting.connections.pusher.key') }}',
+                cluster: '{{ config('broadcasting.connections.pusher.options.cluster') }}',
+                forceTLS: true,
+                encrypted: true
             });
         </script>
 
