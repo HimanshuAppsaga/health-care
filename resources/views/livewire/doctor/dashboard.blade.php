@@ -160,23 +160,6 @@
                 </div>
             </div>
         </div>
-
-        <!-- Right Column: Quick Actions & Alerts -->
-        <div class="col-span-12 lg:col-span-4 space-y-6">
-            <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
-                <h3 class="text-lg font-black text-[#1c1b1b] mb-6">Quick Actions</h3>
-                <div class="space-y-4">
-                    
-                    <a href="{{ route('receptionist.book-appointment') }}" wire:navigate class="w-full flex items-center gap-4 p-4 rounded-2xl bg-[#e6fffb] text-[#0fbda6] font-bold hover:bg-[#0fbda6] hover:text-white transition-all group">
-                        <div class="w-10 h-10 rounded-xl bg-white/50 flex items-center justify-center group-hover:bg-[#0da692]">
-                            <span class="material-symbols-outlined">calendar_add_on</span>
-                        </div>
-                        <span>Book Appointment</span>
-                    </a>
-                    
-                </div>
-            </div>
-        </div>
     </div>
 </div>
 

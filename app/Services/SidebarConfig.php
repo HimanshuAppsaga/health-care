@@ -10,7 +10,6 @@ class SidebarConfig
             'doctor' => [
                 'Medical' => [
                     ['name' => 'Dashboard', 'route' => 'doctor.dashboard', 'icon' => 'layout-dashboard'],
-                    ['name' => 'Appointments', 'route' => 'doctor.appointments', 'icon' => 'calendar'],
                     ['name' => 'Schedule', 'route' => 'doctor.schedule', 'icon' => 'clock'],
                 ],
             ],
