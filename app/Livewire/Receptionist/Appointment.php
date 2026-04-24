@@ -72,7 +72,11 @@ class Appointment extends Component
             // Auto-assign clinic and doctor if user is linked to a clinic
             if ($user->clinic_id) {
                 $this->selectedClinicId = $user->clinic_id;
+                $this->selectedClinic = Clinic::find($this->selectedClinicId);
                 $this->selectedDoctorId = Doctor::where('clinic_id', $this->selectedClinicId)->first()?->id;
+                if ($this->selectedDoctorId) {
+                    $this->selectedDoctor = Doctor::with('user')->find($this->selectedDoctorId);
+                }
             }
         }
     }
@@ -201,18 +205,23 @@ class Appointment extends Component
             'phone' => 'required|string|max:20',
         ]);
 
-        // Ensure doctor is selected (fallback to first doctor of clinic if still null)
-        if (! $this->selectedClinicId && auth()->user()->clinic_id) {
+        // Ensure clinic is selected
+        if (! $this->selectedClinicId) {
             $this->selectedClinicId = auth()->user()->clinic_id;
         }
 
-        if (! $this->selectedDoctorId && $this->selectedClinicId) {
+        if (! $this->selectedClinicId) {
+            session()->flash('error', 'Unable to determine clinic. Please ensure your account is linked to a clinic.');
+            return;
+        }
+
+        // Ensure doctor is selected
+        if (! $this->selectedDoctorId) {
             $this->selectedDoctorId = Doctor::where('clinic_id', $this->selectedClinicId)->first()?->id;
         }
 
         if (! $this->selectedDoctorId) {
-            session()->flash('error', 'No doctor available to assign this appointment.');
-
+            session()->flash('error', 'No doctor available to assign this appointment in your clinic.');
             return;
         }
 

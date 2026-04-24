@@ -63,7 +63,7 @@
                 key: '{{ config('broadcasting.connections.pusher.key') }}',
                 cluster: '{{ config('broadcasting.connections.pusher.options.cluster') }}',
                 forceTLS: true,
-                encrypted: true
+                enabledTransports: ['ws', 'wss']
             });
         </script>
 

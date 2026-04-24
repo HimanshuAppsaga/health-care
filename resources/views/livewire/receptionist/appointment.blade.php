@@ -29,6 +29,20 @@
                     </div>
                 @else
                 <div class="space-y-4">
+                    @if (session()->has('message'))
+                        <div class="p-4 mb-4 text-sm text-green-800 rounded-lg bg-green-50 border border-green-100 flex items-center gap-2 animate-fade-in" role="alert">
+                            <span class="material-symbols-outlined text-lg">check_circle</span>
+                            <span class="font-bold">{{ session('message') }}</span>
+                        </div>
+                    @endif
+
+                    @if (session()->has('error'))
+                        <div class="p-4 mb-4 text-sm text-red-800 rounded-lg bg-red-50 border border-red-100 flex items-center gap-2 animate-fade-in" role="alert">
+                            <span class="material-symbols-outlined text-lg">error</span>
+                            <span class="font-bold">{{ session('error') }}</span>
+                        </div>
+                    @endif
+
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
                             <label class="block text-xs font-bold text-slate-500 mb-2 uppercase tracking-wider">Full Name</label>
