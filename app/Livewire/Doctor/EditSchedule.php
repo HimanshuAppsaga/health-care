@@ -74,6 +74,20 @@ class EditSchedule extends Component
         $this->weekly_schedules[$day] = array_values($this->weekly_schedules[$day]);
     }
 
+    public function syncToAllDays($fromDay)
+    {
+        $sourceSessions = $this->weekly_schedules[$fromDay];
+
+        foreach ($this->weekly_schedules as $day => $sessions) {
+            if ($day != $fromDay) {
+                // Deep copy the sessions to avoid reference issues
+                $this->weekly_schedules[$day] = json_decode(json_encode($sourceSessions), true);
+            }
+        }
+
+        session()->flash('sync_message', 'Schedule synced to all days successfully.');
+    }
+
     public function save()
     {
         $doctor = Auth::user()->doctor;
@@ -88,9 +102,18 @@ class EditSchedule extends Component
             DoctorSchedule::where('doctor_id', $doctor->id)->delete();
 
             foreach ($this->weekly_schedules as $day => $sessions) {
+                $processedSessions = [];
+
                 foreach ($sessions as $session) {
                     $startTime = Carbon::createFromFormat('h:i A', "{$session['start_hour']}:{$session['start_min']} {$session['start_period']}")->format('H:i:s');
                     $endTime = Carbon::createFromFormat('h:i A', "{$session['end_hour']}:{$session['end_min']} {$session['end_period']}")->format('H:i:s');
+
+                    // Avoid duplicate timings for the same day
+                    $sessionHash = $startTime.'-'.$endTime;
+                    if (in_array($sessionHash, $processedSessions)) {
+                        continue;
+                    }
+                    $processedSessions[] = $sessionHash;
 
                     DoctorSchedule::create([
                         'doctor_id' => $doctor->id,

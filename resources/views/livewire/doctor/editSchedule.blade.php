@@ -17,6 +17,13 @@
         </div>
     @endif
 
+    @if (session()->has('sync_message'))
+        <div class="p-4 bg-primary-container text-white rounded-xl font-bold flex items-center gap-2">
+            <span class="material-symbols-outlined">sync</span>
+            {{ session('sync_message') }}
+        </div>
+    @endif
+
     <form wire:submit.prevent="save" class="space-y-12">
         @php
             $days = [
@@ -34,8 +41,14 @@
             @foreach($days as $dayNumber => $dayName)
                 <div class="grid grid-cols-1 md:grid-cols-[200px_1fr] gap-6 items-start">
                     <!-- Day Label -->
-                    <div class="pt-3">
+                    <div class="pt-3 space-y-1">
                         <h3 class="text-2xl font-extrabold text-on-surface">{{ $dayName }}</h3>
+                        @if(count($weekly_schedules[$dayNumber]) > 0)
+                            <button type="button" wire:click="syncToAllDays({{ $dayNumber }})" class="flex items-center gap-1 text-[10px] font-black uppercase tracking-widest text-primary hover:text-primary-container transition-colors group">
+                                <span class="material-symbols-outlined text-sm group-hover:rotate-180 transition-transform duration-500">sync</span>
+                                Sync to all days
+                            </button>
+                        @endif
                     </div>
 
                     <!-- Sessions Container -->
