@@ -4,6 +4,8 @@ use App\Livewire\Auth\ForgotPassword;
 use App\Livewire\Auth\Login;
 use App\Livewire\Auth\ResetPassword;
 use App\Livewire\Auth\SignUp;
+use App\Livewire\Doctor\EditSchedule;
+use App\Livewire\Doctor\Schedule;
 use App\Livewire\Patient\Appointment;
 use App\Livewire\Patient\Dashboard;
 use Illuminate\Support\Facades\Route;
@@ -23,6 +25,8 @@ Route::middleware('auth')->group(function () {
     Route::get('/receptionist/book-appointment', App\Livewire\Receptionist\Appointment::class)->name('receptionist.book-appointment');
 
     Route::get('/doctor/dashboard', App\Livewire\Doctor\Dashboard::class)->name('doctor.dashboard');
+    Route::get('/doctor/schedule', Schedule::class)->name('doctor.schedule');
+    Route::get('/doctor/schedule/edit/{id?}', EditSchedule::class)->name('doctor.schedule.edit');
 
     // Fail-safe GET logout
     Route::get('/logout', function () {
