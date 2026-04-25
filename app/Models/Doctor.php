@@ -7,7 +7,6 @@ use Illuminate\Database\Eloquent\Model;
 class Doctor extends Model
 {
     protected $fillable = [
-        'clinic_id',
         'user_id',
         'specialization',
         'qualification',
@@ -21,11 +20,6 @@ class Doctor extends Model
         return [
             'is_on_hold' => 'boolean',
         ];
-    }
-
-    public function clinic()
-    {
-        return $this->belongsTo(Clinic::class);
     }
 
     public function user()

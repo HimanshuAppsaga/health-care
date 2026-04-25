@@ -7,7 +7,6 @@ use Illuminate\Database\Eloquent\Model;
 class Patient extends Model
 {
     protected $fillable = [
-        'clinic_id',
         'user_id',
         'name',
         'phone',
@@ -15,11 +14,6 @@ class Patient extends Model
         'dob',
         'gender',
     ];
-
-    public function clinic()
-    {
-        return $this->belongsTo(Clinic::class);
-    }
 
     public function user()
     {
@@ -29,10 +23,5 @@ class Patient extends Model
     public function appointments()
     {
         return $this->hasMany(Appointment::class);
-    }
-
-    public function documents()
-    {
-        return $this->hasMany(PatientDocument::class);
     }
 }
