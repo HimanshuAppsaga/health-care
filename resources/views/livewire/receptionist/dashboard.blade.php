@@ -190,13 +190,47 @@
             <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
                 <h3 class="text-lg font-black text-[#1c1b1b] mb-6">Quick Actions</h3>
                 <div class="space-y-4">
+                    @php
+                        $hasActiveSchedule = $doctorSchedules->contains(function($s) {
+                            $now = now();
+                            return \Carbon\Carbon::parse($s->start_time)->isBefore($now) && \Carbon\Carbon::parse($s->end_time)->isAfter($now);
+                        });
+                        $nextSchedule = $doctorSchedules->first(function($s) {
+                            return \Carbon\Carbon::parse($s->start_time)->isAfter(now());
+                        });
+                    @endphp
                     
-                    <a href="{{ route('receptionist.book-appointment') }}" wire:navigate class="w-full flex items-center gap-4 p-4 rounded-2xl bg-[#e6fffb] text-[#0fbda6] font-bold hover:bg-[#0fbda6] hover:text-white transition-all group">
-                        <div class="w-10 h-10 rounded-xl bg-white/50 flex items-center justify-center group-hover:bg-[#0da692]">
-                            <span class="material-symbols-outlined">calendar_add_on</span>
+                    @if($hasActiveSchedule)
+                        <a href="{{ route('receptionist.book-appointment') }}" wire:navigate class="w-full flex items-center gap-4 p-4 rounded-2xl bg-[#e6fffb] text-[#0fbda6] font-bold hover:bg-[#0fbda6] hover:text-white transition-all group shadow-sm">
+                            <div class="w-10 h-10 rounded-xl bg-white/50 flex items-center justify-center group-hover:bg-[#0da692]">
+                                <span class="material-symbols-outlined">calendar_add_on</span>
+                            </div>
+                            <span>Book Appointment</span>
+                        </a>
+                    @else
+                        <div class="w-full flex flex-col gap-2 p-4 rounded-2xl bg-gray-100 text-gray-400 border border-gray-200 cursor-not-allowed">
+                            <div class="flex items-center gap-4">
+                                <div class="w-10 h-10 rounded-xl bg-gray-200 flex items-center justify-center">
+                                    <span class="material-symbols-outlined">event_busy</span>
+                                </div>
+                                <div class="flex flex-col">
+                                    <span class="font-bold">Counter Closed</span>
+                                    @if($nextSchedule)
+                                        <span class="text-[10px] font-black uppercase tracking-tighter text-gray-400">Next Session: {{ \Carbon\Carbon::parse($nextSchedule->start_time)->format('h:i A') }}</span>
+                                    @else
+                                        <span class="text-[10px] font-black uppercase tracking-tighter text-gray-400">No more sessions today</span>
+                                    @endif
+                                </div>
+                            </div>
                         </div>
-                        <span>Book Appointment</span>
-                    </a>
+                        
+                        <!-- Small link to force book if absolutely needed -->
+                        <div class="text-center">
+                            <a href="{{ route('receptionist.book-appointment') }}" wire:navigate class="text-[10px] font-black text-[#5200cc]/40 hover:text-[#5200cc] uppercase tracking-widest transition-colors">
+                                Force Book Appointment (Emergency)
+                            </a>
+                        </div>
+                    @endif
 
                     <!-- Test Sound Button -->
                     <button type="button" wire:click="$dispatch('notify', { type: 'test' })" class="w-full flex items-center gap-4 p-4 rounded-2xl bg-[#ede7ff] text-[#5200cc] font-bold hover:bg-[#5200cc] hover:text-white transition-all group">
@@ -216,12 +250,24 @@
                 </div>
                 <div class="space-y-4">
                     @forelse($doctorSchedules as $schedule)
-                        <div class="p-4 rounded-xl bg-gray-50 border border-gray-100 group hover:border-[#5200cc]/30 transition-all">
-                            <div class="flex items-center gap-3 mb-2">
+                        @php
+                            $isCompleted = \Carbon\Carbon::parse($schedule->end_time)->isBefore(now());
+                            $isActive = \Carbon\Carbon::parse($schedule->start_time)->isBefore(now()) && \Carbon\Carbon::parse($schedule->end_time)->isAfter(now());
+                        @endphp
+                        <div class="p-4 rounded-xl {{ $isCompleted ? 'bg-gray-100 opacity-60' : 'bg-gray-50' }} border {{ $isActive ? 'border-[#0fbda6] bg-[#e6fffb]/30' : 'border-gray-100' }} group hover:border-[#5200cc]/30 transition-all">
+                            <div class="flex items-center justify-between mb-2">
                                 <div class="flex items-center gap-1 text-gray-500 text-sm">
                                     <span class="material-symbols-outlined text-sm">schedule</span>
                                     <span class="font-bold">{{ \Carbon\Carbon::parse($schedule->start_time)->format('h:i A') }} - {{ \Carbon\Carbon::parse($schedule->end_time)->format('h:i A') }}</span>
                                 </div>
+                                @if($isCompleted)
+                                    <span class="text-[10px] font-black uppercase text-gray-400">Completed</span>
+                                @elseif($isActive)
+                                    <span class="flex items-center gap-1">
+                                        <span class="w-1.5 h-1.5 rounded-full bg-[#0fbda6] animate-pulse"></span>
+                                        <span class="text-[10px] font-black uppercase text-[#0fbda6]">Active</span>
+                                    </span>
+                                @endif
                             </div>
                         </div>
                     @empty

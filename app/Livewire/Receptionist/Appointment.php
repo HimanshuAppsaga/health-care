@@ -350,6 +350,8 @@ class Appointment extends Component
 
                 session()->flash('message', 'Appointment booked successfully! Your Token: '.$tokenNumber);
 
+                $this->generateSlots(); // Refresh slots for next booking
+
                 broadcast(new QueueUpdated($this->selectedClinicId, 'booked'))->toOthers();
             });
         } catch (\Exception $e) {
@@ -361,6 +363,22 @@ class Appointment extends Component
 
             session()->flash('error', 'Something went wrong while booking the appointment. Please try again.');
         }
+    }
+
+    public function getSelectedSessionProperty()
+    {
+        if (! $this->selectedSlot || ! $this->selectedDoctorId) {
+            return null;
+        }
+
+        $slotTime = Carbon::parse($this->selectedSlot)->format('H:i:s');
+        $dayOfWeek = Carbon::parse($this->selectedDate)->dayOfWeek;
+
+        return DoctorSchedule::where('doctor_id', $this->selectedDoctorId)
+            ->where('day_of_week', $dayOfWeek)
+            ->whereTime('start_time', '<=', $slotTime)
+            ->whereTime('end_time', '>', $slotTime)
+            ->first();
     }
 
     public function render()

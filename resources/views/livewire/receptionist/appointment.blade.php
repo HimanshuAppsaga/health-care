@@ -50,17 +50,57 @@
                                 No slots available for today.
                             </div>
                         </div>
+                    @else
+                        <!-- Booking Summary Info -->
+                        <div class="mb-6 p-4 bg-indigo-50/50 rounded-2xl border border-indigo-100/50 animate-fade-in">
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-10 h-10 rounded-xl bg-white flex items-center justify-center text-indigo-600 shadow-sm">
+                                        <span class="material-symbols-outlined">info</span>
+                                    </div>
+                                    <div>
+                                        <p class="text-[10px] font-black text-indigo-400 uppercase tracking-widest">Booking For</p>
+                                        <p class="text-sm font-bold text-slate-700">
+                                            Today, {{ \Carbon\Carbon::parse($selectedSlot)->format('h:i A') }}
+                                        </p>
+                                    </div>
+                                </div>
+                                <div class="text-right">
+                                    <p class="text-[10px] font-black text-indigo-400 uppercase tracking-widest">Session</p>
+                                    <p class="text-sm font-bold text-indigo-600">
+                                        @if($this->selectedSession)
+                                            {{ \Carbon\Carbon::parse($this->selectedSession->start_time)->format('h:i A') }} - {{ \Carbon\Carbon::parse($this->selectedSession->end_time)->format('h:i A') }}
+                                        @else
+                                            General Session
+                                        @endif
+                                    </p>
+                                </div>
+                            </div>
+                            
+                            @php
+                                $now = now();
+                                $sessionStart = $this->selectedSession ? \Carbon\Carbon::parse($this->selectedSession->start_time) : null;
+                                $isFutureSession = $sessionStart && $sessionStart->isAfter($now);
+                            @endphp
+
+                            @if($isFutureSession)
+                                <div class="mt-3 flex items-center gap-2 text-[10px] font-bold text-orange-500 bg-orange-50 px-3 py-1.5 rounded-lg border border-orange-100">
+                                    <span class="material-symbols-outlined text-sm">priority_high</span>
+                                    The morning session has ended. You are booking for the upcoming afternoon session.
+                                </div>
+                            @endif
+                        </div>
                     @endif
 
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
                             <label class="block text-xs font-bold text-slate-500 mb-2 uppercase tracking-wider">Full Name</label>
-                            <input type="text" wire:model="name" class="w-full p-3 border border-slate-200 rounded-xl focus:ring-primary focus:border-primary text-sm bg-white" placeholder="Enter your full name"/>
+                            <input type="text" wire:model="name" class="w-full p-3 border border-slate-200 rounded-xl focus:ring-primary focus:border-primary text-sm bg-white" placeholder="Enter patient name"/>
                             @error('name') <span class="text-xs text-red-500">{{ $message }}</span> @enderror
                         </div>
                         <div>
                             <label class="block text-xs font-bold text-slate-500 mb-2 uppercase tracking-wider">Mobile No.</label>
-                            <input type="text" wire:model="phone" class="w-full p-3 border border-slate-200 rounded-xl focus:ring-primary focus:border-primary text-sm bg-white" placeholder="Enter your mobile number"/>
+                            <input type="text" wire:model="phone" class="w-full p-3 border border-slate-200 rounded-xl focus:ring-primary focus:border-primary text-sm bg-white" placeholder="Enter mobile number"/>
                             @error('phone') <span class="text-xs text-red-500">{{ $message }}</span> @enderror
                         </div>
                     </div>

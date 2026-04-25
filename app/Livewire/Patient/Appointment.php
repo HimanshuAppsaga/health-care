@@ -317,6 +317,8 @@ class Appointment extends Component
 
         session()->flash('message', 'Appointment booked successfully! Your Token: '.$tokenNumber);
 
+        $this->generateSlots(); // Refresh slots for next booking
+
         $clinicId = $this->selectedClinicId ?? 1;
         broadcast(new QueueUpdated($clinicId, 'booked'))->toOthers();
 
