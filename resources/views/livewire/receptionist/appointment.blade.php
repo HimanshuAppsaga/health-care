@@ -44,60 +44,9 @@
                     @endif
 
                     @if(empty($availableSlots))
-                        <div class="mb-6">
-                            <div class="p-3 bg-red-50 text-red-500 rounded-xl text-xs font-bold border border-red-100 flex items-center gap-2">
-                                <span class="material-symbols-outlined text-sm">event_busy</span>
-                                No slots available for today.
-                            </div>
-                        </div>
-                    @else
-                        <!-- Booking Summary Info -->
-                        <div class="mb-6 p-4 bg-indigo-50/50 rounded-2xl border border-indigo-100/50 animate-fade-in">
-                            <div class="flex items-center justify-between">
-                                <div class="flex items-center gap-3">
-                                    <div class="w-10 h-10 rounded-xl bg-white flex items-center justify-center text-indigo-600 shadow-sm">
-                                        <span class="material-symbols-outlined">info</span>
-                                    </div>
-                                    <div>
-                                        <p class="text-[10px] font-black text-indigo-400 uppercase tracking-widest">Booking For</p>
-                                        <p class="text-sm font-bold text-slate-700">
-                                            Today, {{ \Carbon\Carbon::parse($selectedSlot)->format('h:i A') }}
-                                        </p>
-                                    </div>
-                                </div>
-                                <div class="text-right">
-                                    <p class="text-[10px] font-black text-indigo-400 uppercase tracking-widest">Session</p>
-                                    <p class="text-sm font-bold text-indigo-600">
-                                        @if($this->selectedSession)
-                                            {{ \Carbon\Carbon::parse($this->selectedSession->start_time)->format('h:i A') }} - {{ \Carbon\Carbon::parse($this->selectedSession->end_time)->format('h:i A') }}
-                                        @else
-                                            General Session
-                                        @endif
-                                    </p>
-                                </div>
-                            </div>
-                            
-                            @php
-                                $now = now();
-                                // Check if there was a session earlier today that has already ended
-                                $pastSessionEnded = false;
-                                if ($this->selectedDate === $now->format('Y-m-d')) {
-                                    $pastSessionEnded = \App\Models\DoctorSchedule::where('doctor_id', $this->selectedDoctorId)
-                                        ->where('day_of_week', $now->dayOfWeek)
-                                        ->whereTime('end_time', '<=', $now->format('H:i:s'))
-                                        ->exists();
-                                }
-
-                                $sessionStart = $this->selectedSession ? \Carbon\Carbon::parse($this->selectedSession->start_time) : null;
-                                $isUpcomingSession = $sessionStart && $sessionStart->isAfter($now);
-                            @endphp
-
-                            @if($pastSessionEnded && $isUpcomingSession)
-                                <div class="mt-3 flex items-center gap-2 text-[10px] font-bold text-orange-500 bg-orange-50 px-3 py-1.5 rounded-lg border border-orange-100">
-                                    <span class="material-symbols-outlined text-sm">priority_high</span>
-                                    The previous session has ended. You are booking for the next available session.
-                                </div>
-                            @endif
+                        <div class="mb-6 p-4 bg-red-50 text-red-500 rounded-xl text-xs font-bold border border-red-100 flex items-center gap-2">
+                            <span class="material-symbols-outlined text-sm">event_busy</span>
+                            No slots available for today.
                         </div>
                     @endif
 

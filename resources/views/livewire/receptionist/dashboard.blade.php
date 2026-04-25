@@ -200,37 +200,14 @@
                         });
                     @endphp
                     
-                    @if($hasActiveSchedule)
-                        <a href="{{ route('receptionist.book-appointment') }}" wire:navigate class="w-full flex items-center gap-4 p-4 rounded-2xl bg-[#e6fffb] text-[#0fbda6] font-bold hover:bg-[#0fbda6] hover:text-white transition-all group shadow-sm">
-                            <div class="w-10 h-10 rounded-xl bg-white/50 flex items-center justify-center group-hover:bg-[#0da692]">
-                                <span class="material-symbols-outlined">calendar_add_on</span>
-                            </div>
+                    <a href="{{ route('receptionist.book-appointment') }}" wire:navigate class="w-full flex items-center gap-4 p-4 rounded-2xl bg-[#e6fffb] text-[#0fbda6] font-bold hover:bg-[#0fbda6] hover:text-white transition-all group shadow-sm">
+                        <div class="w-10 h-10 rounded-xl bg-white/50 flex items-center justify-center group-hover:bg-[#0da692]">
+                            <span class="material-symbols-outlined">calendar_add_on</span>
+                        </div>
+                        <div class="flex flex-col">
                             <span>Book Appointment</span>
-                        </a>
-                    @else
-                        <div class="w-full flex flex-col gap-2 p-4 rounded-2xl bg-gray-100 text-gray-400 border border-gray-200 cursor-not-allowed">
-                            <div class="flex items-center gap-4">
-                                <div class="w-10 h-10 rounded-xl bg-gray-200 flex items-center justify-center">
-                                    <span class="material-symbols-outlined">event_busy</span>
-                                </div>
-                                <div class="flex flex-col">
-                                    <span class="font-bold">Counter Closed</span>
-                                    @if($nextSchedule)
-                                        <span class="text-[10px] font-black uppercase tracking-tighter text-gray-400">Next Session: {{ \Carbon\Carbon::parse($nextSchedule->start_time)->format('h:i A') }}</span>
-                                    @else
-                                        <span class="text-[10px] font-black uppercase tracking-tighter text-gray-400">No more sessions today</span>
-                                    @endif
-                                </div>
-                            </div>
                         </div>
-                        
-                        <!-- Small link to force book if absolutely needed -->
-                        <div class="text-center">
-                            <a href="{{ route('receptionist.book-appointment') }}" wire:navigate class="text-[10px] font-black text-[#5200cc]/40 hover:text-[#5200cc] uppercase tracking-widest transition-colors">
-                                Force Book Appointment (Emergency)
-                            </a>
-                        </div>
-                    @endif
+                    </a>
 
                     <!-- Test Sound Button -->
                     <button type="button" wire:click="$dispatch('notify', { type: 'test' })" class="w-full flex items-center gap-4 p-4 rounded-2xl bg-[#ede7ff] text-[#5200cc] font-bold hover:bg-[#5200cc] hover:text-white transition-all group">

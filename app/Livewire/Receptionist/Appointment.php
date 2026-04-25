@@ -135,7 +135,6 @@ class Appointment extends Component
 
     public function updatedSelectedDate()
     {
-        $this->selectedDate = Carbon::today()->format('Y-m-d'); // Force today
         $this->generateSlots();
     }
 
@@ -146,11 +145,8 @@ class Appointment extends Component
             return;
         }
 
-        // Check if doctor is on hold
-        $doctor = Doctor::find($this->selectedDoctorId);
-        if ($doctor && $doctor->is_on_hold) {
-            return;
-        }
+        // Note: Doctor "on hold" check removed from slot generation.
+        // Doctors can still be booked even if they are temporarily pausing their current session.
 
         $date = Carbon::parse($this->selectedDate);
         $dayOfWeek = $date->dayOfWeek; // 0 (Sun) to 6 (Sat)
@@ -164,17 +160,10 @@ class Appointment extends Component
         }
 
         foreach ($schedules as $schedule) {
-            // Check if this session has reached its max patients limit
-            $bookedCount = AppointmentModel::where('doctor_id', $this->selectedDoctorId)
-                ->where('appointment_date', $this->selectedDate)
-                ->whereTime('start_time', '>=', $schedule->start_time)
-                ->whereTime('start_time', '<', $schedule->end_time)
-                ->whereIn('status', ['pending', 'confirmed'])
-                ->count();
 
-            if ($schedule->max_patients > 0 && $bookedCount >= $schedule->max_patients) {
-                continue; // Session is full
-            }
+            // Note: Session-wide max_patients check removed to allow booking based on slot availability.
+            // If a hard limit for the session is needed, it should be handled while still allowing slot selection
+            // or by showing a "Session Full" message instead of hiding all slots.
 
             $start = Carbon::createFromFormat('H:i:s', $schedule->start_time);
             $end = Carbon::createFromFormat('H:i:s', $schedule->end_time);
@@ -269,7 +258,6 @@ class Appointment extends Component
 
     public function bookAppointment()
     {
-        $this->selectedDate = Carbon::today()->format('Y-m-d'); // Force today
         $this->validate([
             'name' => 'required|string|max:191',
             'phone' => 'required|string|max:20',
