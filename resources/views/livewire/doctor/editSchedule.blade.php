@@ -43,12 +43,7 @@
                     <!-- Day Label -->
                     <div class="pt-3 space-y-1">
                         <h3 class="text-2xl font-extrabold text-on-surface">{{ $dayName }}</h3>
-                        @if(count($weekly_schedules[$dayNumber]) > 0)
-                            <button type="button" wire:click="syncToAllDays({{ $dayNumber }})" class="flex items-center gap-1 text-[10px] font-black uppercase tracking-widest text-primary hover:text-primary-container transition-colors group">
-                                <span class="material-symbols-outlined text-sm group-hover:rotate-180 transition-transform duration-500">sync</span>
-                                Sync to all days
-                            </button>
-                        @endif
+                        
                     </div>
 
                     <!-- Sessions Container -->
