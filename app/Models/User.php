@@ -49,13 +49,6 @@ class User extends Authenticatable
         return $this->roles()->where('name', $role)->exists();
     }
 
-    public function hasPermission(string $permission): bool
-    {
-        return $this->roles()->whereHas('permissions', function ($query) use ($permission) {
-            $query->where('slug', $permission);
-        })->exists();
-    }
-
     public function patient()
     {
         return $this->hasOne(Patient::class);
