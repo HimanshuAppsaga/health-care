@@ -49,6 +49,19 @@
                 </select>
             </div>
 
+            <!-- Doctor -->
+            @if(auth()->user()->hasRole(['receptionist', 'doctor']))
+            <div>
+                <label class="text-xs font-black text-gray-400 uppercase tracking-widest mb-2 block ml-1">Doctor</label>
+                <select wire:model.live="doctorId" class="w-full px-4 py-3 bg-gray-50 border-2 border-transparent rounded-2xl focus:bg-white focus:border-[#5200cc]/20 outline-none transition-all font-bold text-sm appearance-none">
+                    <option value="">All Doctors</option>
+                    @foreach($doctors as $doctor)
+                        <option value="{{ $doctor->id }}">Dr. {{ $doctor->user->name }}</option>
+                    @endforeach
+                </select>
+            </div>
+            @endif
+
             <!-- Date Range -->
             <div>
                 <label class="text-xs font-black text-gray-400 uppercase tracking-widest mb-2 block ml-1">Timeframe</label>
@@ -160,8 +173,8 @@
         </div>
 
         @if($appointments->hasPages())
-        <div class="px-8 py-6 bg-gray-50/30 border-t border-gray-50">
-            {{ $appointments->links() }}
+        <div class="px-8 py-6 bg-gray-50/30 border-t border-gray-50 flex justify-end">
+            {{ $appointments->links('livewire.common.custom-pagination') }}
         </div>
         @endif
     </div>

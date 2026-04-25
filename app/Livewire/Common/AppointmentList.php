@@ -62,12 +62,9 @@ class AppointmentList extends Component
         $query = Appointment::with(['doctor.user', 'patient.user', 'queue'])
             ->where('clinic_id', $user->clinic_id);
 
-        // Role-based scoping
-        if ($user->hasRole('doctor')) {
-            $query->where('doctor_id', $user->doctor->id);
-        } elseif ($user->hasRole('patient')) {
+        if ($user->hasRole('patient')) {
             $query->where('patient_id', $user->patient->id);
-        } elseif ($user->hasRole('receptionist')) {
+        } elseif ($user->hasRole(['receptionist', 'doctor'])) {
             if ($this->doctorId) {
                 $query->where('doctor_id', $this->doctorId);
             }
@@ -103,7 +100,7 @@ class AppointmentList extends Component
             ->get();
 
         $doctors = [];
-        if ($user->hasRole('receptionist')) {
+        if ($user->hasRole(['receptionist', 'doctor'])) {
             $doctors = Doctor::with('user')->where('clinic_id', $user->clinic_id)->get();
         }
 
