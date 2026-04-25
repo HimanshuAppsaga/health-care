@@ -60,17 +60,27 @@
 
             <!-- Custom Dates -->
             @if($dateRange === 'custom' || $dateRange === 'all')
-            <div class="lg:col-span-1 xl:col-span-1 flex items-end gap-2">
-                    <input type="date" wire:model.live="startDate" class="w-full px-3 py-2 bg-gray-50 border-2 border-transparent rounded-xl focus:bg-white focus:border-[#5200cc]/20 outline-none transition-all font-bold text-[10px]">
+            <div class="lg:col-span-1 xl:col-span-1 flex items-end">
+                <input type="date" wire:model.live="startDate" class="w-full px-3 py-3 bg-gray-50 border-2 border-transparent rounded-2xl focus:bg-white focus:border-[#5200cc]/20 outline-none transition-all font-bold text-sm">
             </div>
             @else
             <div class="flex items-end">
-                <button wire:click="setDateRange('custom')" class="text-[#5200cc] text-xs font-black hover:underline mb-3 ml-2 flex items-center gap-1">
+                <button wire:click="setDateRange('custom')" class="text-[#5200cc] text-xs font-black hover:underline mb-4 ml-2 flex items-center gap-1">
                     <span class="material-symbols-outlined text-sm">calendar_today</span>
                     Custom Range
                 </button>
             </div>
             @endif
+
+
+            <!-- Clear Action -->
+            <div class="flex items-end">
+                <button wire:click="clearFilters" 
+                        class="w-full px-4 py-3 bg-gray-100 text-gray-500 rounded-2xl font-black text-xs hover:bg-red-50 hover:text-red-600 transition-all flex items-center justify-center gap-2 group">
+                    <span class="material-symbols-outlined text-sm group-hover:rotate-180 transition-transform duration-500">restart_alt</span>
+                    Clear All
+                </button>
+            </div>
         </div>
     </div>
 

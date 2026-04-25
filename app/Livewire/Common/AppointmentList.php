@@ -3,7 +3,6 @@
 namespace App\Livewire\Common;
 
 use App\Models\Appointment;
-use App\Models\Doctor;
 use App\Models\DoctorSchedule;
 use Carbon\Carbon;
 use Livewire\Attributes\Layout;
@@ -33,8 +32,12 @@ class AppointmentList extends Component
     #[Url(history: true)]
     public $endDate;
 
-    #[Url(history: true)]
-    public $doctorId = '';
+    public function mount()
+    {
+        if ($this->startDate || $this->endDate) {
+            $this->dateRange = 'custom';
+        }
+    }
 
     public function updatingSearch()
     {
@@ -51,8 +54,19 @@ class AppointmentList extends Component
         $this->resetPage();
     }
 
-    public function updatingDoctorId()
+    public function updatedStartDate($value)
     {
+        if ($value) {
+            $this->dateRange = 'custom';
+        }
+        $this->resetPage();
+    }
+
+    public function updatedEndDate($value)
+    {
+        if ($value) {
+            $this->dateRange = 'custom';
+        }
         $this->resetPage();
     }
 
@@ -64,10 +78,6 @@ class AppointmentList extends Component
 
         if ($user->hasRole('patient')) {
             $query->where('patient_id', $user->patient->id);
-        } elseif ($user->hasRole(['receptionist', 'doctor'])) {
-            if ($this->doctorId) {
-                $query->where('doctor_id', $this->doctorId);
-            }
         }
 
         // Search
@@ -99,14 +109,8 @@ class AppointmentList extends Component
             ->whereIn('day_of_week', $daysOfWeek)
             ->get();
 
-        $doctors = [];
-        if ($user->hasRole(['receptionist', 'doctor'])) {
-            $doctors = Doctor::with('user')->where('clinic_id', $user->clinic_id)->get();
-        }
-
         return view('livewire.common.appointment-list', [
             'appointments' => $appointments,
-            'doctors' => $doctors,
             'schedules' => $schedules,
         ]);
     }
@@ -126,11 +130,12 @@ class AppointmentList extends Component
                 $query->whereBetween('appointment_date', [$today->copy()->startOfMonth(), $today->copy()->endOfMonth()]);
                 break;
             case 'custom':
-                if ($this->startDate) {
-                    $query->whereDate('appointment_date', '>=', $this->startDate);
-                }
-                if ($this->endDate) {
-                    $query->whereDate('appointment_date', '<=', $this->endDate);
+                if ($this->startDate && $this->endDate) {
+                    $query->whereBetween('appointment_date', [$this->startDate, $this->endDate]);
+                } elseif ($this->startDate) {
+                    $query->whereDate('appointment_date', $this->startDate);
+                } elseif ($this->endDate) {
+                    $query->whereDate('appointment_date', $this->endDate);
                 }
                 break;
         }
@@ -139,6 +144,17 @@ class AppointmentList extends Component
     public function setDateRange($range)
     {
         $this->dateRange = $range;
+        if ($range !== 'custom') {
+            $this->startDate = null;
+            $this->endDate = null;
+        }
+        $this->resetPage();
+    }
+
+    public function clearFilters()
+    {
+        $this->reset(['search', 'status', 'dateRange', 'startDate', 'endDate']);
+        $this->dateRange = 'all'; // Ensure it defaults back to all
         $this->resetPage();
     }
 }
