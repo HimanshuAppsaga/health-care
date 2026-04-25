@@ -192,12 +192,15 @@
 
 <style>
     .time-picker-container {
+        position: relative;
+        z-index: 1;
         background: rgba(255, 255, 255, 0.6);
         backdrop-filter: blur(10px);
         border: 1px solid rgba(82, 0, 204, 0.1);
         transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     }
     .time-picker-container:focus-within {
+        z-index: 100;
         background: white;
         border-color: #5200cc;
         box-shadow: 0 10px 25px -5px rgba(82, 0, 204, 0.1), 0 8px 10px -6px rgba(82, 0, 204, 0.1);
