@@ -79,14 +79,23 @@
                             
                             @php
                                 $now = now();
+                                // Check if there was a session earlier today that has already ended
+                                $pastSessionEnded = false;
+                                if ($this->selectedDate === $now->format('Y-m-d')) {
+                                    $pastSessionEnded = \App\Models\DoctorSchedule::where('doctor_id', $this->selectedDoctorId)
+                                        ->where('day_of_week', $now->dayOfWeek)
+                                        ->whereTime('end_time', '<=', $now->format('H:i:s'))
+                                        ->exists();
+                                }
+
                                 $sessionStart = $this->selectedSession ? \Carbon\Carbon::parse($this->selectedSession->start_time) : null;
-                                $isFutureSession = $sessionStart && $sessionStart->isAfter($now);
+                                $isUpcomingSession = $sessionStart && $sessionStart->isAfter($now);
                             @endphp
 
-                            @if($isFutureSession)
+                            @if($pastSessionEnded && $isUpcomingSession)
                                 <div class="mt-3 flex items-center gap-2 text-[10px] font-bold text-orange-500 bg-orange-50 px-3 py-1.5 rounded-lg border border-orange-100">
                                     <span class="material-symbols-outlined text-sm">priority_high</span>
-                                    The morning session has ended. You are booking for the upcoming afternoon session.
+                                    The previous session has ended. You are booking for the next available session.
                                 </div>
                             @endif
                         </div>

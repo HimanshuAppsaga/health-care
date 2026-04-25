@@ -146,12 +146,14 @@ class Appointment extends Component
             return;
         }
 
+        // Check if doctor is on hold
+        $doctor = Doctor::find($this->selectedDoctorId);
+        if ($doctor && $doctor->is_on_hold) {
+            return;
+        }
+
         $date = Carbon::parse($this->selectedDate);
         $dayOfWeek = $date->dayOfWeek; // 0 (Sun) to 6 (Sat)
-
-        // Database uses 0-6 or 1-7? Check schema or model.
-        // Typically Laravel/Carbon uses 0=Sunday, 1=Monday...
-        // Let's check DoctorSchedule day_of_week
 
         $schedules = DoctorSchedule::where('doctor_id', $this->selectedDoctorId)
             ->where('day_of_week', $dayOfWeek)
@@ -161,18 +163,32 @@ class Appointment extends Component
             return;
         }
 
-        // Fetch already booked slots
-        $bookedSlots = AppointmentModel::where('doctor_id', $this->selectedDoctorId)
-            ->where('appointment_date', $this->selectedDate)
-            ->whereIn('status', ['pending', 'confirmed'])
-            ->pluck('start_time')
-            ->map(fn ($time) => Carbon::parse($time)->format('H:i'))
-            ->toArray();
-
         foreach ($schedules as $schedule) {
+            // Check if this session has reached its max patients limit
+            $bookedCount = AppointmentModel::where('doctor_id', $this->selectedDoctorId)
+                ->where('appointment_date', $this->selectedDate)
+                ->whereTime('start_time', '>=', $schedule->start_time)
+                ->whereTime('start_time', '<', $schedule->end_time)
+                ->whereIn('status', ['pending', 'confirmed'])
+                ->count();
+
+            if ($schedule->max_patients > 0 && $bookedCount >= $schedule->max_patients) {
+                continue; // Session is full
+            }
+
             $start = Carbon::createFromFormat('H:i:s', $schedule->start_time);
             $end = Carbon::createFromFormat('H:i:s', $schedule->end_time);
             $duration = $schedule->slot_duration ?: 30;
+
+            // Fetch booked slots for this specific schedule to avoid overlapping
+            $bookedSlotsForSchedule = AppointmentModel::where('doctor_id', $this->selectedDoctorId)
+                ->where('appointment_date', $this->selectedDate)
+                ->whereIn('status', ['pending', 'confirmed'])
+                ->whereTime('start_time', '>=', $schedule->start_time)
+                ->whereTime('start_time', '<', $schedule->end_time)
+                ->pluck('start_time')
+                ->map(fn ($time) => Carbon::parse($time)->format('H:i'))
+                ->toArray();
 
             while ($start->copy()->addMinutes($duration)->lte($end)) {
                 $timeSlot = $start->format('H:i');
@@ -180,13 +196,12 @@ class Appointment extends Component
                 // Filter out past slots if the date is today
                 $isPast = false;
                 if ($this->selectedDate === Carbon::today()->format('Y-m-d')) {
-                    // Use a more generous grace period or just strict comparison
                     if ($start->copy()->addMinutes($duration)->isBefore(now())) {
                         $isPast = true;
                     }
                 }
 
-                if (! $isPast && ! in_array($timeSlot, $bookedSlots)) {
+                if (! $isPast && ! in_array($timeSlot, $bookedSlotsForSchedule)) {
                     $this->availableSlots[] = $timeSlot;
                 }
                 $start->addMinutes($duration);
