@@ -43,24 +43,10 @@
                 <select wire:model.live="status" class="w-full px-4 py-3 bg-gray-50 border-2 border-transparent rounded-2xl focus:bg-white focus:border-[#5200cc]/20 outline-none transition-all font-bold text-sm appearance-none">
                     <option value="">All Statuses</option>
                     <option value="pending">Pending</option>
-                    <option value="confirmed">Confirmed</option>
                     <option value="completed">Completed</option>
-                    <option value="cancelled">Cancelled</option>
                 </select>
             </div>
 
-            <!-- Doctor -->
-            @if(auth()->user()->hasRole(['receptionist', 'doctor']))
-            <div>
-                <label class="text-xs font-black text-gray-400 uppercase tracking-widest mb-2 block ml-1">Doctor</label>
-                <select wire:model.live="doctorId" class="w-full px-4 py-3 bg-gray-50 border-2 border-transparent rounded-2xl focus:bg-white focus:border-[#5200cc]/20 outline-none transition-all font-bold text-sm appearance-none">
-                    <option value="">All Doctors</option>
-                    @foreach($doctors as $doctor)
-                        <option value="{{ $doctor->id }}">Dr. {{ $doctor->user->name }}</option>
-                    @endforeach
-                </select>
-            </div>
-            @endif
 
             <!-- Date Range -->
             <div>
@@ -145,10 +131,7 @@
                             @php
                                 $statusClasses = [
                                     'pending' => 'bg-yellow-100 text-yellow-700 border-yellow-200',
-                                    'confirmed' => 'bg-green-100 text-green-700 border-green-200',
                                     'completed' => 'bg-[#5200cc]/10 text-[#5200cc] border-[#5200cc]/20',
-                                    'cancelled' => 'bg-red-100 text-red-700 border-red-200',
-                                    'no_show' => 'bg-orange-100 text-orange-700 border-orange-200',
                                 ];
                                 $class = $statusClasses[$appointment->status] ?? 'bg-gray-100 text-gray-700 border-gray-200';
                             @endphp
