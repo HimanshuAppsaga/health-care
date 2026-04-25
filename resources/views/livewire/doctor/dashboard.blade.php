@@ -120,7 +120,10 @@
             <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
                 <div class="p-6 border-b border-gray-50 flex justify-between items-center">
                     <h3 class="text-lg font-black text-[#1c1b1b]">Today's Appointments</h3>
-                    <button class="text-sm font-bold text-[#5200cc] hover:underline">View All Schedule</button>
+                    <a href="{{ route('appointments.index') }}" wire:navigate class="text-sm font-black text-[#5200cc] hover:underline flex items-center gap-1">
+                        View All History
+                        <span class="material-symbols-outlined text-sm">arrow_forward</span>
+                    </a>
                 </div>
                 <div class="overflow-x-auto">
                     <table class="w-full text-left">
