@@ -2,7 +2,6 @@
 
 namespace Tests\Feature;
 
-use App\Models\Clinic;
 use App\Models\Role;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -14,8 +13,7 @@ class SidebarApiTest extends TestCase
 
     public function test_doctor_gets_correct_menu(): void
     {
-        $clinic = Clinic::factory()->create();
-        $user = User::factory()->create(['clinic_id' => $clinic->id]);
+        $user = User::factory()->create();
         $role = Role::firstOrCreate(['name' => 'doctor']);
         $user->roles()->attach($role);
 

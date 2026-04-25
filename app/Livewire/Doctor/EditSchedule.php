@@ -127,10 +127,7 @@ class EditSchedule extends Component
             }
         });
 
-        $clinicId = $doctor->clinic_id;
-        if ($clinicId) {
-            broadcast(new ScheduleUpdated($clinicId, 'updated'))->toOthers();
-        }
+        broadcast(new ScheduleUpdated(1, 'updated'))->toOthers();
 
         session()->flash('message', 'Weekly schedule updated successfully.');
 

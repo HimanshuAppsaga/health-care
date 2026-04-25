@@ -7,5 +7,5 @@ Broadcast::channel('App.Models.User.{id}', function ($user, $id) {
 });
 
 Broadcast::channel('queue-updates.{clinicId}', function ($user, $clinicId) {
-    return (int) $user->clinic_id === (int) $clinicId;
+    return true;
 });

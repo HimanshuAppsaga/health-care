@@ -73,8 +73,7 @@ class AppointmentList extends Component
     public function render()
     {
         $user = auth()->user();
-        $query = Appointment::with(['doctor.user', 'patient.user', 'queue'])
-            ->where('clinic_id', $user->clinic_id);
+        $query = Appointment::with(['doctor.user', 'patient.user', 'queue']);
 
         if ($user->hasRole('patient')) {
             $query->where('patient_id', $user->patient->id);

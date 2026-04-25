@@ -16,10 +16,8 @@ class Schedule extends Component
 
     public function getListeners()
     {
-        $clinicId = Auth::user()->clinic_id;
-
         return [
-            "echo:schedule-updates.{$clinicId},ScheduleUpdated" => 'loadSchedules',
+            'echo:schedule-updates.1,ScheduleUpdated' => 'loadSchedules',
         ];
     }
 

@@ -4,7 +4,6 @@ namespace App\Livewire\Patient;
 
 use App\Events\QueueUpdated;
 use App\Models\Appointment as AppointmentModel;
-use App\Models\Clinic;
 use App\Models\Doctor;
 use App\Models\DoctorSchedule;
 use App\Models\Patient;
@@ -56,16 +55,13 @@ class Appointment extends Component
 
     public function getListeners()
     {
-        $clinicId = $this->selectedClinicId ?? 1;
-
         return [
-            "echo:schedule-updates.{$clinicId},ScheduleUpdated" => 'generateSlots',
+            'echo:schedule-updates.1,ScheduleUpdated' => 'generateSlots',
         ];
     }
 
     public function mount()
     {
-        $this->clinics = Clinic::where('is_active', true)->get();
         $this->selectedDate = Carbon::today()->format('Y-m-d');
         $this->generateSlots();
 
@@ -80,39 +76,32 @@ class Appointment extends Component
                 $this->phone = $patient->phone;
             }
 
-            // Auto-assign clinic and doctor if user is linked to a clinic
-            if ($user->clinic_id) {
-                $this->selectedClinicId = $user->clinic_id;
-                $this->selectedClinic = Clinic::find($this->selectedClinicId);
-                $this->doctors = Doctor::whereHas('user')->where('clinic_id', $this->selectedClinicId)->get();
+            $this->doctors = Doctor::whereHas('user')->get();
 
-                // Try to pick a doctor who has a schedule today
-                $dayOfWeek = Carbon::today()->dayOfWeek;
-                $this->selectedDoctorId = Doctor::whereHas('user')->where('clinic_id', $this->selectedClinicId)
-                    ->whereHas('schedules', function ($query) use ($dayOfWeek) {
-                        $query->where('day_of_week', $dayOfWeek);
-                    })->first()?->id;
+            // Try to pick a doctor who has a schedule today
+            $dayOfWeek = Carbon::today()->dayOfWeek;
+            $this->selectedDoctorId = Doctor::whereHas('user')
+                ->whereHas('schedules', function ($query) use ($dayOfWeek) {
+                    $query->where('day_of_week', $dayOfWeek);
+                })->first()?->id;
 
-                // Fallback to first doctor if no one has a schedule today
-                if (! $this->selectedDoctorId) {
-                    $this->selectedDoctorId = $this->doctors->first()?->id;
-                }
+            // Fallback to first doctor if no one has a schedule today
+            if (! $this->selectedDoctorId) {
+                $this->selectedDoctorId = $this->doctors->first()?->id;
+            }
 
-                if ($this->selectedDoctorId) {
-                    $this->selectedDoctor = Doctor::with('user')->find($this->selectedDoctorId);
-                    $this->fee = $this->selectedDoctor->consultation_fee;
-                    $this->updateTotal();
-                    $this->generateSlots();
-                }
+            if ($this->selectedDoctorId) {
+                $this->selectedDoctor = Doctor::with('user')->find($this->selectedDoctorId);
+                $this->fee = $this->selectedDoctor->consultation_fee;
+                $this->updateTotal();
+                $this->generateSlots();
             }
         }
     }
 
     public function updatedSelectedClinicId($value)
     {
-        $this->selectedClinic = Clinic::find($value);
         $this->doctors = Doctor::whereHas('user')
-            ->where('clinic_id', $value)
             ->get();
 
         $this->selectedDoctorId = null;
@@ -274,7 +263,6 @@ class Appointment extends Component
         if (! $patient) {
             $user = Auth::user();
             $patient = Patient::create([
-                'clinic_id' => $this->selectedClinicId ?? 1,
                 'user_id' => $user?->id,
                 'name' => $this->name,
                 'email' => $user?->email ?? 'guest@example.com',
@@ -294,7 +282,6 @@ class Appointment extends Component
         $tokenNumber = Queue::whereDate('created_at', Carbon::today())->count() + 1;
 
         $appointment = AppointmentModel::create([
-            'clinic_id' => $this->selectedClinicId ?? 1,
             'doctor_id' => $this->selectedDoctorId ?? 1,
             'patient_id' => $patient->id,
             'name' => $this->name,
@@ -319,8 +306,7 @@ class Appointment extends Component
 
         $this->generateSlots(); // Refresh slots for next booking
 
-        $clinicId = $this->selectedClinicId ?? 1;
-        broadcast(new QueueUpdated($clinicId, 'booked'))->toOthers();
+        broadcast(new QueueUpdated(1, 'booked'))->toOthers();
 
         // Do not redirect to make it dynamic
         // return redirect()->route('patient.dashboard');

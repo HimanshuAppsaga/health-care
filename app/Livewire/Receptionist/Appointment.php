@@ -4,7 +4,6 @@ namespace App\Livewire\Receptionist;
 
 use App\Events\QueueUpdated;
 use App\Models\Appointment as AppointmentModel;
-use App\Models\Clinic;
 use App\Models\Doctor;
 use App\Models\DoctorSchedule;
 use App\Models\Patient;
@@ -58,16 +57,13 @@ class Appointment extends Component
 
     public function getListeners()
     {
-        $clinicId = Auth::user()->clinic_id;
-
         return [
-            "echo:schedule-updates.{$clinicId},ScheduleUpdated" => 'generateSlots',
+            'echo:schedule-updates.1,ScheduleUpdated' => 'generateSlots',
         ];
     }
 
     public function mount()
     {
-        $this->clinics = Clinic::where('is_active', true)->get();
         $this->selectedDate = Carbon::today()->format('Y-m-d');
         $this->generateSlots();
 
@@ -82,39 +78,31 @@ class Appointment extends Component
                 $this->phone = $patient->phone;
             }
 
-            // Auto-assign clinic and doctor if user is linked to a clinic
-            if ($user->clinic_id) {
-                $this->selectedClinicId = $user->clinic_id;
-                $this->selectedClinic = Clinic::find($this->selectedClinicId);
-                $this->doctors = Doctor::whereHas('user')->where('clinic_id', $this->selectedClinicId)->get();
+            $this->doctors = Doctor::whereHas('user')->get();
 
-                // Try to pick a doctor who has a schedule today
-                $dayOfWeek = Carbon::today()->dayOfWeek;
-                $this->selectedDoctorId = Doctor::where('clinic_id', $this->selectedClinicId)
-                    ->whereHas('schedules', function ($query) use ($dayOfWeek) {
-                        $query->where('day_of_week', $dayOfWeek);
-                    })->first()?->id;
+            // Try to pick a doctor who has a schedule today
+            $dayOfWeek = Carbon::today()->dayOfWeek;
+            $this->selectedDoctorId = Doctor::whereHas('schedules', function ($query) use ($dayOfWeek) {
+                $query->where('day_of_week', $dayOfWeek);
+            })->first()?->id;
 
-                // Fallback to first doctor if no one has a schedule today
-                if (! $this->selectedDoctorId) {
-                    $this->selectedDoctorId = $this->doctors->first()?->id;
-                }
+            // Fallback to first doctor if no one has a schedule today
+            if (! $this->selectedDoctorId) {
+                $this->selectedDoctorId = $this->doctors->first()?->id;
+            }
 
-                if ($this->selectedDoctorId) {
-                    $this->selectedDoctor = Doctor::with('user')->find($this->selectedDoctorId);
-                    $this->fee = $this->selectedDoctor->consultation_fee;
-                    $this->updateTotal();
-                    $this->generateSlots();
-                }
+            if ($this->selectedDoctorId) {
+                $this->selectedDoctor = Doctor::with('user')->find($this->selectedDoctorId);
+                $this->fee = $this->selectedDoctor->consultation_fee;
+                $this->updateTotal();
+                $this->generateSlots();
             }
         }
     }
 
     public function updatedSelectedClinicId($value)
     {
-        $this->selectedClinic = Clinic::find($value);
         $this->doctors = Doctor::whereHas('user')
-            ->where('clinic_id', $value)
             ->get();
 
         $this->selectedDoctorId = null;
@@ -276,24 +264,13 @@ class Appointment extends Component
 
         try {
             return DB::transaction(function () {
-                // Ensure clinic is selected
-                if (! $this->selectedClinicId) {
-                    $this->selectedClinicId = auth()->user()->clinic_id;
-                }
-
-                if (! $this->selectedClinicId) {
-                    session()->flash('error', 'Unable to determine clinic. Please ensure your account is linked to a clinic.');
-
-                    return;
-                }
-
                 // Ensure doctor is selected
                 if (! $this->selectedDoctorId) {
-                    $this->selectedDoctorId = Doctor::whereHas('user')->where('clinic_id', $this->selectedClinicId)->first()?->id;
+                    $this->selectedDoctorId = Doctor::whereHas('user')->first()?->id;
                 }
 
                 if (! $this->selectedDoctorId) {
-                    session()->flash('error', 'No doctor available to assign this appointment in your clinic.');
+                    session()->flash('error', 'No doctor available to assign this appointment.');
 
                     return;
                 }
@@ -304,7 +281,6 @@ class Appointment extends Component
                 if (! $patient) {
                     $user = Auth::user();
                     $patient = Patient::create([
-                        'clinic_id' => $this->selectedClinicId ?? 1,
                         'user_id' => $user?->id,
                         'name' => $this->name,
                         'email' => $user?->email ?? 'guest@example.com',
@@ -324,7 +300,6 @@ class Appointment extends Component
                 $tokenNumber = Queue::whereDate('created_at', Carbon::today())->count() + 1;
 
                 $appointment = AppointmentModel::create([
-                    'clinic_id' => $this->selectedClinicId,
                     'doctor_id' => $this->selectedDoctorId,
                     'patient_id' => $patient->id,
                     'name' => $this->name,
@@ -355,7 +330,7 @@ class Appointment extends Component
 
                 $this->generateSlots(); // Refresh slots for next booking
 
-                broadcast(new QueueUpdated($this->selectedClinicId, 'booked'))->toOthers();
+                broadcast(new QueueUpdated(1, 'booked'))->toOthers();
             });
         } catch (\Exception $e) {
             Log::error('Failed to book appointment: '.$e->getMessage(), [
