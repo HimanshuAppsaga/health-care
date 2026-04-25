@@ -59,28 +59,10 @@
                 </div>
             </div>
 
-            <!-- Doctor Filter (Receptionist only) -->
-            @if(auth()->user()->hasRole('receptionist'))
-            <div>
-                <label class="text-xs font-black text-gray-400 uppercase tracking-widest mb-2 block ml-1">Doctor</label>
-                <select wire:model.live="doctorId" class="w-full px-4 py-3 bg-gray-50 border-2 border-transparent rounded-2xl focus:bg-white focus:border-[#5200cc]/20 outline-none transition-all font-bold text-sm appearance-none">
-                    <option value="">All Doctors</option>
-                    @foreach($doctors as $doctor)
-                        <option value="{{ $doctor->id }}">Dr. {{ $doctor->user->name }}</option>
-                    @endforeach
-                </select>
-            </div>
-            @endif
-
             <!-- Custom Dates -->
             @if($dateRange === 'custom' || $dateRange === 'all')
             <div class="lg:col-span-1 xl:col-span-1 flex items-end gap-2">
-                <div class="flex-1">
                     <input type="date" wire:model.live="startDate" class="w-full px-3 py-2 bg-gray-50 border-2 border-transparent rounded-xl focus:bg-white focus:border-[#5200cc]/20 outline-none transition-all font-bold text-[10px]">
-                </div>
-                <div class="flex-1">
-                    <input type="date" wire:model.live="endDate" class="w-full px-3 py-2 bg-gray-50 border-2 border-transparent rounded-xl focus:bg-white focus:border-[#5200cc]/20 outline-none transition-all font-bold text-[10px]">
-                </div>
             </div>
             @else
             <div class="flex items-end">
@@ -101,10 +83,8 @@
                     <tr class="bg-gray-50/50">
                         <th class="px-8 py-6 text-xs font-black text-gray-400 uppercase tracking-widest">Date & Time</th>
                         <th class="px-8 py-6 text-xs font-black text-gray-400 uppercase tracking-widest">Patient Details</th>
-                        <th class="px-8 py-6 text-xs font-black text-gray-400 uppercase tracking-widest">Doctor</th>
                         <th class="px-8 py-6 text-xs font-black text-gray-400 uppercase tracking-widest">Token</th>
                         <th class="px-8 py-6 text-xs font-black text-gray-400 uppercase tracking-widest">Status</th>
-                        <th class="px-8 py-6 text-xs font-black text-gray-400 uppercase tracking-widest text-right">Actions</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-50">
@@ -113,10 +93,23 @@
                         <td class="px-8 py-6">
                             <div class="flex flex-col">
                                 <span class="font-black text-[#1c1b1b]">{{ \Carbon\Carbon::parse($appointment->appointment_date)->format('M d, Y') }}</span>
-                                <span class="text-xs font-bold text-[#5200cc] flex items-center gap-1 mt-1">
+                                <div class="text-xs font-bold text-[#5200cc] flex items-center gap-1 mt-1">
                                     <span class="material-symbols-outlined text-xs">schedule</span>
-                                    {{ \Carbon\Carbon::parse($appointment->start_time)->format('h:i A') }}
-                                </span>
+                                    @php
+                                        $dayOfWeek = \Carbon\Carbon::parse($appointment->appointment_date)->dayOfWeek;
+                                        $session = $schedules->first(function($s) use ($appointment, $dayOfWeek) {
+                                            return $s->doctor_id == $appointment->doctor_id && 
+                                                   $s->day_of_week == $dayOfWeek &&
+                                                   $appointment->start_time >= $s->start_time && 
+                                                   $appointment->start_time < $s->end_time;
+                                        });
+                                    @endphp
+                                    @if($session)
+                                        {{ \Carbon\Carbon::parse($session->start_time)->format('h:i A') }} - {{ \Carbon\Carbon::parse($session->end_time)->format('h:i A') }}
+                                    @else
+                                        {{ \Carbon\Carbon::parse($appointment->start_time)->format('h:i A') }} - {{ \Carbon\Carbon::parse($appointment->end_time)->format('h:i A') }}
+                                    @endif
+                                </div>
                             </div>
                         </td>
                         <td class="px-8 py-6">
@@ -128,12 +121,6 @@
                                     <span class="font-bold text-[#1c1b1b] group-hover:text-[#5200cc] transition-colors">{{ $appointment->name }}</span>
                                     <span class="text-xs text-gray-400 font-medium">{{ $appointment->phone }}</span>
                                 </div>
-                            </div>
-                        </td>
-                        <td class="px-8 py-6">
-                            <div class="flex flex-col">
-                                <span class="font-bold text-gray-700">Dr. {{ $appointment->doctor->user->name ?? 'N/A' }}</span>
-                                <span class="text-[10px] font-black text-gray-400 uppercase tracking-tighter">{{ $appointment->doctor->user->department ?? 'General' }}</span>
                             </div>
                         </td>
                         <td class="px-8 py-6">
@@ -155,18 +142,6 @@
                             <span class="px-4 py-1.5 {{ $class }} text-[10px] font-black uppercase rounded-full border tracking-widest">
                                 {{ $appointment->status }}
                             </span>
-                        </td>
-                        <td class="px-8 py-6 text-right">
-                            <div class="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                <button class="w-8 h-8 rounded-lg bg-gray-100 text-gray-400 hover:bg-[#5200cc] hover:text-white transition-all flex items-center justify-center">
-                                    <span class="material-symbols-outlined text-lg">visibility</span>
-                                </button>
-                                @if(auth()->user()->hasRole('receptionist'))
-                                <button class="w-8 h-8 rounded-lg bg-gray-100 text-gray-400 hover:bg-orange-500 hover:text-white transition-all flex items-center justify-center">
-                                    <span class="material-symbols-outlined text-lg">edit</span>
-                                </button>
-                                @endif
-                            </div>
                         </td>
                     </tr>
                     @empty
