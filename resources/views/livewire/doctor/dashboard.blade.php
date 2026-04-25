@@ -126,7 +126,7 @@
                     <table class="w-full text-left">
                         <thead class="bg-gray-50/50">
                             <tr>
-                                <th class="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider">Time</th>
+                                <th class="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider">Schedule Time</th>
                                 <th class="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider">Patient Name</th>
                                 <th class="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider">Token</th>
                                 <th class="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider text-right">Status</th>
@@ -135,7 +135,21 @@
                         <tbody class="divide-y divide-gray-50">
                             @forelse($todaysAppointments as $appointment)
                             <tr class="hover:bg-gray-50 transition-colors">
-                                <td class="px-6 py-4 font-bold text-[#5200cc]">{{ \Carbon\Carbon::parse($appointment->start_time)->format('h:i A') }}</td>
+                                <td class="px-6 py-4 font-bold text-[#5200cc]">
+                                    @php
+                                        $session = $doctorSchedules->first(function($s) use ($appointment) {
+                                            return $appointment->start_time >= $s->start_time && $appointment->start_time < $s->end_time;
+                                        });
+                                    @endphp
+                                    <div class="flex items-center gap-2">
+                                        <span class="material-symbols-outlined text-base">schedule</span>
+                                        @if($session)
+                                            {{ \Carbon\Carbon::parse($session->start_time)->format('h:i A') }} - {{ \Carbon\Carbon::parse($session->end_time)->format('h:i A') }}
+                                        @else
+                                            {{ \Carbon\Carbon::parse($appointment->start_time)->format('h:i A') }}
+                                        @endif
+                                    </div>
+                                </td>
                                 <td class="px-6 py-4 font-medium text-[#1c1b1b]">{{ $appointment->name ?? 'Unknown' }}</td>
                                 <td class="px-6 py-4 text-gray-600 font-bold">{{ $appointment->token ?? '--' }}</td>
                                 <td class="px-6 py-4 text-right">
@@ -187,9 +201,9 @@
                     @forelse($doctorSchedules as $schedule)
                         <div class="p-4 rounded-xl bg-gray-50 border border-gray-100 group hover:border-[#5200cc]/30 transition-all">
                             <div class="flex items-center gap-3">
-                                <div class="flex items-center gap-1 text-gray-500 text-sm">
-                                    <span class="material-symbols-outlined text-sm">schedule</span>
-                                    <span class="font-bold">{{ \Carbon\Carbon::parse($schedule->start_time)->format('h:i A') }} - {{ \Carbon\Carbon::parse($schedule->end_time)->format('h:i A') }}</span>
+                                <div class="flex items-center gap-2 text-gray-500 text-sm font-bold">
+                                    <span class="material-symbols-outlined text-base">schedule</span>
+                                    <span>{{ \Carbon\Carbon::parse($schedule->start_time)->format('h:i A') }} - {{ \Carbon\Carbon::parse($schedule->end_time)->format('h:i A') }}</span>
                                 </div>
                             </div>
                         </div>
