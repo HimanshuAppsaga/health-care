@@ -6,6 +6,8 @@ use Livewire\Component;
 
 class Header extends Component
 {
+    public $title;
+
     public function logout()
     {
         auth()->logout();

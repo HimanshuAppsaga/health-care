@@ -41,7 +41,7 @@
                 <!-- Main Content -->
                 <div class="flex-1 flex flex-col overflow-hidden">
                     <!-- Header -->
-                    <livewire:common.header />
+                    <livewire:common.header :title="$title ?? ''" />
 
                     <!-- Dashboard Content -->
                     <main class="flex-1 overflow-y-auto custom-scrollbar">
