@@ -7,13 +7,14 @@ use Illuminate\Database\Eloquent\Model;
 class Doctor extends Model
 {
     protected $fillable = [
-        'user_id',
-        'specialization',
-        'qualification',
-        'experience_years',
-        'consultation_fee',
-        'is_on_hold',
-    ];
+    'user_id',
+    'clinic_id', 
+    'specialization',
+    'qualification',
+    'experience_years',
+    'consultation_fee',
+    'is_on_hold',
+];
 
     protected function casts(): array
     {
