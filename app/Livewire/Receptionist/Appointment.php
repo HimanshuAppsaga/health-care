@@ -281,6 +281,7 @@ class Appointment extends Component
                 if (! $patient) {
                     $user = Auth::user();
                     $patient = Patient::create([
+                        'clinic_id' => $this->selectedClinicId,
                         'user_id' => $user?->id,
                         'name' => $this->name,
                         'email' => $user?->email ?? 'guest@example.com',
@@ -300,6 +301,7 @@ class Appointment extends Component
                 $tokenNumber = Queue::whereDate('created_at', Carbon::today())->count() + 1;
 
                 $appointment = AppointmentModel::create([
+                    'clinic_id' => $this->selectedClinicId,
                     'doctor_id' => $this->selectedDoctorId,
                     'patient_id' => $patient->id,
                     'name' => $this->name,
