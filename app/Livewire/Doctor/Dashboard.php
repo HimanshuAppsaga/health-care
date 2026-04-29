@@ -38,9 +38,10 @@ class Dashboard extends Component
         $doctor = $user->doctor;
 
         if (! $doctor && $user->hasRole('doctor')) {
+
             Doctor::create([
                 'user_id' => $user->id,
-                'clinic_id' => $user->clinic_id,
+                'clinic_id' => $doctor?->clinic_id ?? 1, // fallback
                 'specialization' => 'General',
                 'qualification' => 'MBBS',
                 'experience_years' => 0,

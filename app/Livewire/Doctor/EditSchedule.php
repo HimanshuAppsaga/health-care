@@ -28,16 +28,15 @@ class EditSchedule extends Component
         } else {
             $doctor = $user->doctor;
 
-            // Auto-create doctor record if user has doctor role but no doctor record
             if (! $doctor && $user->hasRole('doctor')) {
                 Doctor::create([
-                'user_id' => $user->id,
-                'clinic_id' => $user->clinic_id,
-                'specialization' => 'General',
-                'qualification' => 'MBBS',
-                'experience_years' => 0,
-                'consultation_fee' => 0,
-            ]);
+                    'user_id' => $user->id,
+                    'clinic_id' => $doctor?->clinic_id ?? 1, // fallback
+                    'specialization' => 'General',
+                    'qualification' => 'MBBS',
+                    'experience_years' => 0,
+                    'consultation_fee' => 0,
+                ]);
             }
         }
 
