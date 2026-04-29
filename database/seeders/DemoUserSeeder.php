@@ -53,7 +53,6 @@ class DemoUserSeeder extends Seeder
                 [
                     'name' => $userData['name'],
                     'password' => Hash::make('password'),
-                    'phone' => $userData['phone'],
                 ]
             );
 
