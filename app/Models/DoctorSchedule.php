@@ -11,6 +11,7 @@ class DoctorSchedule extends Model
         'day_of_week',
         'start_time',
         'end_time',
+        'max_patients',
         'slot_duration',
     ];
 

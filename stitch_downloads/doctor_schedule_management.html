@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Doctor Schedule Management - Clinic OS</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "surface-variant": "#e1e3e3",
+                    "on-secondary-fixed-variant": "#005046",
+                    "on-primary": "#ffffff",
+                    "on-surface-variant": "#494455",
+                    "on-primary-fixed-variant": "#5202cc",
+                    "tertiary-fixed-dim": "#adc6ff",
+                    "outline": "#7a7487",
+                    "on-error-container": "#93000a",
+                    "primary": "#390092",
+                    "on-primary-container": "#bea7ff",
+                    "inverse-surface": "#2e3131",
+                    "tertiary-container": "#004394",
+                    "surface": "#f8fafa",
+                    "error-container": "#ffdad6",
+                    "on-secondary-container": "#006f61",
+                    "surface-container-highest": "#e1e3e3",
+                    "secondary-fixed": "#6cf9e0",
+                    "primary-fixed-dim": "#cebdff",
+                    "on-primary-fixed": "#21005d",
+                    "on-secondary-fixed": "#00201b",
+                    "on-error": "#ffffff",
+                    "secondary-fixed-dim": "#49dcc4",
+                    "secondary-container": "#68f6dd",
+                    "on-surface": "#191c1d",
+                    "on-tertiary": "#ffffff",
+                    "surface-tint": "#6b35e4",
+                    "secondary": "#006b5d",
+                    "primary-container": "#5200cc",
+                    "tertiary": "#002e69",
+                    "surface-container-low": "#f2f4f4",
+                    "on-tertiary-fixed-variant": "#004395",
+                    "surface-container-lowest": "#ffffff",
+                    "on-secondary": "#ffffff",
+                    "inverse-on-surface": "#eff1f1",
+                    "on-tertiary-fixed": "#001a42",
+                    "outline-variant": "#cbc3d8",
+                    "surface-bright": "#f8fafa",
+                    "error": "#ba1a1a",
+                    "surface-container": "#eceeee",
+                    "on-background": "#191c1d",
+                    "background": "#f8fafa",
+                    "inverse-primary": "#cebdff",
+                    "surface-dim": "#d8dada",
+                    "tertiary-fixed": "#d8e2ff",
+                    "primary-fixed": "#e8ddff",
+                    "surface-container-high": "#e6e8e8",
+                    "on-tertiary-container": "#90b4ff"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.125rem",
+                    "lg": "0.25rem",
+                    "xl": "0.5rem",
+                    "full": "0.75rem"
+            },
+            "fontFamily": {
+                    "headline": ["Manrope"],
+                    "body": ["Inter"],
+                    "label": ["Inter"]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        body { font-family: 'Inter', sans-serif; }
+        h1, h2, h3 { font-family: 'Manrope', sans-serif; }
+    </style>
+</head>
+<body class="bg-surface text-on-surface">
+<!-- SideNavBar Anchor -->
+<aside class="h-screen w-64 fixed left-0 top-0 bg-slate-100 dark:bg-slate-950 flex flex-col py-6 px-4 gap-2 z-50">
+<div class="mb-8 px-4">
+<h1 class="text-lg font-black text-[#390092] dark:text-white uppercase tracking-tight">Mercy General</h1>
+<p class="text-xs text-slate-500 font-medium">Admin Terminal</p>
+</div>
+<nav class="flex flex-col gap-1">
+<a class="flex items-center gap-3 px-4 py-3 text-slate-600 dark:text-slate-400 hover:bg-[#5200cc]/5 transition-colors rounded-lg font-medium text-sm" href="#">
+<span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+                Overview
+            </a>
+<a class="flex items-center gap-3 px-4 py-3 text-slate-600 dark:text-slate-400 hover:bg-[#5200cc]/5 transition-colors rounded-lg font-medium text-sm" href="#">
+<span class="material-symbols-outlined" data-icon="medical_services">medical_services</span>
+                Physicians
+            </a>
+<a class="flex items-center gap-3 px-4 py-3 text-[#390092] dark:text-[#68f6dd] font-bold bg-[#5200cc]/10 rounded-lg text-sm" href="#">
+<span class="material-symbols-outlined" data-icon="calendar_today">calendar_today</span>
+                Scheduling
+            </a>
+<a class="flex items-center gap-3 px-4 py-3 text-slate-600 dark:text-slate-400 hover:bg-[#5200cc]/5 transition-colors rounded-lg font-medium text-sm" href="#">
+<span class="material-symbols-outlined" data-icon="group">group</span>
+                Patients
+            </a>
+<a class="flex items-center gap-3 px-4 py-3 text-slate-600 dark:text-slate-400 hover:bg-[#5200cc]/5 transition-colors rounded-lg font-medium text-sm" href="#">
+<span class="material-symbols-outlined" data-icon="assessment">assessment</span>
+                Reports
+            </a>
+</nav>
+<div class="mt-auto flex flex-col gap-1">
+<a class="flex items-center gap-3 px-4 py-3 text-slate-600 dark:text-slate-400 hover:bg-[#5200cc]/5 transition-colors rounded-lg font-medium text-sm" href="#">
+<span class="material-symbols-outlined" data-icon="help">help</span>
+                Support
+            </a>
+<a class="flex items-center gap-3 px-4 py-3 text-slate-600 dark:text-slate-400 hover:bg-[#5200cc]/5 transition-colors rounded-lg font-medium text-sm" href="#">
+<span class="material-symbols-outlined" data-icon="logout">logout</span>
+                Logout
+            </a>
+</div>
+</aside>
+<main class="ml-64 min-h-screen">
+<!-- TopAppBar Anchor -->
+<header class="w-full h-16 sticky top-0 z-40 bg-slate-50 dark:bg-slate-900 flex justify-between items-center px-8 border-none">
+<div class="flex items-center gap-8">
+<h2 class="text-xl font-bold text-[#390092] dark:text-[#5200cc] tracking-tight">Clinic OS</h2>
+<nav class="hidden md:flex gap-6 items-baseline">
+<a class="text-slate-500 font-semibold text-sm hover:text-primary transition-colors" href="#">Schedules</a>
+<a class="text-slate-500 font-semibold text-sm hover:text-primary transition-colors" href="#">Analytics</a>
+<a class="text-slate-500 font-semibold text-sm hover:text-primary transition-colors" href="#">Staff</a>
+</nav>
+</div>
+<div class="flex items-center gap-4">
+<button class="p-2 text-slate-500 hover:bg-primary/5 rounded-full transition-colors">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+</button>
+<button class="p-2 text-slate-500 hover:bg-primary/5 rounded-full transition-colors">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+</button>
+<div class="w-8 h-8 rounded-full overflow-hidden bg-surface-container ml-2">
+<img alt="Administrator Profile" class="w-full h-full object-cover" data-alt="Professional headshot of a female hospital administrator in a clean white office setting with soft natural light" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCQllewEbZ0epNSUXhh0Moq0iVMhBY7-jkJ2ADfJv6GTUm5F1GVI602QQQiGUEeLw5Km74QrOFW3wgQnHZmW5l0v56OfNRSIWhKOZTJvQPpNOLTbcVOj7oYO7t2_B1WEHuYAuumOGomM7l6sK32BqALnE1hs9uc6ej3T_g00YRImI6myRNCdx-iw__uls4R3L8oei9x1m90TVKDa73oXvI1nrMk2Rw7Gr9lEr6Ix_pssoHH2RJVyiDWD1D3W_i13ZFObRsVdWLfLw"/>
+</div>
+</div>
+</header>
+<!-- Main Dashboard Content -->
+<div class="p-8 max-w-7xl mx-auto">
+<!-- Hero Action Bar -->
+<section class="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
+<div>
+<h3 class="text-4xl font-extrabold text-on-surface tracking-tighter mb-2">Doctor Schedule Management</h3>
+<p class="text-on-surface-variant font-medium">Weekly operational planning for surgical and clinical staff.</p>
+</div>
+<div class="flex items-center gap-4">
+<div class="relative group">
+<div class="flex items-center gap-3 bg-surface-container-low px-4 py-2.5 rounded-xl cursor-pointer hover:bg-surface-container-high transition-colors">
+<div class="w-8 h-8 rounded-full overflow-hidden">
+<img alt="Doctor Avatar" class="w-full h-full object-cover" data-alt="Portrait of a senior male physician with a stethoscope, looking confident in a bright medical environment" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCMwIVzuq5ZgCpIJcVBNaa0qQOUg_26b1x0OLKEO-IG1le50GQDMJ_n2KxZIT3OR9p6Khv7Lxv21rh_BEU34vh8yGLsjx1QGNc8DmtcRZuiraR0OhQrQT4aqCNovu_5ct96Lg_nc3vrJd8NFLZaUAmL9YKw_c-Q7dwOwnUPtZypvRrRnAQ5CM5j_VqAi1Z1XGxM004-KDmfqwK7Z70rplsqMCORvWwJoM2DziH2jDisQ8288Wr2jYJTBiyl9j1V37bdUvkD_1zZeQ"/>
+</div>
+<div class="text-left">
+<p class="text-xs font-bold uppercase tracking-widest text-primary">Active Selection</p>
+<p class="text-sm font-semibold text-on-surface">Dr. Julian Sterling</p>
+</div>
+<span class="material-symbols-outlined text-outline" data-icon="keyboard_arrow_down">keyboard_arrow_down</span>
+</div>
+</div>
+<button class="bg-primary-container text-on-primary font-bold px-6 py-3 rounded-lg flex items-center gap-2 hover:bg-on-primary-fixed-variant transition-all active:scale-95 shadow-lg shadow-primary/10">
+<span class="material-symbols-outlined" data-icon="add">add</span>
+                        Create Schedule
+                    </button>
+</div>
+</section>
+<!-- Stats/Summary Bento Grid -->
+<div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-12">
+<div class="bg-surface-container-low p-6 rounded-xl">
+<p class="text-xs font-bold text-secondary uppercase tracking-wider mb-1">Weekly Utilization</p>
+<p class="text-3xl font-extrabold text-on-surface">84%</p>
+<div class="w-full bg-surface-container-high h-1.5 rounded-full mt-3 overflow-hidden">
+<div class="bg-secondary w-[84%] h-full"></div>
+</div>
+</div>
+<div class="bg-surface-container-low p-6 rounded-xl">
+<p class="text-xs font-bold text-primary uppercase tracking-wider mb-1">Total Slots</p>
+<p class="text-3xl font-extrabold text-on-surface">42</p>
+<p class="text-xs text-on-surface-variant mt-2">+4 from last week</p>
+</div>
+<div class="bg-surface-container-low p-6 rounded-xl">
+<p class="text-xs font-bold text-error uppercase tracking-wider mb-1">Conflict Alerts</p>
+<p class="text-3xl font-extrabold text-on-surface">02</p>
+<p class="text-xs text-error mt-2 font-medium">Double booking on Wednesday</p>
+</div>
+<div class="bg-surface-container-low p-6 rounded-xl">
+<p class="text-xs font-bold text-on-surface-variant uppercase tracking-wider mb-1">Next Break</p>
+<p class="text-3xl font-extrabold text-on-surface">12:30</p>
+<p class="text-xs text-on-surface-variant mt-2">Lunch Period (45m)</p>
+</div>
+</div>
+<!-- Weekly Calendar View -->
+<div class="bg-surface-container-lowest rounded-2xl overflow-hidden shadow-xl shadow-slate-200/50">
+<!-- Calendar Header -->
+<div class="grid grid-cols-7 border-b border-surface-variant/30">
+<div class="p-6 text-center border-r border-surface-variant/30 bg-surface-container-low/50">
+<span class="block text-xs font-black uppercase text-outline tracking-widest mb-1">Mon</span>
+<span class="text-2xl font-extrabold">12</span>
+</div>
+<div class="p-6 text-center border-r border-surface-variant/30 bg-surface-container-low/50">
+<span class="block text-xs font-black uppercase text-outline tracking-widest mb-1">Tue</span>
+<span class="text-2xl font-extrabold">13</span>
+</div>
+<div class="p-6 text-center border-r border-surface-variant/30 bg-primary/5">
+<span class="block text-xs font-black uppercase text-primary tracking-widest mb-1">Wed</span>
+<span class="text-2xl font-extrabold text-primary">14</span>
+</div>
+<div class="p-6 text-center border-r border-surface-variant/30 bg-surface-container-low/50">
+<span class="block text-xs font-black uppercase text-outline tracking-widest mb-1">Thu</span>
+<span class="text-2xl font-extrabold">15</span>
+</div>
+<div class="p-6 text-center border-r border-surface-variant/30 bg-surface-container-low/50">
+<span class="block text-xs font-black uppercase text-outline tracking-widest mb-1">Fri</span>
+<span class="text-2xl font-extrabold">16</span>
+</div>
+<div class="p-6 text-center border-r border-surface-variant/30 bg-surface-container-low/50">
+<span class="block text-xs font-black uppercase text-outline tracking-widest mb-1">Sat</span>
+<span class="text-2xl font-extrabold">17</span>
+</div>
+<div class="p-6 text-center bg-surface-container-low/50">
+<span class="block text-xs font-black uppercase text-outline tracking-widest mb-1">Sun</span>
+<span class="text-2xl font-extrabold">18</span>
+</div>
+</div>
+<!-- Calendar Content Grid -->
+<div class="grid grid-cols-7 h-[600px] overflow-y-auto">
+<!-- Monday -->
+<div class="p-4 border-r border-surface-variant/10 space-y-3">
+<div class="bg-primary-fixed/30 p-3 rounded-xl border-l-4 border-primary">
+<p class="text-[10px] font-bold text-primary uppercase">Morning Rounds</p>
+<p class="text-sm font-semibold text-on-surface">09:00 - 11:30</p>
+</div>
+<div class="bg-surface-container p-3 rounded-xl border-l-4 border-outline/30">
+<p class="text-[10px] font-bold text-outline uppercase">Documentation</p>
+<p class="text-sm font-semibold text-on-surface">11:30 - 12:30</p>
+</div>
+<div class="bg-secondary-container/20 p-3 rounded-xl border-l-4 border-secondary">
+<p class="text-[10px] font-bold text-secondary uppercase">Consultations</p>
+<p class="text-sm font-semibold text-on-surface">14:00 - 17:00</p>
+</div>
+</div>
+<!-- Tuesday -->
+<div class="p-4 border-r border-surface-variant/10 space-y-3">
+<div class="bg-error-container/30 p-3 rounded-xl border-l-4 border-error">
+<p class="text-[10px] font-bold text-error uppercase">Surgery Block</p>
+<p class="text-sm font-semibold text-on-surface">08:00 - 14:00</p>
+</div>
+<div class="bg-surface-container p-3 rounded-xl border-l-4 border-outline/30">
+<p class="text-[10px] font-bold text-outline uppercase">Short Break</p>
+<p class="text-sm font-semibold text-on-surface">14:00 - 14:30</p>
+</div>
+</div>
+<!-- Wednesday -->
+<div class="p-4 border-r border-surface-variant/10 space-y-3 bg-primary/5">
+<div class="bg-primary-fixed/30 p-3 rounded-xl border-l-4 border-primary ring-2 ring-primary/20">
+<p class="text-[10px] font-bold text-primary uppercase">Staff Meeting</p>
+<p class="text-sm font-semibold text-on-surface">09:00 - 10:00</p>
+</div>
+<div class="bg-secondary-container/20 p-3 rounded-xl border-l-4 border-secondary">
+<p class="text-[10px] font-bold text-secondary uppercase">OPD Clinic</p>
+<p class="text-sm font-semibold text-on-surface">10:30 - 13:00</p>
+</div>
+<div class="bg-error-container/30 p-3 rounded-xl border-l-4 border-error">
+<p class="text-[10px] font-bold text-error uppercase">Conflict Detected</p>
+<p class="text-sm font-semibold text-on-surface">13:00 - 15:00</p>
+</div>
+</div>
+<!-- Thursday -->
+<div class="p-4 border-r border-surface-variant/10 space-y-3">
+<div class="bg-primary-fixed/30 p-3 rounded-xl border-l-4 border-primary">
+<p class="text-[10px] font-bold text-primary uppercase">Morning Rounds</p>
+<p class="text-sm font-semibold text-on-surface">09:00 - 11:30</p>
+</div>
+<div class="bg-surface-container p-3 rounded-xl border-l-4 border-outline/30">
+<p class="text-[10px] font-bold text-outline uppercase">Education / CME</p>
+<p class="text-sm font-semibold text-on-surface">12:30 - 14:00</p>
+</div>
+</div>
+<!-- Friday -->
+<div class="p-4 border-r border-surface-variant/10 space-y-3">
+<div class="bg-secondary-container/20 p-3 rounded-xl border-l-4 border-secondary">
+<p class="text-[10px] font-bold text-secondary uppercase">Consultations</p>
+<p class="text-sm font-semibold text-on-surface">09:00 - 12:30</p>
+</div>
+<div class="bg-primary-fixed/30 p-3 rounded-xl border-l-4 border-primary">
+<p class="text-[10px] font-bold text-primary uppercase">Evening Rounds</p>
+<p class="text-sm font-semibold text-on-surface">15:00 - 18:00</p>
+</div>
+</div>
+<!-- Saturday -->
+<div class="p-4 border-r border-surface-variant/10 bg-surface-container-low/20">
+<div class="h-full flex items-center justify-center border-2 border-dashed border-outline-variant/30 rounded-2xl">
+<p class="text-xs font-bold text-outline uppercase tracking-widest -rotate-90">On Call Only</p>
+</div>
+</div>
+<!-- Sunday -->
+<div class="p-4 bg-surface-container-low/20">
+<div class="h-full flex items-center justify-center border-2 border-dashed border-outline-variant/30 rounded-2xl">
+<p class="text-xs font-bold text-outline uppercase tracking-widest -rotate-90">Facility Closed</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Contextual Assistant (FAB like floating card) -->
+<div class="fixed bottom-10 right-10 bg-primary-container text-on-primary p-6 rounded-2xl shadow-2xl shadow-primary/40 flex items-center gap-6 max-w-sm">
+<div class="p-3 bg-white/20 rounded-xl backdrop-blur-md">
+<span class="material-symbols-outlined" data-icon="auto_awesome">auto_awesome</span>
+</div>
+<div>
+<h4 class="text-sm font-extrabold uppercase tracking-widest mb-1">Scheduling AI</h4>
+<p class="text-sm opacity-90 leading-tight">I've found 4 optimized gaps for clinic overflow on Thursday. View suggestions?</p>
+</div>
+</div>
+</div>
+</main>
+</body></html>

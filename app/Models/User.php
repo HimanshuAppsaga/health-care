@@ -10,7 +10,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
-#[Fillable(['name', 'email', 'phone', 'password', 'clinic_id', 'is_active'])]
+#[Fillable(['name', 'email', 'profile_photo_path', 'phone', 'password', 'is_active', 'employee_id', 'department', 'joining_date', 'bio', 'emergency_contact_name', 'emergency_contact_phone', 'address', 'unit', 'supervisor_name', 'rating', 'last_login_at'])]
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable
 {
@@ -30,13 +30,44 @@ class User extends Authenticatable
         ];
     }
 
-    public function clinic()
-    {
-        return $this->belongsTo(Clinic::class);
-    }
-
     public function roles()
     {
         return $this->belongsToMany(Role::class, 'user_roles');
+    }
+
+    public function hasRole(string|array $role): bool
+    {
+        if (is_array($role)) {
+            return $this->roles()->whereIn('name', $role)->exists();
+        }
+
+        return $this->roles()->where('name', $role)->exists();
+    }
+
+    public function patient()
+    {
+        return $this->hasOne(Patient::class);
+    }
+
+    public function doctor()
+    {
+        return $this->hasOne(Doctor::class);
+    }
+
+    public function getDashboardRouteName(): string
+    {
+        if ($this->hasRole('receptionist')) {
+            return 'receptionist.dashboard';
+        }
+
+        if ($this->hasRole('patient')) {
+            return 'patient.dashboard';
+        }
+
+        if ($this->hasRole('doctor')) {
+            return 'doctor.dashboard';
+        }
+
+        return 'login'; // Fallback
     }
 }

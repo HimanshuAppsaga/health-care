@@ -7,17 +7,19 @@ use Illuminate\Database\Eloquent\Model;
 class Doctor extends Model
 {
     protected $fillable = [
-        'clinic_id',
         'user_id',
         'specialization',
         'qualification',
         'experience_years',
         'consultation_fee',
+        'is_on_hold',
     ];
 
-    public function clinic()
+    protected function casts(): array
     {
-        return $this->belongsTo(Clinic::class);
+        return [
+            'is_on_hold' => 'boolean',
+        ];
     }
 
     public function user()
