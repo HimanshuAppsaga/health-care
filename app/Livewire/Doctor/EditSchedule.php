@@ -26,18 +26,7 @@ class EditSchedule extends Component
         if ($id) {
             $doctor = Doctor::find($id);
         } else {
-            $doctor = $user->doctor;
-
-            if (! $doctor && $user->hasRole('doctor')) {
-                Doctor::create([
-                    'user_id' => $user->id,
-                    'clinic_id' => $doctor?->clinic_id ?? 1, // fallback
-                    'specialization' => 'General',
-                    'qualification' => 'MBBS',
-                    'experience_years' => 0,
-                    'consultation_fee' => 0,
-                ]);
-            }
+            $doctor = $user->ensureDoctorProfileExists();
         }
 
         if (! $doctor) {
