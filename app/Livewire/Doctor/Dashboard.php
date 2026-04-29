@@ -4,6 +4,7 @@ namespace App\Livewire\Doctor;
 
 use App\Events\QueueUpdated;
 use App\Models\Appointment;
+use App\Models\Doctor;
 use App\Models\DoctorSchedule;
 use App\Models\Queue;
 use Carbon\Carbon;
@@ -33,7 +34,19 @@ class Dashboard extends Component
 
     public function mount()
     {
-        $doctor = auth()->user()->doctor;
+        $user = auth()->user();
+        $doctor = $user->doctor;
+
+        if (! $doctor && $user->hasRole('doctor')) {
+            $doctor = Doctor::create([
+                'user_id' => $user->id,
+                'specialization' => 'General',
+                'qualification' => 'MBBS',
+                'experience_years' => 0,
+                'consultation_fee' => 0,
+            ]);
+        }
+
         $this->isDoctorOnHold = $doctor ? (bool) $doctor->is_on_hold : false;
 
         $today = Carbon::today();

@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Doctor;
 
+use App\Models\Doctor;
 use App\Models\DoctorSchedule;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Layout;
@@ -28,7 +29,18 @@ class Schedule extends Component
 
     public function loadSchedules()
     {
-        $doctor = Auth::user()->doctor;
+        $user = Auth::user();
+        $doctor = $user->doctor;
+
+        if (! $doctor && $user->hasRole('doctor')) {
+            $doctor = Doctor::create([
+                'user_id' => $user->id,
+                'specialization' => 'General',
+                'qualification' => 'MBBS',
+                'experience_years' => 0,
+                'consultation_fee' => 0,
+            ]);
+        }
 
         if (! $doctor) {
             return;
