@@ -38,13 +38,13 @@ class Dashboard extends Component
         $doctor = $user->doctor;
 
         if (! $doctor && $user->hasRole('doctor')) {
-            $doctor = Doctor::create([
-                'user_id' => $user->id,
-                'specialization' => 'General',
-                'qualification' => 'MBBS',
-                'experience_years' => 0,
-                'consultation_fee' => 0,
-            ]);
+            Doctor::create([
+                    'user_id' => $user->id,
+                    'specialization' => 'General',
+                    'qualification' => 'MBBS',
+                    'experience_years' => 0,
+                    'consultation_fee' => 0,
+                ]);
         }
 
         $this->isDoctorOnHold = $doctor ? (bool) $doctor->is_on_hold : false;

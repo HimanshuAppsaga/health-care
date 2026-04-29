@@ -30,7 +30,7 @@ class EditSchedule extends Component
 
             // Auto-create doctor record if user has doctor role but no doctor record
             if (! $doctor && $user->hasRole('doctor')) {
-                $doctor = Doctor::create([
+                Doctor::create([
                     'user_id' => $user->id,
                     'specialization' => 'General',
                     'qualification' => 'MBBS',

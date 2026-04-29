@@ -33,7 +33,7 @@ class Schedule extends Component
         $doctor = $user->doctor;
 
         if (! $doctor && $user->hasRole('doctor')) {
-            $doctor = Doctor::create([
+            Doctor::create([
                 'user_id' => $user->id,
                 'specialization' => 'General',
                 'qualification' => 'MBBS',
