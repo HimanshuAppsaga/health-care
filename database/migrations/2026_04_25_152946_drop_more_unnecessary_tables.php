@@ -22,7 +22,9 @@ return new class extends Migration
         Schema::dropIfExists('clinics');
 
         Schema::table('users', function (Blueprint $table) {
-            $table->dropColumn('clinic_id');
+            if (Schema::hasColumn('users', 'clinic_id')) {
+                $table->dropColumn('clinic_id');
+            }
         });
 
         Schema::table('appointments', function (Blueprint $table) {
