@@ -4,7 +4,6 @@ namespace App\Livewire\Auth;
 
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Hash;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
 use Livewire\Attributes\Validate;
@@ -35,7 +34,7 @@ class SignUp extends Component
         $user = User::create([
             'name' => $this->full_name,
             'email' => $this->email,
-            'password' => Hash::make($this->password),
+            'password' => $this->password,
             'phone' => '', // Temporary empty phone
             'is_active' => true,
         ]);
