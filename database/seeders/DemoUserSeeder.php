@@ -47,12 +47,12 @@ class DemoUserSeeder extends Seeder
             if (! $role) {
                 $role = Role::create(['name' => $userData['role']]);
             }
-
+            
             $user = User::updateOrCreate(
                 ['email' => $userData['email']],
                 [
                     'name' => $userData['name'],
-                    'phone' => '9999999999',
+                    'phone' => $userData['phone'], // ✅ FIX HERE
                     'password' => Hash::make('password'),
                 ]
             );
