@@ -11,9 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('doctor_schedules', function (Blueprint $table) {
-            $table->integer('max_patients')->default(1)->after('end_time');
-        });
+        if (! Schema::hasColumn('doctor_schedules', 'max_patients')) {
+            Schema::table('doctor_schedules', function (Blueprint $table) {
+                $table->integer('max_patients')->default(1)->after('end_time');
+            });
+        }
     }
 
     /**
