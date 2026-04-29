@@ -28,7 +28,8 @@ return new class extends Migration
         });
 
         Schema::table('appointments', function (Blueprint $table) {
-            $table->dropColumn('clinic_id');
+            $table->dropForeign(['clinic_id']); // 🔥 FIRST drop FK
+            $table->dropColumn('clinic_id');    // THEN drop column
         });
 
         Schema::table('doctors', function (Blueprint $table) {
