@@ -11,12 +11,23 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('clinics', function (Blueprint $table) {
-            $table->id();
-            $table->string('name');
-            $table->string('address')->nullable();
-            $table->timestamps();
-        });
+        if (Schema::hasTable('clinics')) {
+            Schema::table('clinics', function (Blueprint $table) {
+                if (!Schema::hasColumn('clinics', 'name')) {
+                    $table->string('name')->after('id');
+                }
+                if (!Schema::hasColumn('clinics', 'address')) {
+                    $table->string('address')->nullable()->after('name');
+                }
+            });
+        } else {
+            Schema::create('clinics', function (Blueprint $table) {
+                $table->id();
+                $table->string('name');
+                $table->string('address')->nullable();
+                $table->timestamps();
+            });
+        }
     }
 
     /**
