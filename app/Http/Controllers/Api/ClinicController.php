@@ -3,26 +3,33 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Models\Doctor;
+use App\Http\Resources\ClinicResource;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Log;
 
 class ClinicController extends Controller
 {
     /**
-     * Display a listing of doctors for the authenticated clinic.
+     * Get details of the authenticated clinic.
+     *
+     * Uses caching for performance.
      */
-    public function doctors(Request $request)
+    public function details(Request $request)
     {
-        // Accessing the clinic attached by the CheckApiKey middleware
         $clinic = $request->clinic;
 
-        // Fetching only clinic-specific data
-        $doctors = Doctor::where('clinic_id', $clinic->id)->get();
+        // Log clinic access
+        Log::info('API Access: Clinic Details retrieved', ['clinic_id' => $clinic->id]);
+
+        // Cache clinic details for 1 hour
+        $cachedClinic = Cache::remember("clinic_details_{$clinic->id}", 3600, function () use ($clinic) {
+            return new ClinicResource($clinic);
+        });
 
         return response()->json([
             'status' => true,
-            'clinic' => $clinic->name,
-            'data' => $doctors,
+            'data' => $cachedClinic,
         ]);
     }
 
