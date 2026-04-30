@@ -149,13 +149,14 @@ class Appointment extends Component
 
         foreach ($schedules as $schedule) {
 
-            // Note: Session-wide max_patients check removed to allow booking based on slot availability.
-            // If a hard limit for the session is needed, it should be handled while still allowing slot selection
-            // or by showing a "Session Full" message instead of hiding all slots.
-
             $start = Carbon::createFromFormat('H:i:s', $schedule->start_time);
             $end = Carbon::createFromFormat('H:i:s', $schedule->end_time);
             $duration = $schedule->slot_duration ?: 30;
+
+            // If the schedule hasn't started yet today, don't allow bookings
+            if ($this->selectedDate === Carbon::today()->format('Y-m-d') && now()->isBefore($start)) {
+                continue;
+            }
 
             // Fetch booked slots for this specific schedule to avoid overlapping
             $bookedSlotsForSchedule = AppointmentModel::where('doctor_id', $this->selectedDoctorId)
