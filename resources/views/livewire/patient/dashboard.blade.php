@@ -29,7 +29,7 @@
                         <img class="w-12 h-12 rounded-xl object-cover" src="{{ $appointment->doctor->user->profile_photo_url ?? 'https://ui-avatars.com/api/?name='.urlencode($appointment->doctor->user->name).'&background=E8DDFF&color=21005D' }}"/>
                         <div class="flex-1">
                             <h4 class="text-sm font-bold">Dr. {{ $appointment->doctor->user->name }}</h4>
-                            <p class="text-[11px] text-gray-500">{{ $appointment->doctor->specialization }} • {{ \Carbon\Carbon::parse($appointment->appointment_date)->format('d M, H:i') }}</p>
+                            <p class="text-[11px] text-gray-500">{{ $appointment->doctor->specialization }} • {{ \Carbon\Carbon::parse($appointment->appointment_date)->format('d M') }} • Token: {{ $appointment->token }}</p>
                         </div>
                         <span class="material-symbols-outlined text-gray-400 text-sm">chevron_right</span>
                     </div>

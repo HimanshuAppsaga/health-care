@@ -97,7 +97,7 @@ class AppointmentList extends Component
         $this->applyDateFilter($query);
 
         $appointments = $query->orderBy('appointment_date', 'desc')
-            ->orderBy('start_time', 'desc')
+            ->orderByRaw('CAST(token AS UNSIGNED) DESC')
             ->paginate(10);
 
         // Fetch schedules for the doctors and days of week in the current result set

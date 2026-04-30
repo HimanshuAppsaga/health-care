@@ -57,7 +57,7 @@ class Dashboard extends Component
                 ->where('status', 'confirmed')
                 ->with('doctor.user')
                 ->orderBy('appointment_date')
-                ->orderBy('start_time')
+                ->orderByRaw('CAST(token AS UNSIGNED) ASC')
                 ->first();
 
             // Upcoming Appointments (excluding the next one)
@@ -69,7 +69,7 @@ class Dashboard extends Component
                 })
                 ->with('doctor.user')
                 ->orderBy('appointment_date')
-                ->orderBy('start_time')
+                ->orderByRaw('CAST(token AS UNSIGNED) ASC')
                 ->limit(3)
                 ->get();
 

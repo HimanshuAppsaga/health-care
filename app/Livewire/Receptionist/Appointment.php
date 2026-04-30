@@ -163,15 +163,9 @@ class Appointment extends Component
                 continue;
             }
 
-            // Fetch booked slots for this specific schedule to avoid overlapping
-            $bookedSlotsForSchedule = AppointmentModel::where('doctor_id', $this->selectedDoctorId)
-                ->where('appointment_date', $this->selectedDate)
-                ->whereIn('status', ['pending', 'confirmed'])
-                ->whereTime('start_time', '>=', $schedule->start_time)
-                ->whereTime('start_time', '<', $schedule->end_time)
-                ->pluck('start_time')
-                ->map(fn ($time) => Carbon::parse($time)->format('H:i'))
-                ->toArray();
+            // Note: Since we moved to a token-based system, we no longer store start_time in appointments.
+            // We can show all slots available in the doctor's schedule, or limit by max_patients if needed.
+            $bookedSlotsForSchedule = [];
 
             while ($start->copy()->addMinutes($duration)->lte($end)) {
                 $timeSlot = $start->format('H:i');
@@ -255,18 +249,7 @@ class Appointment extends Component
         $this->validate([
             'name' => 'required|string|max:191',
             'phone' => 'required|string|max:20',
-            'selectedSlot' => 'required',
         ]);
-
-        // Double check slot availability
-        if (! in_array($this->selectedSlot, $this->availableSlots)) {
-            $this->generateSlots(); // Refresh slots
-            if (! in_array($this->selectedSlot, $this->availableSlots)) {
-                session()->flash('error', 'Selected slot is no longer available. Please pick another one.');
-
-                return;
-            }
-        }
 
         try {
             return DB::transaction(function () {
@@ -322,10 +305,7 @@ class Appointment extends Component
                     'phone' => $this->phone,
                     'token' => $tokenNumber,
                     'appointment_date' => $this->selectedDate ?? Carbon::today()->format('Y-m-d'),
-                    'start_time' => $this->selectedSlot ?? '09:00',
-                    'end_time' => Carbon::parse($this->selectedSlot ?? '09:00')->addMinutes(30)->format('H:i'), // Default 30 min
                     'status' => 'pending',
-                    'notes' => ($this->reason ?? 'Checkup').($this->notes ? "\n".$this->notes : ''),
                 ]);
 
                 Queue::create([
@@ -343,8 +323,6 @@ class Appointment extends Component
                 ]);
 
                 session()->flash('message', 'Appointment booked successfully! Your Token: '.$tokenNumber);
-
-                $this->generateSlots(); // Refresh slots for next booking
 
                 broadcast(new QueueUpdated(1, 'booked'))->toOthers();
             });

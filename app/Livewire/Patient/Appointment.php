@@ -152,13 +152,8 @@ class Appointment extends Component
             return;
         }
 
-        // Fetch already booked slots
-        $bookedSlots = AppointmentModel::where('doctor_id', $this->selectedDoctorId)
-            ->where('appointment_date', $this->selectedDate)
-            ->whereIn('status', ['pending', 'confirmed'])
-            ->pluck('start_time')
-            ->map(fn ($time) => Carbon::parse($time)->format('H:i'))
-            ->toArray();
+        // Note: Since we moved to a token-based system, we no longer store start_time in appointments.
+        $bookedSlots = [];
 
         foreach ($schedules as $schedule) {
             $start = Carbon::createFromFormat('H:i:s', $schedule->start_time);
@@ -253,18 +248,11 @@ class Appointment extends Component
         $this->validate([
             'name' => 'required|string|max:191',
             'phone' => 'required|string|max:20',
-            'selectedSlot' => 'required',
         ]);
 
-        // Refresh slots to ensure accuracy
-        $this->generateSlots();
-
-        // Double check slot availability
-        if (! in_array($this->selectedSlot, $this->availableSlots)) {
-            session()->flash('error', 'Selected slot is no longer available. Please pick another one.');
-
-            return;
-        }
+        // Get clinic_id
+        $doctor = Doctor::find($this->selectedDoctorId ?? 1);
+        $clinicId = $doctor ? $doctor->clinic_id : 1;
 
         // Find or create patient record by phone
         $patient = Patient::where('phone', $this->phone)->first();
@@ -272,6 +260,7 @@ class Appointment extends Component
         if (! $patient) {
             $user = Auth::user();
             $patient = Patient::create([
+                'clinic_id' => $clinicId,
                 'user_id' => $user?->id,
                 'name' => $this->name,
                 'email' => $user?->email ?? 'guest@example.com',
@@ -291,16 +280,14 @@ class Appointment extends Component
         $tokenNumber = Queue::whereDate('created_at', Carbon::today())->count() + 1;
 
         $appointment = AppointmentModel::create([
+            'clinic_id' => $clinicId,
             'doctor_id' => $this->selectedDoctorId ?? 1,
             'patient_id' => $patient->id,
             'name' => $this->name,
             'phone' => $this->phone,
             'token' => $tokenNumber,
             'appointment_date' => $this->selectedDate ?? Carbon::today()->format('Y-m-d'),
-            'start_time' => $this->selectedSlot ?? '09:00',
-            'end_time' => Carbon::parse($this->selectedSlot ?? '09:00')->addMinutes(30)->format('H:i'), // Default 30 min
             'status' => 'pending',
-            'notes' => ($this->reason ?? 'Checkup').($this->notes ? "\n".$this->notes : ''),
         ]);
 
         Queue::create([
@@ -313,12 +300,7 @@ class Appointment extends Component
 
         session()->flash('message', 'Appointment booked successfully! Your Token: '.$tokenNumber);
 
-        $this->generateSlots(); // Refresh slots for next booking
-
         broadcast(new QueueUpdated(1, 'booked'))->toOthers();
-
-        // Do not redirect to make it dynamic
-        // return redirect()->route('patient.dashboard');
     }
 
     public function render()

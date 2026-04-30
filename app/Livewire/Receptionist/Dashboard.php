@@ -271,7 +271,7 @@ class Dashboard extends Component
         $todaysAppointments = Appointment::with(['doctor.user'])
             ->when($doctorId, fn ($q) => $q->where('doctor_id', $doctorId))
             ->whereDate('appointment_date', $today)
-            ->orderBy('start_time', 'asc')
+            ->orderByRaw('CAST(token AS UNSIGNED) ASC')
             ->get();
 
         $waitingCount = Queue::whereHas('appointment', function ($query) use ($today, $doctorId) {
@@ -289,11 +289,9 @@ class Dashboard extends Component
             ->orderBy('start_time', 'asc')
             ->get()
             ->map(function ($schedule) use ($today) {
-                // Count appointments for this doctor today that fall within this schedule's time range
+                // Since appointments no longer have times, we can't accurately split them by session.
                 $schedule->booked_count = Appointment::where('doctor_id', $schedule->doctor_id)
                     ->whereDate('appointment_date', $today)
-                    ->whereTime('start_time', '>=', $schedule->start_time)
-                    ->whereTime('start_time', '<', $schedule->end_time)
                     ->count();
 
                 return $schedule;

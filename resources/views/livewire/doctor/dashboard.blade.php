@@ -124,7 +124,6 @@
                     <table class="w-full text-left">
                         <thead class="bg-surface-container-low/50">
                             <tr>
-                                <th class="px-6 py-4 text-xs font-bold text-outline uppercase tracking-wider">Schedule Time</th>
                                 <th class="px-6 py-4 text-xs font-bold text-outline uppercase tracking-wider">Patient Name</th>
                                 <th class="px-6 py-4 text-xs font-bold text-outline uppercase tracking-wider">Token</th>
                                 <th class="px-6 py-4 text-xs font-bold text-outline uppercase tracking-wider text-right">Status</th>
@@ -133,21 +132,6 @@
                         <tbody class="divide-y divide-outline-variant/10">
                             @forelse($todaysAppointments as $appointment)
                             <tr class="hover:bg-primary-container/10 transition-colors">
-                                <td class="px-6 py-4 font-bold text-primary">
-                                    @php
-                                        $session = $doctorSchedules->first(function($s) use ($appointment) {
-                                            return $appointment->start_time >= $s->start_time && $appointment->start_time < $s->end_time;
-                                        });
-                                    @endphp
-                                    <div class="flex items-center gap-2">
-                                        <span class="material-symbols-outlined text-base">schedule</span>
-                                        @if($session)
-                                            {{ \Carbon\Carbon::parse($session->start_time)->format('h:i A') }} - {{ \Carbon\Carbon::parse($session->end_time)->format('h:i A') }}
-                                        @else
-                                            {{ \Carbon\Carbon::parse($appointment->start_time)->format('h:i A') }}
-                                        @endif
-                                    </div>
-                                </td>
                                 <td class="px-6 py-4 font-medium text-on-background">{{ $appointment->name ?? 'Unknown' }}</td>
                                 <td class="px-6 py-4 text-on-surface-variant font-bold">{{ $appointment->token ?? '--' }}</td>
                                 <td class="px-6 py-4 text-right">
@@ -164,7 +148,7 @@
                             </tr>
                             @empty
                             <tr>
-                                <td colspan="4" class="px-6 py-8 text-center text-outline font-medium">No appointments for today.</td>
+                                <td colspan="3" class="px-6 py-8 text-center text-outline font-medium">No appointments for today.</td>
                             </tr>
                             @endforelse
                         </tbody>

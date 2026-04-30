@@ -90,7 +90,7 @@
             <table class="w-full text-left border-collapse">
                 <thead>
                     <tr class="bg-surface-container-low/50">
-                        <th class="px-8 py-6 text-xs font-black text-outline uppercase tracking-widest">Date & Time</th>
+                        <th class="px-8 py-6 text-xs font-black text-outline uppercase tracking-widest">Date</th>
                         <th class="px-8 py-6 text-xs font-black text-outline uppercase tracking-widest">Patient Details</th>
                         <th class="px-8 py-6 text-xs font-black text-outline uppercase tracking-widest">Token</th>
                         <th class="px-8 py-6 text-xs font-black text-outline uppercase tracking-widest">Status</th>
@@ -102,23 +102,6 @@
                         <td class="px-8 py-6">
                             <div class="flex flex-col">
                                 <span class="font-black text-on-background">{{ \Carbon\Carbon::parse($appointment->appointment_date)->format('M d, Y') }}</span>
-                                <div class="text-xs font-bold text-primary flex items-center gap-1 mt-1">
-                                    <span class="material-symbols-outlined text-xs">schedule</span>
-                                    @php
-                                        $dayOfWeek = \Carbon\Carbon::parse($appointment->appointment_date)->dayOfWeek;
-                                        $session = $schedules->first(function($s) use ($appointment, $dayOfWeek) {
-                                            return $s->doctor_id == $appointment->doctor_id && 
-                                                   $s->day_of_week == $dayOfWeek &&
-                                                   $appointment->start_time >= $s->start_time && 
-                                                   $appointment->start_time < $s->end_time;
-                                        });
-                                    @endphp
-                                    @if($session)
-                                        {{ \Carbon\Carbon::parse($session->start_time)->format('h:i A') }} - {{ \Carbon\Carbon::parse($session->end_time)->format('h:i A') }}
-                                    @else
-                                        {{ \Carbon\Carbon::parse($appointment->start_time)->format('h:i A') }} - {{ \Carbon\Carbon::parse($appointment->end_time)->format('h:i A') }}
-                                    @endif
-                                </div>
                             </div>
                         </td>
                         <td class="px-8 py-6">
@@ -152,7 +135,7 @@
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="6" class="px-8 py-16 text-center">
+                        <td colspan="4" class="px-8 py-16 text-center">
                             <div class="flex flex-col items-center justify-center text-outline">
                                 <span class="material-symbols-outlined text-6xl mb-4">event_busy</span>
                                 <p class="text-lg font-black uppercase tracking-widest">No appointments found</p>

@@ -262,7 +262,7 @@ class Dashboard extends Component
         $todaysAppointments = Appointment::with(['doctor.user'])
             ->where('doctor_id', $doctorId)
             ->whereDate('appointment_date', $today)
-            ->orderBy('start_time', 'asc')
+            ->orderByRaw('CAST(token AS UNSIGNED) ASC')
             ->get();
 
         $waitingCount = Queue::whereHas('appointment', function ($query) use ($doctorId, $today) {
@@ -281,8 +281,6 @@ class Dashboard extends Component
             ->map(function ($schedule) use ($today) {
                 $schedule->booked_count = Appointment::where('doctor_id', $schedule->doctor_id)
                     ->whereDate('appointment_date', $today)
-                    ->whereTime('start_time', '>=', $schedule->start_time)
-                    ->whereTime('start_time', '<', $schedule->end_time)
                     ->count();
 
                 return $schedule;
