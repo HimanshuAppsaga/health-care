@@ -1,10 +1,4 @@
-<div class="max-w-6xl mx-auto">
-    <!-- Stepper Header -->
-    <div class="mb-10 text-center">
-        <h1 class="text-3xl font-extrabold tracking-tight text-on-surface mb-2">Book an Appointment</h1>
-    </div>
-
-    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+<div class="max-w-6xl mx-auto pt-6">    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
         <!-- Left Column: Flow Steps -->
         <div class="lg:col-span-8 space-y-6">
             <!-- Section 4: Visit Info -->

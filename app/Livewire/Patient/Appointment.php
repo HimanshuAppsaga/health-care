@@ -10,8 +10,12 @@ use App\Models\Patient;
 use App\Models\Queue;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
+use Livewire\Attributes\Layout;
+use Livewire\Attributes\Title;
 use Livewire\Component;
 
+#[Layout('components.layouts.app')]
+#[Title('Book Appointment | ClinicOS')]
 class Appointment extends Component
 {
     public $step = 1;
@@ -319,7 +323,6 @@ class Appointment extends Component
 
     public function render()
     {
-        return view('livewire.patient.appointment')
-            ->layout('components.layouts.app');
+        return view('livewire.patient.appointment');
     }
 }
