@@ -34,4 +34,9 @@ class Appointment extends Model
     {
         return $this->hasOne(Queue::class);
     }
+
+    public function clinic()
+    {
+        return $this->belongsTo(Clinic::class);
+    }
 }
