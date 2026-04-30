@@ -22,14 +22,14 @@ class ClinicController extends Controller
         // Log clinic access
         Log::info('API Access: Clinic Details retrieved', ['clinic_id' => $clinic->id]);
 
-        // Cache clinic details for 1 hour
-        $cachedClinic = Cache::remember("clinic_details_{$clinic->id}", 3600, function () use ($clinic) {
-            return new ClinicResource($clinic);
+        // Cache the resolved clinic data (array) for 1 hour
+        $cachedClinicData = Cache::remember("clinic_details_data_{$clinic->id}", 3600, function () use ($clinic) {
+            return (new ClinicResource($clinic))->resolve();
         });
 
         return response()->json([
             'status' => true,
-            'data' => $cachedClinic,
+            'data' => $cachedClinicData,
         ]);
     }
 
