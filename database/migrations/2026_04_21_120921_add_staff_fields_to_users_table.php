@@ -13,7 +13,8 @@ return new class extends Migration
     {
         Schema::table('users', function (Blueprint $table) {
             $table->string('employee_id')->nullable()->unique()->after('id');
-            $table->string('department')->nullable()->after('phone');
+            $columnBefore = Schema::hasColumn('users', 'phone') ? 'phone' : 'email';
+            $table->string('department')->nullable()->after($columnBefore);
             $table->date('joining_date')->nullable()->after('department');
             $table->text('bio')->nullable()->after('joining_date');
         });

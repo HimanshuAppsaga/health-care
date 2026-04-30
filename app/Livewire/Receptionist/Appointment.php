@@ -4,6 +4,7 @@ namespace App\Livewire\Receptionist;
 
 use App\Events\QueueUpdated;
 use App\Models\Appointment as AppointmentModel;
+use App\Models\Clinic;
 use App\Models\Doctor;
 use App\Models\DoctorSchedule;
 use App\Models\Patient;
@@ -274,6 +275,14 @@ class Appointment extends Component
                     session()->flash('error', 'No doctor available to assign this appointment.');
 
                     return;
+                }
+
+                if (empty($this->selectedClinicId)) {
+                    $doctor = Doctor::find($this->selectedDoctorId);
+                    $this->selectedClinicId = $doctor?->clinic_id ?? Clinic::firstOrCreate(
+                        ['name' => 'Default Clinic'],
+                        ['address' => 'Main Street']
+                    )->id;
                 }
 
                 // Find or create patient record by phone

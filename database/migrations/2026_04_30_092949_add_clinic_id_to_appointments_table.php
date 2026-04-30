@@ -11,9 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('appointments', function (Blueprint $table) {
-            $table->foreignId('clinic_id')->nullable()->after('id')->constrained('clinics')->cascadeOnDelete();
-        });
+        if (! Schema::hasColumn('appointments', 'clinic_id')) {
+            Schema::table('appointments', function (Blueprint $table) {
+                $table->foreignId('clinic_id')->nullable()->after('id')->constrained('clinics')->cascadeOnDelete();
+            });
+        }
     }
 
     /**
@@ -21,9 +23,11 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('appointments', function (Blueprint $table) {
-            $table->dropForeign(['clinic_id']);
-            $table->dropColumn('clinic_id');
-        });
+        if (Schema::hasColumn('appointments', 'clinic_id')) {
+            Schema::table('appointments', function (Blueprint $table) {
+                $table->dropForeign(['clinic_id']);
+                $table->dropColumn('clinic_id');
+            });
+        }
     }
 };
