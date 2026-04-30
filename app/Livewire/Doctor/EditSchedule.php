@@ -3,6 +3,7 @@
 namespace App\Livewire\Doctor;
 
 use App\Events\ScheduleUpdated;
+use App\Models\Doctor;
 use App\Models\DoctorSchedule;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
@@ -16,13 +17,23 @@ class EditSchedule extends Component
 {
     public $weekly_schedules = [];
 
+    public $doctor_id;
+
     public function mount($id = null)
     {
-        $doctor = Auth::user()->doctor;
+        $user = Auth::user();
+
+        if ($id) {
+            $doctor = Doctor::find($id);
+        } else {
+            $doctor = $user->ensureDoctorProfileExists();
+        }
 
         if (! $doctor) {
             return redirect()->route('doctor.dashboard');
         }
+
+        $this->doctor_id = $doctor->id;
 
         // Initialize all days (1=Mon, ..., 6=Sat, 0=Sun)
         $days = [1, 2, 3, 4, 5, 6, 0];
@@ -90,7 +101,7 @@ class EditSchedule extends Component
 
     public function save()
     {
-        $doctor = Auth::user()->doctor;
+        $doctor = Doctor::find($this->doctor_id);
 
         if (! $doctor) {
             return;

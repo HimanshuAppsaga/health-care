@@ -33,7 +33,9 @@ class Dashboard extends Component
 
     public function mount()
     {
-        $doctor = auth()->user()->doctor;
+        $user = auth()->user();
+        $doctor = $user->ensureDoctorProfileExists();
+
         $this->isDoctorOnHold = $doctor ? (bool) $doctor->is_on_hold : false;
 
         $today = Carbon::today();

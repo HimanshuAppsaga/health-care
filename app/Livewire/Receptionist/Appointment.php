@@ -4,6 +4,7 @@ namespace App\Livewire\Receptionist;
 
 use App\Events\QueueUpdated;
 use App\Models\Appointment as AppointmentModel;
+use App\Models\Clinic;
 use App\Models\Doctor;
 use App\Models\DoctorSchedule;
 use App\Models\Patient;
@@ -149,13 +150,14 @@ class Appointment extends Component
 
         foreach ($schedules as $schedule) {
 
-            // Note: Session-wide max_patients check removed to allow booking based on slot availability.
-            // If a hard limit for the session is needed, it should be handled while still allowing slot selection
-            // or by showing a "Session Full" message instead of hiding all slots.
-
             $start = Carbon::createFromFormat('H:i:s', $schedule->start_time);
             $end = Carbon::createFromFormat('H:i:s', $schedule->end_time);
             $duration = $schedule->slot_duration ?: 30;
+
+            // If the schedule hasn't started yet today, don't allow bookings
+            if ($this->selectedDate === Carbon::today()->format('Y-m-d') && now()->isBefore($start)) {
+                continue;
+            }
 
             // Fetch booked slots for this specific schedule to avoid overlapping
             $bookedSlotsForSchedule = AppointmentModel::where('doctor_id', $this->selectedDoctorId)
@@ -275,12 +277,21 @@ class Appointment extends Component
                     return;
                 }
 
+                if (empty($this->selectedClinicId)) {
+                    $doctor = Doctor::find($this->selectedDoctorId);
+                    $this->selectedClinicId = $doctor?->clinic_id ?? Clinic::firstOrCreate(
+                        ['name' => 'Default Clinic'],
+                        ['address' => 'Main Street']
+                    )->id;
+                }
+
                 // Find or create patient record by phone
                 $patient = Patient::where('phone', $this->phone)->first();
 
                 if (! $patient) {
                     $user = Auth::user();
                     $patient = Patient::create([
+                        'clinic_id' => $this->selectedClinicId,
                         'user_id' => $user?->id,
                         'name' => $this->name,
                         'email' => $user?->email ?? 'guest@example.com',
@@ -300,6 +311,7 @@ class Appointment extends Component
                 $tokenNumber = Queue::whereDate('created_at', Carbon::today())->count() + 1;
 
                 $appointment = AppointmentModel::create([
+                    'clinic_id' => $this->selectedClinicId,
                     'doctor_id' => $this->selectedDoctorId,
                     'patient_id' => $patient->id,
                     'name' => $this->name,

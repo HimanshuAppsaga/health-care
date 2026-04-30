@@ -12,7 +12,8 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('users', function (Blueprint $table) {
-            $table->string('emergency_contact_name')->nullable()->after('phone');
+            $columnBefore = Schema::hasColumn('users', 'phone') ? 'phone' : 'email';
+            $table->string('emergency_contact_name')->nullable()->after($columnBefore);
             $table->string('emergency_contact_phone')->nullable()->after('emergency_contact_name');
             $table->text('address')->nullable()->after('emergency_contact_phone');
             $table->string('unit')->nullable()->after('department');
@@ -33,7 +34,7 @@ return new class extends Migration
                 'address',
                 'unit',
                 'supervisor_name',
-                'rating'
+                'rating',
             ]);
         });
     }

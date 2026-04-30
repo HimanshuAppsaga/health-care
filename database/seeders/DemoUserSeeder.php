@@ -5,7 +5,6 @@ namespace Database\Seeders;
 use App\Models\Role;
 use App\Models\User;
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\Hash;
 
 class DemoUserSeeder extends Seeder
 {
@@ -14,27 +13,46 @@ class DemoUserSeeder extends Seeder
      */
     public function run(): void
     {
-
-        $roles = [
-            'doctor' => ['email' => 'doctor@clinic.com', 'phone' => '2222222222'],
-            'receptionist' => ['email' => 'receptionist@clinic.com', 'phone' => '3333333333'],
-            'patient' => ['email' => 'patient@clinic.com', 'phone' => '4444444444'],
+        $users = [
+            [
+                'name' => 'Demo Doctor',
+                'email' => 'doctor@clinic.com',
+                'phone' => '2222222222',
+                'role' => 'doctor',
+            ],
+            [
+                'name' => 'Demo Receptionist',
+                'email' => 'receptionist@clinic.com',
+                'phone' => '3333333333',
+                'role' => 'receptionist',
+            ],
+            [
+                'name' => 'Demo Patient',
+                'email' => 'patient@clinic.com',
+                'phone' => '4444444444',
+                'role' => 'patient',
+            ],
+            [
+                'name' => 'Dr. Smith',
+                'email' => 'smith@example.com',
+                'phone' => '5555555555',
+                'role' => 'doctor',
+            ],
         ];
 
-        foreach ($roles as $roleName => $data) {
-            $role = Role::where('name', $roleName)->first();
+        foreach ($users as $userData) {
+            $role = Role::where('name', $userData['role'])->first();
 
             if (! $role) {
-                $role = Role::create(['name' => $roleName]);
+                $role = Role::create(['name' => $userData['role']]);
             }
 
             $user = User::updateOrCreate(
-                ['email' => $data['email']],
+                ['email' => $userData['email']],
                 [
-                    'name' => 'Demo '.ucwords(str_replace('_', ' ', $roleName)),
-                    'password' => Hash::make('password'),
-                    'is_active' => true,
-                    'phone' => $data['phone'],
+                    'name' => $userData['name'],
+                    'phone' => $userData['phone'], // ✅ FIX HERE
+                    'password' => 'password',
                 ]
             );
 

@@ -28,7 +28,8 @@ class Schedule extends Component
 
     public function loadSchedules()
     {
-        $doctor = Auth::user()->doctor;
+        $user = Auth::user();
+        $doctor = $user->ensureDoctorProfileExists();
 
         if (! $doctor) {
             return;

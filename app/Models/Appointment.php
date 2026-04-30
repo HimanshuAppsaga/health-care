@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class Appointment extends Model
 {
     protected $fillable = [
+        'clinic_id',
         'doctor_id',
         'patient_id',
         'appointment_date',
@@ -32,5 +33,10 @@ class Appointment extends Model
     public function queue()
     {
         return $this->hasOne(Queue::class);
+    }
+
+    public function clinic()
+    {
+        return $this->belongsTo(Clinic::class);
     }
 }

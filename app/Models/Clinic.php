@@ -4,21 +4,16 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class Patient extends Model
+class Clinic extends Model
 {
     protected $fillable = [
-        'clinic_id',
-        'user_id',
         'name',
-        'phone',
-        'email',
-        'dob',
-        'gender',
+        'address',
     ];
 
-    public function user()
+    public function doctors()
     {
-        return $this->belongsTo(User::class);
+        return $this->hasMany(Doctor::class);
     }
 
     public function appointments()

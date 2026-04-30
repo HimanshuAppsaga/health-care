@@ -54,6 +54,29 @@ class User extends Authenticatable
         return $this->hasOne(Doctor::class);
     }
 
+    public function ensureDoctorProfileExists(): Doctor
+    {
+        $doctor = $this->doctor;
+
+        if (! $doctor && $this->hasRole('doctor')) {
+            $clinic = Clinic::firstOrCreate(
+                ['id' => 1],
+                ['name' => 'Default Clinic', 'address' => 'Main Street']
+            );
+
+            $doctor = Doctor::create([
+                'user_id' => $this->id,
+                'clinic_id' => $clinic->id,
+                'specialization' => 'General',
+                'qualification' => 'MBBS',
+                'experience_years' => 0,
+                'consultation_fee' => 0,
+            ]);
+        }
+
+        return $doctor;
+    }
+
     public function getDashboardRouteName(): string
     {
         if ($this->hasRole('receptionist')) {
