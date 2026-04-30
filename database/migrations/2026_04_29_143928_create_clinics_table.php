@@ -13,10 +13,10 @@ return new class extends Migration
     {
         if (Schema::hasTable('clinics')) {
             Schema::table('clinics', function (Blueprint $table) {
-                if (!Schema::hasColumn('clinics', 'name')) {
+                if (! Schema::hasColumn('clinics', 'name')) {
                     $table->string('name')->after('id');
                 }
-                if (!Schema::hasColumn('clinics', 'address')) {
+                if (! Schema::hasColumn('clinics', 'address')) {
                     $table->string('address')->nullable()->after('name');
                 }
             });

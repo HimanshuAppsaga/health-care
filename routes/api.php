@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\AppointmentController;
 use App\Http\Controllers\Api\SidebarController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -10,3 +11,5 @@ Route::get('/user', function (Request $request) {
 
 Route::get('/sidebar', [SidebarController::class, 'index'])
     ->middleware('auth:sanctum');
+
+Route::post('/appointments/book', [AppointmentController::class, 'store']);
