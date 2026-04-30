@@ -9,6 +9,7 @@ class Clinic extends Model
     protected $fillable = [
         'name',
         'address',
+        'api_key',
     ];
 
     public function doctors()

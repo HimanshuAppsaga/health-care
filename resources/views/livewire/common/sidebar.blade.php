@@ -64,14 +64,22 @@
         <!-- Bottom Actions -->
         <div class="mt-auto py-6">
             <!-- Clinic Settings -->
-            <div class="px-4 mb-4">
-                <a href="#" class="flex items-center gap-4 px-4 py-3 text-sm font-semibold text-outline hover:text-on-surface transition-colors group">
-                    <x-icon name="settings" class="w-5 h-5 text-outline-variant group-hover:text-outline" />
-                    @if(!$isCollapsed)
-                        <span>Clinic Settings</span>
-                    @endif
-                </a>
-            </div>
+            @if(auth()->user()->hasRole('doctor'))
+                <div class="px-4 mb-4">
+                    @php $isSettingsActive = request()->routeIs('doctor.clinic-settings'); @endphp
+                    <a href="{{ route('doctor.clinic-settings') }}" wire:navigate 
+                        class="flex items-center gap-4 px-4 py-3 text-sm font-semibold transition-all duration-200 group rounded-xl
+                            {{ $isSettingsActive 
+                                ? 'bg-primary-container text-on-primary-container' 
+                                : 'text-outline hover:text-on-surface hover:bg-surface-container' }}"
+                    >
+                        <x-icon name="settings" class="w-5 h-5 {{ $isSettingsActive ? 'text-on-primary-container' : 'text-outline-variant group-hover:text-outline' }}" />
+                        @if(!$isCollapsed)
+                            <span>Clinic Settings</span>
+                        @endif
+                    </a>
+                </div>
+            @endif
 
             <!-- User Profile Section -->
             <div class="px-4 border-t border-outline-variant pt-6">

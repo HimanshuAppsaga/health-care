@@ -5,6 +5,7 @@ use App\Livewire\Auth\Login;
 use App\Livewire\Auth\ResetPassword;
 use App\Livewire\Auth\SignUp;
 use App\Livewire\Common\AppointmentList;
+use App\Livewire\Doctor\ClinicSettings;
 use App\Livewire\Doctor\EditSchedule;
 use App\Livewire\Doctor\Schedule;
 use App\Livewire\Patient\Appointment;
@@ -28,6 +29,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/doctor/dashboard', App\Livewire\Doctor\Dashboard::class)->name('doctor.dashboard');
     Route::get('/doctor/schedule', Schedule::class)->name('doctor.schedule');
     Route::get('/doctor/schedule/edit/{id?}', EditSchedule::class)->name('doctor.schedule.edit');
+    Route::get('/doctor/clinic-settings', ClinicSettings::class)->name('doctor.clinic-settings');
 
     Route::get('/appointments', AppointmentList::class)->name('appointments.index');
 
