@@ -18,8 +18,19 @@ class AppointmentController extends Controller
      */
     public function store(Request $request)
     {
+        $clinic = $request->clinic;
+
         $request->validate([
-            'doctor_id' => 'required|exists:doctors,id',
+            'doctor_id' => [
+                'required',
+                'exists:doctors,id',
+                // Security: Ensure the doctor belongs to this clinic
+                function ($attribute, $value, $fail) use ($clinic) {
+                    if (! Doctor::where('id', $value)->where('clinic_id', $clinic->id)->exists()) {
+                        $fail('The selected doctor does not belong to your clinic.');
+                    }
+                },
+            ],
             'name' => 'required|string|max:191',
             'phone' => 'required|string|max:20',
             'date' => 'nullable|date',
@@ -30,20 +41,18 @@ class AppointmentController extends Controller
         $name = $request->name;
         $phone = $request->phone;
 
-        // Fetch doctor to get the clinic_id
-        $doctor = Doctor::findOrFail($doctorId);
-        $clinicId = $doctor->clinic_id ?? 1;
-
-        // Find or create patient record by phone
-        $patient = Patient::where('phone', $phone)->first();
+        // Find or create patient record by phone within THIS clinic
+        $patient = Patient::where('phone', $phone)
+            ->where('clinic_id', $clinic->id)
+            ->first();
 
         if (! $patient) {
             $user = auth('sanctum')->user();
             $patient = Patient::create([
-                'clinic_id' => $clinicId,
+                'clinic_id' => $clinic->id,
                 'user_id' => $user?->id,
                 'name' => $name,
-                'email' => $user?->email ?? 'guest@example.com',
+                'email' => $user?->email ?? 'guest@' . strtolower(str_replace(' ', '', $clinic->name)) . '.com',
                 'phone' => $phone,
                 'dob' => '1990-01-01',
                 'gender' => 'other',
@@ -56,11 +65,14 @@ class AppointmentController extends Controller
             ]);
         }
 
-        // Generate simple sequential token number for the day
-        $tokenNumber = Queue::whereDate('created_at', Carbon::today())->count() + 1;
+        // Generate sequential token number for the clinic and day
+        $tokenNumber = Queue::join('appointments', 'queues.appointment_id', '=', 'appointments.id')
+            ->where('appointments.clinic_id', $clinic->id)
+            ->whereDate('queues.created_at', Carbon::today())
+            ->count() + 1;
 
         $appointment = AppointmentModel::create([
-            'clinic_id' => $clinicId,
+            'clinic_id' => $clinic->id,
             'doctor_id' => $doctorId,
             'patient_id' => $patient->id,
             'name' => $name,
@@ -76,12 +88,17 @@ class AppointmentController extends Controller
             'status' => 'waiting',
         ]);
 
-        broadcast(new QueueUpdated(1, 'booked'))->toOthers();
+        // Broadcast with clinic-specific context
+        broadcast(new QueueUpdated($clinic->id, 'booked'))->toOthers();
 
         return response()->json([
+            'status' => true,
             'message' => 'Appointment booked successfully!',
             'token' => $tokenNumber,
-            'appointment' => $appointment,
+            'data' => [
+                'appointment' => $appointment,
+                'clinic' => $clinic->name,
+            ],
         ], 201);
     }
 }

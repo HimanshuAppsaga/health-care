@@ -24,6 +24,7 @@ return Application::configure(basePath: dirname(__DIR__))
 
         $middleware->alias([
             'role' => RoleMiddleware::class,
+            'api.key' => \App\Http\Middleware\CheckApiKey::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

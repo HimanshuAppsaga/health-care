@@ -13,6 +13,27 @@ class Clinic extends Model
         'api_key',
     ];
 
+    /**
+     * The attributes that should be hidden for serialization.
+     *
+     * @var array<int, string>
+     */
+    protected $hidden = [
+        'api_key',
+    ];
+
+    /**
+     * Generate a secure, unique API key for the clinic.
+     */
+    public static function generateUniqueApiKey(): string
+    {
+        do {
+            $key = bin2hex(random_bytes(32)); // 64 characters
+        } while (static::where('api_key', $key)->exists());
+
+        return $key;
+    }
+
     public function doctors()
     {
         return $this->hasMany(Doctor::class);
