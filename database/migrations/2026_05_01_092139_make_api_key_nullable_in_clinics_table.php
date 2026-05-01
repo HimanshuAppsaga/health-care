@@ -11,10 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('clinics', function (Blueprint $table) {
-            $table->unique('api_key');
-            $table->index('api_key');
-        });
+        if (config('database.default') !== 'sqlite') {
+            Schema::table('clinics', function (Blueprint $table) {
+                $table->string('api_key', 64)->nullable()->change();
+            });
+        }
     }
 
     /**
@@ -24,9 +25,7 @@ return new class extends Migration
     {
         if (config('database.default') !== 'sqlite') {
             Schema::table('clinics', function (Blueprint $table) {
-                $table->string('api_key', 64)->nullable()->change();
-                $table->dropUnique(['api_key']);
-                $table->dropIndex(['api_key']);
+                $table->string('api_key', 64)->nullable(false)->change();
             });
         }
     }
