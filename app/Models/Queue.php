@@ -13,6 +13,10 @@ class Queue extends Model
         'called_at',
     ];
 
+    protected $casts = [
+        'called_at' => 'datetime',
+    ];
+
     public function appointment()
     {
         return $this->belongsTo(Appointment::class);
