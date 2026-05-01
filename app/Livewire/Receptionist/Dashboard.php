@@ -2,11 +2,13 @@
 
 namespace App\Livewire\Receptionist;
 
+use App\Enums\QueueStatus;
 use App\Events\QueueUpdated;
 use App\Models\Appointment;
 use App\Models\Doctor;
 use App\Models\DoctorSchedule;
 use App\Models\Queue;
+use App\Services\QueueService;
 use Carbon\Carbon;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
@@ -118,14 +120,10 @@ class Dashboard extends Component
         $current = Queue::whereHas('appointment', function ($query) use ($today) {
             $query->where('doctor_id', $this->selectedDoctorId)
                 ->whereDate('appointment_date', $today);
-        })->whereIn('status', ['serving', 'hold'])->first();
+        })->whereIn('status', [QueueStatus::SERVING->value, QueueStatus::HOLD->value])->first();
 
         if ($current) {
-            $current->update(['status' => 'completed']);
-            if ($current->appointment) {
-                $current->appointment->update(['status' => 'completed']);
-            }
-            broadcast(new QueueUpdated(1, 'completed'))->toOthers();
+            app(QueueService::class)->markAsDone($current->appointment_id, 1);
         }
     }
 
@@ -237,9 +235,9 @@ class Dashboard extends Component
         }
         // 2. Check for Status change on same token
         elseif ($this->lastStatus !== $currentStatus) {
-            if ($currentStatus === 'hold' || $currentStatus === 'serving') {
+            if ($currentStatus?->value === 'hold' || $currentStatus?->value === 'serving') {
                 $shouldPlaySound = true;
-                $reason = $currentStatus === 'hold' ? 'hold' : 'continue';
+                $reason = $currentStatus?->value === 'hold' ? 'hold' : 'continue';
             }
             $this->lastStatus = $currentStatus;
         }

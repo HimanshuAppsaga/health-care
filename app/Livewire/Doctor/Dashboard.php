@@ -2,10 +2,12 @@
 
 namespace App\Livewire\Doctor;
 
+use App\Enums\QueueStatus;
 use App\Events\QueueUpdated;
 use App\Models\Appointment;
 use App\Models\DoctorSchedule;
 use App\Models\Queue;
+use App\Services\QueueService;
 use Carbon\Carbon;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
@@ -98,14 +100,10 @@ class Dashboard extends Component
         $current = Queue::whereHas('appointment', function ($query) use ($doctorId, $today) {
             $query->where('doctor_id', $doctorId)
                 ->whereDate('appointment_date', $today);
-        })->whereIn('status', ['serving', 'hold'])->first();
+        })->whereIn('status', [QueueStatus::SERVING->value, QueueStatus::HOLD->value])->first();
 
         if ($current) {
-            $current->update(['status' => 'completed']);
-            if ($current->appointment) {
-                $current->appointment->update(['status' => 'completed']);
-            }
-            broadcast(new QueueUpdated(1, 'completed'))->toOthers();
+            app(QueueService::class)->markAsDone($current->appointment_id, 1); // Clinic ID is hardcoded as 1 in existing code, but should probably be dynamic
         }
     }
 
@@ -124,13 +122,19 @@ class Dashboard extends Component
                 $query->where('doctor_id', $doctorId)
                     ->whereDate('appointment_date', $today);
             })
-                ->whereIn('status', ['serving', 'hold'])
+                ->whereIn('status', [QueueStatus::SERVING->value, QueueStatus::HOLD->value])
                 ->first();
 
             if ($current) {
-                $current->update(['status' => $this->isDoctorOnHold ? 'hold' : 'serving']);
+                if ($this->isDoctorOnHold) {
+                    app(QueueService::class)->hold($current->appointment_id, 1);
+                } else {
+                    $current->update(['status' => QueueStatus::SERVING->value]);
+                    broadcast(new QueueUpdated(1, 'continue'))->toOthers();
+                }
+            } else {
+                broadcast(new QueueUpdated(1, $this->isDoctorOnHold ? 'hold' : 'continue'))->toOthers();
             }
-            broadcast(new QueueUpdated(1, $this->isDoctorOnHold ? 'hold' : 'continue'))->toOthers();
         }
     }
 
@@ -238,9 +242,9 @@ class Dashboard extends Component
             $this->lastTokenNumber = $currentToken;
             $this->lastStatus = $currentStatus;
         } elseif ($this->lastStatus !== $currentStatus) {
-            if ($currentStatus === 'hold' || $currentStatus === 'serving') {
+            if ($currentStatus?->value === 'hold' || $currentStatus?->value === 'serving') {
                 $shouldNotify = true;
-                $reason = $currentStatus === 'hold' ? 'hold' : 'continue';
+                $reason = $currentStatus?->value === 'hold' ? 'hold' : 'continue';
             }
             $this->lastStatus = $currentStatus;
         }

@@ -67,10 +67,10 @@
                     <p class="text-sm font-bold text-outline-variant uppercase tracking-widest mb-2">Now Serving</p>
                     <div class="relative">
                         <div class="absolute -inset-8 bg-secondary/10 blur-3xl rounded-full"></div>
-                        <div class="relative text-9xl font-black {{ $nowServing && $nowServing->status === 'hold' ? 'text-amber-500' : 'text-secondary' }} tracking-tighter mb-4">
+                        <div class="relative text-9xl font-black {{ $nowServing && $nowServing->status?->value === 'hold' ? 'text-amber-500' : 'text-secondary' }} tracking-tighter mb-4">
                             {{ $nowServing ? $nowServing->token_number : '--' }}
                         </div>
-                        @if($nowServing && $nowServing->status === 'hold')
+                        @if($nowServing && $nowServing->status?->value === 'hold')
                             <div class="absolute top-0 right-0 -mr-12 bg-amber-500 text-white text-xs font-black px-3 py-1 rounded-full shadow-lg animate-bounce">
                                 ON HOLD
                             </div>
@@ -142,14 +142,14 @@
                                 <td class="px-6 py-4 font-medium text-on-background">{{ $appointment->name ?? 'Unknown' }}</td>
                                 <td class="px-6 py-4 text-on-surface-variant font-bold">{{ $appointment->token ?? '--' }}</td>
                                 <td class="px-6 py-4 text-right">
-                                    @if($appointment->status === 'confirmed')
+                                    @if($appointment->status->value === 'confirmed')
                                         <span class="px-3 py-1 bg-green-100 text-green-700 text-xs font-bold rounded-full">Confirmed</span>
-                                    @elseif($appointment->status === 'pending')
+                                    @elseif($appointment->status->value === 'pending')
                                         <span class="px-3 py-1 bg-yellow-100 text-yellow-700 text-xs font-bold rounded-full">Pending</span>
-                                    @elseif($appointment->status === 'cancelled')
+                                    @elseif($appointment->status->value === 'cancelled')
                                         <span class="px-3 py-1 bg-red-100 text-red-700 text-xs font-bold rounded-full">Cancelled</span>
                                     @else
-                                        <span class="px-3 py-1 bg-gray-100 text-gray-700 text-xs font-bold rounded-full">{{ ucfirst($appointment->status) }}</span>
+                                        <span class="px-3 py-1 bg-gray-100 text-gray-700 text-xs font-bold rounded-full">{{ ucfirst($appointment->status->value) }}</span>
                                     @endif
                                 </td>
                             </tr>
