@@ -6,6 +6,7 @@ use App\Events\QueueUpdated;
 use App\Http\Controllers\Controller;
 use App\Models\Appointment as AppointmentModel;
 use App\Models\Doctor;
+use App\Models\DoctorSchedule;
 use App\Models\Patient;
 use App\Models\Queue;
 use Carbon\Carbon;
@@ -41,6 +42,54 @@ class AppointmentController extends Controller
         $name = $request->name;
         $phone = $request->phone;
 
+        // Check if the doctor has any schedule for the given day
+        $date = Carbon::parse($dateStr);
+        $dayOfWeek = $date->dayOfWeek; // 0 (Sun) to 6 (Sat)
+        $isToday = $date->isToday();
+
+        $schedules = DoctorSchedule::where('doctor_id', $doctorId)
+            ->where('day_of_week', $dayOfWeek)
+            ->get();
+
+        $hasAvailableSlot = false;
+
+        foreach ($schedules as $schedule) {
+            $start = Carbon::createFromFormat('H:i:s', $schedule->start_time);
+            $end = Carbon::createFromFormat('H:i:s', $schedule->end_time);
+            $duration = $schedule->slot_duration ?: 30;
+
+            // If the schedule hasn't started yet today, don't allow bookings (Live Queue Logic)
+            if ($isToday && now()->isBefore($start)) {
+                continue;
+            }
+
+            // Check if there's at least one slot that is not in the past
+            $tempStart = $start->copy();
+            while ($tempStart->copy()->addMinutes($duration)->lte($end)) {
+                if ($isToday) {
+                    if ($tempStart->copy()->addMinutes($duration)->isAfter(now())) {
+                        $hasAvailableSlot = true;
+                        break;
+                    }
+                } else {
+                    $hasAvailableSlot = true;
+                    break;
+                }
+                $tempStart->addMinutes($duration);
+            }
+
+            if ($hasAvailableSlot) {
+                break;
+            }
+        }
+
+        if (! $hasAvailableSlot) {
+            return response()->json([
+                'status' => false,
+                'message' => 'No slots available for today.',
+            ], 422);
+        }
+
         // Find or create patient record by phone within THIS clinic
         $patient = Patient::where('phone', $phone)
             ->where('clinic_id', $clinic->id)
@@ -52,7 +101,7 @@ class AppointmentController extends Controller
                 'clinic_id' => $clinic->id,
                 'user_id' => $user?->id,
                 'name' => $name,
-                'email' => $user?->email ?? 'guest@' . strtolower(str_replace(' ', '', $clinic->name)) . '.com',
+                'email' => $user?->email ?? 'guest@'.strtolower(str_replace(' ', '', $clinic->name)).'.com',
                 'phone' => $phone,
                 'dob' => '1990-01-01',
                 'gender' => 'other',
