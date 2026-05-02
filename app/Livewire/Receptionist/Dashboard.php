@@ -40,8 +40,11 @@ class Dashboard extends Component
     {
         $this->doctors = Doctor::whereHas('user')->get();
 
-        if (empty($this->selectedDoctorId) && $this->doctors->isNotEmpty()) {
+        $this->selectedDoctorId = session('receptionist_selected_doctor_id');
+
+        if ((empty($this->selectedDoctorId) || ! $this->doctors->contains('id', $this->selectedDoctorId)) && $this->doctors->isNotEmpty()) {
             $this->selectedDoctorId = $this->doctors->first()->id;
+            session(['receptionist_selected_doctor_id' => $this->selectedDoctorId]);
         }
 
         $today = Carbon::today();
@@ -62,6 +65,8 @@ class Dashboard extends Component
 
     public function updatedSelectedDoctorId($value)
     {
+        session(['receptionist_selected_doctor_id' => $value]);
+
         $today = Carbon::today();
         $nowServing = Queue::whereHas('appointment', function ($query) use ($today, $value) {
             $query->where('doctor_id', $value)
