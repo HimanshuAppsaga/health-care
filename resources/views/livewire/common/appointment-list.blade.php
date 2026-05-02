@@ -43,7 +43,10 @@
                 <select wire:model.live="status" class="w-full px-4 py-3 bg-surface-container-low border-2 border-transparent rounded-2xl focus:bg-surface focus:border-primary/20 outline-none transition-all font-bold text-sm text-on-surface appearance-none">
                     <option value="">All Statuses</option>
                     <option value="pending">Pending</option>
+                    <option value="confirmed">Confirmed</option>
                     <option value="completed">Completed</option>
+                    <option value="cancelled">Cancelled</option>
+                    <option value="no_show">No Show</option>
                 </select>
             </div>
 
@@ -124,12 +127,16 @@
                             @php
                                 $statusClasses = [
                                     'pending' => 'bg-amber-100 text-amber-700 border-amber-200',
+                                    'confirmed' => 'bg-green-100 text-green-700 border-green-200',
                                     'completed' => 'bg-primary-container/20 text-primary border-primary-container/30',
+                                    'cancelled' => 'bg-red-100 text-red-700 border-red-200',
+                                    'no_show' => 'bg-gray-100 text-gray-700 border-gray-200',
                                 ];
-                                $class = $statusClasses[$appointment->status] ?? 'bg-surface-container-low text-on-surface-variant border-outline-variant';
+                                $statusValue = $appointment->status->value;
+                                $class = $statusClasses[$statusValue] ?? 'bg-surface-container-low text-on-surface-variant border-outline-variant';
                             @endphp
                             <span class="px-4 py-1.5 {{ $class }} text-[10px] font-black uppercase rounded-full border tracking-widest">
-                                {{ $appointment->status }}
+                                {{ str_replace('_', ' ', $statusValue) }}
                             </span>
                         </td>
                     </tr>
