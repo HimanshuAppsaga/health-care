@@ -86,6 +86,43 @@
             </div>
         </div>
 
+        <!-- Queue Settings Card -->
+        <div class="mt-8 bg-surface rounded-[2rem] clinical-shadow border border-outline-variant overflow-hidden">
+            <div class="p-8 border-b border-outline-variant bg-surface-container-low">
+                <div class="flex items-center gap-4">
+                    <div class="w-12 h-12 bg-secondary-container/20 rounded-2xl flex items-center justify-center text-secondary">
+                        <span class="material-symbols-outlined text-2xl" style="font-variation-settings: 'FILL' 1;">queue</span>
+                    </div>
+                    <div>
+                        <h2 class="text-xl font-black">Queue Settings</h2>
+                        <p class="text-sm text-outline font-medium">Configure how the patient queue behaves.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="p-8">
+                <div class="max-w-md">
+                    <label for="transferDepth" class="text-sm font-bold text-on-surface mb-2 block">Transfer Token Depth (1-9)</label>
+                    <p class="text-xs text-outline mb-4">Number of positions a patient moves back when "Transfer Token" is clicked.</p>
+                    
+                    <div class="relative">
+                        <input 
+                            type="number" 
+                            id="transferDepth"
+                            wire:model.live="transferDepth"
+                            min="1" 
+                            max="9" 
+                            oninput="if(this.value.length > 1) this.value = this.value.slice(0, 1);"
+                            class="w-32 bg-surface border-2 border-outline-variant rounded-2xl px-6 py-4 text-2xl font-black text-primary focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all outline-none"
+                        >
+                        @error('transferDepth') 
+                            <span class="text-error text-xs font-bold mt-2 block">{{ $message }}</span> 
+                        @enderror
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- Additional Settings Placeholder -->
         <div class="mt-8 grid grid-cols-1 md:grid-cols-2 gap-6">
             <div class="bg-surface p-6 rounded-2xl border border-outline-variant opacity-50 cursor-not-allowed">

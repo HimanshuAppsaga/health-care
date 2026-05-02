@@ -5,6 +5,7 @@ namespace App\Livewire\Receptionist;
 use App\Enums\QueueStatus;
 use App\Events\QueueUpdated;
 use App\Models\Appointment;
+use App\Models\Clinic;
 use App\Models\Doctor;
 use App\Models\DoctorSchedule;
 use App\Models\Queue;
@@ -146,10 +147,12 @@ class Dashboard extends Component
         })->where('status', 'serving')->first();
 
         if ($current) {
+            $clinic = $current->appointment->clinic;
+            $depth = $clinic->transfer_depth ?? 6;
             $currentTokenNum = (int) $current->token_number;
-            $newTokenStr = (string) ($currentTokenNum + 6);
+            $newTokenStr = (string) ($currentTokenNum + $depth);
 
-            // Shift the next 6 tokens down by 1
+            // Shift the next X tokens down by 1
             $nextTokensToShift = Queue::whereHas('appointment', function ($query) use ($today) {
                 $query->where('doctor_id', $this->selectedDoctorId)
                     ->whereDate('appointment_date', $today);
@@ -157,7 +160,7 @@ class Dashboard extends Component
                 ->where('status', 'waiting')
                 ->whereRaw('CAST(token_number AS UNSIGNED) > ?', [$currentTokenNum])
                 ->orderByRaw('CAST(token_number AS UNSIGNED) ASC')
-                ->take(6)
+                ->take($depth)
                 ->get();
 
             foreach ($nextTokensToShift as $q) {
@@ -312,6 +315,7 @@ class Dashboard extends Component
             'todaysAppointments' => $todaysAppointments,
             'isDoctorOnHold' => $isDoctorOnHold,
             'doctorSchedules' => $doctorSchedules,
+            'transferDepth' => $nowServing?->appointment?->clinic?->transfer_depth ?? Clinic::first()?->transfer_depth ?? 6,
         ]);
     }
 }

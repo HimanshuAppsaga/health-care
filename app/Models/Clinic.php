@@ -11,6 +11,7 @@ class Clinic extends Model
         'logo',
         'address',
         'api_key',
+        'transfer_depth',
     ];
 
     /**

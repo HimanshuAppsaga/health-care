@@ -111,7 +111,10 @@
                             @if(!$nowServing || $isDoctorOnHold) disabled @endif 
                             class="flex-1 py-4 bg-surface border-2 border-amber-200 text-amber-500 rounded-2xl font-black text-lg transition-all flex items-center justify-center gap-2 
                             @if(!$nowServing || $isDoctorOnHold) opacity-50 cursor-not-allowed @else hover:border-amber-500 hover:text-amber-600 active:scale-95 @endif">
-                            <span class="material-symbols-outlined">forward_5</span>
+                            <div class="flex flex-col items-center leading-none">
+                                <span class="material-symbols-outlined">forward_media</span>
+                                <span class="text-[10px] font-black mt-1">+{{ $transferDepth }}</span>
+                            </div>
                             Transfer Token
                         </button>
                     </div>

@@ -12,6 +12,12 @@ class ClinicSettings extends Component
 
     public ?string $apiKey = null;
 
+    public ?int $transferDepth = 6;
+
+    protected $rules = [
+        'transferDepth' => 'required|integer|min:1|max:9',
+    ];
+
     public function mount()
     {
         $user = auth()->user();
@@ -20,12 +26,21 @@ class ClinicSettings extends Component
         if ($doctor) {
             $this->clinic = $doctor->clinic;
             $this->apiKey = $this->clinic->api_key;
+            $this->transferDepth = $this->clinic->transfer_depth ?? 6;
         } else {
-            // Handle case where user is not a doctor but somehow accessed this page
-            // Or maybe they are a receptionist? The user said "doctors panel"
-            // Let's check if they have a clinic_id directly or through a relationship
-            $this->clinic = Clinic::first(); // Fallback for testing if needed
+            $this->clinic = Clinic::first();
             $this->apiKey = $this->clinic?->api_key;
+            $this->transferDepth = $this->clinic?->transfer_depth ?? 6;
+        }
+    }
+
+    public function updatedTransferDepth($value)
+    {
+        $this->validateOnly('transferDepth');
+
+        if ($this->clinic) {
+            $this->clinic->update(['transfer_depth' => $value]);
+            session()->flash('message', 'Transfer depth updated successfully.');
         }
     }
 
