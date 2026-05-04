@@ -9,6 +9,7 @@ use App\Models\Clinic;
 use App\Models\Doctor;
 use App\Models\DoctorSchedule;
 use App\Models\Queue;
+use App\Services\CurrentTokenService;
 use App\Services\QueueService;
 use Carbon\Carbon;
 use Livewire\Attributes\Layout;
@@ -19,6 +20,13 @@ use Livewire\Component;
 #[Title('Receptionist Dashboard | ClinicOS')]
 class Dashboard extends Component
 {
+    protected $currentTokenService;
+
+    public function boot(CurrentTokenService $currentTokenService)
+    {
+        $this->currentTokenService = $currentTokenService;
+    }
+
     public $lastStatus;
 
     public $lastTokenNumber;
@@ -48,13 +56,8 @@ class Dashboard extends Component
             session(['receptionist_selected_doctor_id' => $this->selectedDoctorId]);
         }
 
-        $today = Carbon::today();
-        $nowServing = Queue::whereHas('appointment', function ($query) use ($today) {
-            $query->where('doctor_id', $this->selectedDoctorId)
-                ->whereDate('appointment_date', $today);
-        })
-            ->whereIn('status', ['serving', 'hold'])
-            ->first();
+        $result = $this->currentTokenService->getCurrentToken(auth()->user()->clinic_id, $this->selectedDoctorId);
+        $nowServing = $result['data']['current_token'];
 
         $this->lastTokenNumber = $nowServing ? $nowServing->token_number : null;
         $this->lastStatus = $nowServing ? $nowServing->status : null;
@@ -68,13 +71,8 @@ class Dashboard extends Component
     {
         session(['receptionist_selected_doctor_id' => $value]);
 
-        $today = Carbon::today();
-        $nowServing = Queue::whereHas('appointment', function ($query) use ($today, $value) {
-            $query->where('doctor_id', $value)
-                ->whereDate('appointment_date', $today);
-        })
-            ->whereIn('status', ['serving', 'hold'])
-            ->first();
+        $result = $this->currentTokenService->getCurrentToken(auth()->user()->clinic_id, $value);
+        $nowServing = $result['data']['current_token'];
 
         $this->lastTokenNumber = $nowServing ? $nowServing->token_number : null;
         $this->lastStatus = $nowServing ? $nowServing->status : null;
@@ -213,13 +211,8 @@ class Dashboard extends Component
 
         $revenueToday = 0;
 
-        $nowServing = Queue::with('appointment')
-            ->whereHas('appointment', function ($query) use ($today, $doctorId) {
-                $query->when($doctorId, fn ($q) => $q->where('doctor_id', $doctorId))
-                    ->whereDate('appointment_date', $today);
-            })
-            ->whereIn('status', ['serving', 'hold'])
-            ->first();
+        $result = $this->currentTokenService->getCurrentToken(auth()->user()->clinic_id, $doctorId);
+        $nowServing = $result['data']['current_token'];
 
         $currentStatus = $nowServing ? $nowServing->status : null;
         $currentToken = $nowServing ? $nowServing->token_number : null;

@@ -6,12 +6,20 @@ use App\Events\QueueUpdated;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\QueueResource;
 use App\Models\Queue;
+use App\Services\CurrentTokenService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 
 class QueueController extends Controller
 {
+    protected $currentTokenService;
+
+    public function __construct(CurrentTokenService $currentTokenService)
+    {
+        $this->currentTokenService = $currentTokenService;
+    }
+
     /**
      * GET /api/queue/live
      * Returns full live queue data for a clinic/doctor
@@ -32,7 +40,8 @@ class QueueController extends Controller
                 }
             });
 
-        $nowServing = (clone $query)->whereIn('status', ['serving', 'hold'])->first();
+        $result = $this->currentTokenService->getCurrentToken($clinic->id, $doctorId);
+        $nowServing = $result['data']['current_token'];
 
         $waitingList = (clone $query)->where('status', 'waiting')
             ->orderByRaw('CAST(token_number AS UNSIGNED) ASC')

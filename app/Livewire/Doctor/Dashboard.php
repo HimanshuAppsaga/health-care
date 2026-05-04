@@ -7,6 +7,7 @@ use App\Events\QueueUpdated;
 use App\Models\Appointment;
 use App\Models\DoctorSchedule;
 use App\Models\Queue;
+use App\Services\CurrentTokenService;
 use App\Services\QueueService;
 use Carbon\Carbon;
 use Livewire\Attributes\Layout;
@@ -17,6 +18,13 @@ use Livewire\Component;
 #[Title('Doctor Dashboard | ClinicOS')]
 class Dashboard extends Component
 {
+    protected $currentTokenService;
+
+    public function boot(CurrentTokenService $currentTokenService)
+    {
+        $this->currentTokenService = $currentTokenService;
+    }
+
     public bool $isDoctorOnHold = false;
 
     public $lastTokenNumber;
@@ -40,15 +48,9 @@ class Dashboard extends Component
 
         $this->isDoctorOnHold = $doctor ? (bool) $doctor->is_on_hold : false;
 
-        $today = Carbon::today();
         $doctorId = $doctor->id ?? 0;
-
-        $nowServing = Queue::whereHas('appointment', function ($query) use ($doctorId, $today) {
-            $query->where('doctor_id', $doctorId)
-                ->whereDate('appointment_date', $today);
-        })
-            ->whereIn('status', ['serving', 'hold'])
-            ->first();
+        $result = $this->currentTokenService->getCurrentToken($doctor->clinic_id ?? null, $doctorId);
+        $nowServing = $result['data']['current_token'];
 
         $this->lastTokenNumber = $nowServing ? $nowServing->token_number : null;
         $this->lastStatus = $nowServing ? $nowServing->status : null;
@@ -221,13 +223,8 @@ class Dashboard extends Component
 
         $revenueToday = 0;
 
-        $nowServing = Queue::with('appointment')
-            ->whereHas('appointment', function ($query) use ($doctorId, $today) {
-                $query->where('doctor_id', $doctorId)
-                    ->whereDate('appointment_date', $today);
-            })
-            ->whereIn('status', ['serving', 'hold'])
-            ->first();
+        $result = $this->currentTokenService->getCurrentToken($doctor->clinic_id ?? null, $doctorId);
+        $nowServing = $result['data']['current_token'];
 
         $currentStatus = $nowServing ? $nowServing->status : null;
         $currentToken = $nowServing ? $nowServing->token_number : null;
