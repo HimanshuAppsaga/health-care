@@ -12,6 +12,10 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (config('database.default') === 'sqlite') {
+            // SQLite doesn't support MODIFY, and enums are just strings anyway
+            return;
+        }
         Schema::table('queues', function (Blueprint $table) {
             DB::statement("ALTER TABLE queues MODIFY COLUMN status ENUM('waiting', 'serving', 'completed', 'hold') NOT NULL DEFAULT 'waiting'");
         });

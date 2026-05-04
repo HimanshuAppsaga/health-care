@@ -20,7 +20,7 @@ class ClinicApiKeySeeder extends Seeder
                 $clinic->update([
                     'api_key' => Clinic::generateUniqueApiKey(),
                 ]);
-                
+
                 $this->command->info("Generated API Key for clinic: {$clinic->name}");
                 $this->command->warn("API Key: {$clinic->api_key}");
             });

@@ -10,6 +10,7 @@ use App\Models\Queue;
 use App\Services\CallNextTokenService;
 use App\Services\CurrentTokenService;
 use App\Services\QueueService;
+use App\Services\TokenTransferService;
 use Carbon\Carbon;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
@@ -23,10 +24,16 @@ class Dashboard extends Component
 
     protected $callNextTokenService;
 
-    public function boot(CurrentTokenService $currentTokenService, CallNextTokenService $callNextTokenService)
-    {
+    protected $tokenTransferService;
+
+    public function boot(
+        CurrentTokenService $currentTokenService,
+        CallNextTokenService $callNextTokenService,
+        TokenTransferService $tokenTransferService
+    ) {
         $this->currentTokenService = $currentTokenService;
         $this->callNextTokenService = $callNextTokenService;
+        $this->tokenTransferService = $tokenTransferService;
     }
 
     public bool $isDoctorOnHold = false;
@@ -130,49 +137,21 @@ class Dashboard extends Component
             return;
         }
 
-        $today = Carbon::today();
         $doctor = auth()->user()->doctor;
-        $doctorId = $doctor->id ?? 0;
+        if (! $doctor) {
+            return;
+        }
 
-        $current = Queue::whereHas('appointment', function ($query) use ($doctorId, $today) {
-            $query->where('doctor_id', $doctorId)
-                ->whereDate('appointment_date', $today);
-        })->where('status', 'serving')->first();
+        $clinicId = $doctor->clinic_id ?? 1;
+        $doctorId = $doctor->id;
+        $depth = $doctor->clinic->transfer_depth ?? 6;
 
-        if ($current) {
-            $clinic = $current->appointment->clinic;
-            $depth = $clinic->transfer_depth ?? 6;
-            $currentTokenNum = (int) $current->token_number;
-            $newTokenStr = (string) ($currentTokenNum + $depth);
+        $result = $this->tokenTransferService->transferToken($clinicId, $doctorId, $depth);
 
-            // Shift ALL appointments for this doctor/day that are in the way
-            $appointmentsToShift = Appointment::where('doctor_id', $doctorId)
-                ->whereDate('appointment_date', $today)
-                ->whereRaw('CAST(token AS UNSIGNED) > ?', [$currentTokenNum])
-                ->whereRaw('CAST(token AS UNSIGNED) <= ?', [$currentTokenNum + $depth])
-                ->orderByRaw('CAST(token AS UNSIGNED) ASC')
-                ->get();
-
-            foreach ($appointmentsToShift as $appointment) {
-                $num = (int) $appointment->token;
-                $newNumStr = (string) ($num - 1);
-                $appointment->update(['token' => $newNumStr]);
-
-                if ($appointment->queue) {
-                    $appointment->queue->update(['token_number' => $newNumStr]);
-                }
-            }
-
-            // Update the transferred token
-            $current->update([
-                'token_number' => $newTokenStr,
-                'status' => 'waiting',
-            ]);
-
-            if ($current->appointment) {
-                $current->appointment->update(['token' => $newTokenStr]);
-            }
-            broadcast(new QueueUpdated(1, 'transfer'))->toOthers();
+        if ($result['success']) {
+            $this->dispatch('notify', type: 'success', message: $result['message']);
+        } else {
+            $this->dispatch('notify', type: 'error', message: $result['message']);
         }
     }
 

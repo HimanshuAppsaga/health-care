@@ -13,6 +13,7 @@ trait HasClinicScope
     public function scopeForClinic(Builder $query, int|Clinic $clinic): Builder
     {
         $clinicId = $clinic instanceof Clinic ? $clinic->id : $clinic;
+
         return $query->where('clinic_id', $clinicId);
     }
 

@@ -7,6 +7,7 @@ use App\Http\Resources\QueueResource;
 use App\Models\Queue;
 use App\Services\CallNextTokenService;
 use App\Services\CurrentTokenService;
+use App\Services\TokenTransferService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 
@@ -16,10 +17,16 @@ class QueueController extends Controller
 
     protected $callNextTokenService;
 
-    public function __construct(CurrentTokenService $currentTokenService, CallNextTokenService $callNextTokenService)
-    {
+    protected $tokenTransferService;
+
+    public function __construct(
+        CurrentTokenService $currentTokenService,
+        CallNextTokenService $callNextTokenService,
+        TokenTransferService $tokenTransferService
+    ) {
         $this->currentTokenService = $currentTokenService;
         $this->callNextTokenService = $callNextTokenService;
+        $this->tokenTransferService = $tokenTransferService;
     }
 
     /**
@@ -89,5 +96,32 @@ class QueueController extends Controller
             'status' => false,
             'message' => $result['message'],
         ], $result['message'] === 'No patients in waiting queue' ? 404 : 500);
+    }
+
+    public function transfer(Request $request)
+    {
+        $request->validate([
+            'doctor_id' => 'required|exists:doctors,id',
+            'transfer_count' => 'required|integer|min:1',
+        ]);
+
+        $clinic = $request->clinic;
+        $doctorId = $request->doctor_id;
+        $transferCount = $request->transfer_count;
+
+        $result = $this->tokenTransferService->transferToken($clinic->id, $doctorId, $transferCount);
+
+        if ($result['success']) {
+            return response()->json([
+                'status' => true,
+                'message' => $result['message'],
+                'data' => $result['data'] ?? null,
+            ]);
+        }
+
+        return response()->json([
+            'status' => false,
+            'message' => $result['message'],
+        ], 400);
     }
 }

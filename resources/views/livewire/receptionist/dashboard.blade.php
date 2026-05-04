@@ -101,9 +101,9 @@
                     
                     <div class="flex gap-4 w-full max-w-2xl">
                         <button wire:click="callNextPatient" 
-                            @if($isDoctorOnHold) disabled @endif 
+                            @if($nowServing || $isDoctorOnHold) disabled @endif 
                             class="flex-1 py-4 bg-secondary text-white rounded-2xl font-black text-lg clinical-shadow shadow-secondary/30 transition-all flex items-center justify-center gap-2 
-                            @if($isDoctorOnHold) opacity-50 cursor-not-allowed @else hover:bg-secondary-container hover:text-on-secondary-container active:scale-95 @endif">
+                            @if($nowServing || $isDoctorOnHold) opacity-50 cursor-not-allowed @else hover:bg-secondary-container hover:text-on-secondary-container active:scale-95 @endif">
                             <span class="material-symbols-outlined">campaign</span>
                             Call Next Patient
                         </button>

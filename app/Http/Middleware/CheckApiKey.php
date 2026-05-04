@@ -12,7 +12,7 @@ class CheckApiKey
     /**
      * Handle an incoming request.
      *
-     * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
+     * @param  Closure(Request): (Response)  $next
      */
     public function handle(Request $request, Closure $next): Response
     {
@@ -41,7 +41,7 @@ class CheckApiKey
 
         // 5. Attach the clinic data to the request
         $request->merge(['clinic' => $clinic]);
-        
+
         // Optional: Also set as a request attribute for easier access via $request->attributes->get('clinic')
         // but merge() is more standard for $request->clinic access in Laravel.
         $request->setUserResolver(fn () => $clinic); // Optional: treat clinic as the "user" for this request context

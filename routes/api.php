@@ -17,5 +17,6 @@ Route::middleware('api.key')->group(function () {
     Route::prefix('queue')->group(function () {
         Route::get('/live', [QueueController::class, 'live']);
         Route::post('/call-next', [QueueController::class, 'callNext']);
+        Route::post('/transfer', [QueueController::class, 'transfer']);
     });
 });

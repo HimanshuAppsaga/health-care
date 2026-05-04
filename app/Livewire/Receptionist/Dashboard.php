@@ -2,7 +2,7 @@
 
 namespace App\Livewire\Receptionist;
 
-use App\Events\QueueUpdated;
+use App\Enums\QueueStatus;
 use App\Models\Appointment;
 use App\Models\Clinic;
 use App\Models\Doctor;
@@ -10,6 +10,8 @@ use App\Models\DoctorSchedule;
 use App\Models\Queue;
 use App\Services\CallNextTokenService;
 use App\Services\CurrentTokenService;
+use App\Services\QueueService;
+use App\Services\TokenTransferService;
 use Carbon\Carbon;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
@@ -23,10 +25,16 @@ class Dashboard extends Component
 
     protected $callNextTokenService;
 
-    public function boot(CurrentTokenService $currentTokenService, CallNextTokenService $callNextTokenService)
-    {
+    protected $tokenTransferService;
+
+    public function boot(
+        CurrentTokenService $currentTokenService,
+        CallNextTokenService $callNextTokenService,
+        TokenTransferService $tokenTransferService
+    ) {
         $this->currentTokenService = $currentTokenService;
         $this->callNextTokenService = $callNextTokenService;
+        $this->tokenTransferService = $tokenTransferService;
     }
 
     public $lastStatus;
@@ -95,6 +103,17 @@ class Dashboard extends Component
             return;
         }
 
+        // Check if someone is already being served
+        $today = Carbon::today();
+        $isServing = Queue::whereHas('appointment', function ($query) use ($today) {
+            $query->where('doctor_id', $this->selectedDoctorId)
+                ->whereDate('appointment_date', $today);
+        })->where('status', \App\Enums\QueueStatus::SERVING)->exists();
+
+        if ($isServing) {
+            return;
+        }
+
         $clinicId = auth()->user()->clinic_id ?? $doctor->clinic_id;
 
         $this->callNextTokenService->callNextToken($clinicId, $this->selectedDoctorId);
@@ -103,52 +122,20 @@ class Dashboard extends Component
     public function transferToken()
     {
         $doctor = Doctor::find($this->selectedDoctorId);
-        if (!$doctor || $doctor->is_on_hold) {
+        if (! $doctor || $doctor->is_on_hold) {
             return;
         }
 
-        $today = Carbon::today();
-        $current = Queue::whereHas('appointment', function ($query) use ($today) {
-            $query->where('doctor_id', $this->selectedDoctorId)
-                ->whereDate('appointment_date', $today);
-        })->where('status', 'serving')->first();
+        $clinicId = auth()->user()->clinic_id ?? $doctor->clinic_id;
+        $clinic = Clinic::find($clinicId);
+        $count = $clinic->transfer_depth ?? 6;
 
-        if ($current) {
-            $clinic = $current->appointment->clinic;
-            $depth = $clinic->transfer_depth ?? 6;
-            $currentTokenNum = (int) $current->token_number;
-            $newTokenStr = (string) ($currentTokenNum + $depth);
+        $result = $this->tokenTransferService->transferToken($clinicId, $this->selectedDoctorId, $count);
 
-            // Shift ALL appointments for this doctor/day that are in the way
-            $appointmentsToShift = Appointment::where('doctor_id', $this->selectedDoctorId)
-                ->whereDate('appointment_date', $today)
-                ->whereRaw('CAST(token AS UNSIGNED) > ?', [$currentTokenNum])
-                ->whereRaw('CAST(token AS UNSIGNED) <= ?', [$currentTokenNum + $depth])
-                ->orderByRaw('CAST(token AS UNSIGNED) ASC')
-                ->get();
-
-            foreach ($appointmentsToShift as $appointment) {
-                $num = (int) $appointment->token;
-                $newNumStr = (string) ($num - 1);
-                $appointment->update(['token' => $newNumStr]);
-
-                if ($appointment->queue) {
-                    $appointment->queue->update(['token_number' => $newNumStr]);
-                }
-            }
-
-            // Update the transferred token
-            $current->update([
-                'token_number' => $newTokenStr,
-                'status' => 'waiting',
-            ]);
-
-            if ($current->appointment) {
-                $current->appointment->update(['status' => 'confirmed', 'token' => $newTokenStr]);
-            }
-
-            $clinicId = auth()->user()->clinic_id ?? $current->appointment->clinic_id;
-            broadcast(new QueueUpdated($clinicId, 'transfer'))->toOthers();
+        if ($result['success']) {
+            $this->dispatch('notify', type: 'success', message: $result['message']);
+        } else {
+            $this->dispatch('notify', type: 'error', message: $result['message']);
         }
     }
 
