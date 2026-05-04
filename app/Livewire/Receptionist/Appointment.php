@@ -2,17 +2,12 @@
 
 namespace App\Livewire\Receptionist;
 
-use App\Events\QueueUpdated;
-use App\Models\Appointment as AppointmentModel;
-use App\Models\Clinic;
 use App\Models\Doctor;
 use App\Models\DoctorSchedule;
 use App\Models\Patient;
-use App\Models\Queue;
+use App\Services\AppointmentBookingService;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
 use Livewire\Component;
@@ -21,6 +16,13 @@ use Livewire\Component;
 #[Title('Book Appointment | ClinicOS')]
 class Appointment extends Component
 {
+    protected AppointmentBookingService $bookingService;
+
+    public function boot(AppointmentBookingService $bookingService)
+    {
+        $this->bookingService = $bookingService;
+    }
+
     public $step = 1;
 
     // Selection properties
@@ -251,89 +253,25 @@ class Appointment extends Component
             'phone' => 'required|string|max:20',
         ]);
 
-        try {
-            return DB::transaction(function () {
-                // Ensure doctor is selected
-                if (! $this->selectedDoctorId) {
-                    $this->selectedDoctorId = Doctor::whereHas('user')->first()?->id;
-                }
+        if (! $this->selectedDoctorId) {
+            $this->selectedDoctorId = Doctor::whereHas('user')->first()?->id;
+        }
 
-                if (! $this->selectedDoctorId) {
-                    session()->flash('error', 'No doctor available to assign this appointment.');
+        $data = [
+            'doctor_id' => $this->selectedDoctorId,
+            'clinic_id' => $this->selectedClinicId,
+            'name' => $this->name,
+            'phone' => $this->phone,
+            'appointment_date' => $this->selectedDate,
+        ];
 
-                    return;
-                }
+        $result = $this->bookingService->bookAppointment($data, Auth::user());
 
-                if (empty($this->selectedClinicId)) {
-                    $doctor = Doctor::find($this->selectedDoctorId);
-                    $this->selectedClinicId = $doctor?->clinic_id ?? Clinic::firstOrCreate(
-                        ['name' => 'Default Clinic'],
-                        ['address' => 'Main Street']
-                    )->id;
-                }
-
-                // Find or create patient record by phone
-                $patient = Patient::where('phone', $this->phone)->first();
-
-                if (! $patient) {
-                    $user = Auth::user();
-                    $patient = Patient::create([
-                        'clinic_id' => $this->selectedClinicId,
-                        'user_id' => $user?->id,
-                        'name' => $this->name,
-                        'email' => $user?->email ?? 'guest@example.com',
-                        'phone' => $this->phone,
-                        'dob' => '1990-01-01',
-                        'gender' => 'other',
-                    ]);
-                } else {
-                    // Update patient details if changed
-                    $patient->update([
-                        'name' => $this->name,
-                        'user_id' => $patient->user_id ?? Auth::id(),
-                    ]);
-                }
-
-                // Generate simple sequential token number for the day
-                $tokenNumber = Queue::whereDate('created_at', Carbon::today())->count() + 1;
-
-                $appointment = AppointmentModel::create([
-                    'clinic_id' => $this->selectedClinicId,
-                    'doctor_id' => $this->selectedDoctorId,
-                    'patient_id' => $patient->id,
-                    'name' => $this->name,
-                    'phone' => $this->phone,
-                    'token' => $tokenNumber,
-                    'appointment_date' => $this->selectedDate ?? Carbon::today()->format('Y-m-d'),
-                    'status' => 'pending',
-                ]);
-
-                Queue::create([
-                    'appointment_id' => $appointment->id,
-                    'token_number' => $tokenNumber,
-                    'status' => 'waiting',
-                ]);
-
-                $this->generatedToken = $tokenNumber;
-
-                Log::info('Appointment booked successfully', [
-                    'appointment_id' => $appointment->id,
-                    'token' => $tokenNumber,
-                    'patient' => $this->name,
-                ]);
-
-                session()->flash('message', 'Appointment booked successfully! Your Token: '.$tokenNumber);
-
-                broadcast(new QueueUpdated(1, 'booked'))->toOthers();
-            });
-        } catch (\Exception $e) {
-            Log::error('Failed to book appointment: '.$e->getMessage(), [
-                'name' => $this->name,
-                'phone' => $this->phone,
-                'trace' => $e->getTraceAsString(),
-            ]);
-
-            session()->flash('error', 'Something went wrong while booking the appointment. Please try again.');
+        if ($result['success']) {
+            $this->generatedToken = $result['data']['token'];
+            session()->flash('message', $result['message'].' Your Token: '.$result['data']['token']);
+        } else {
+            session()->flash('error', $result['message']);
         }
     }
 
