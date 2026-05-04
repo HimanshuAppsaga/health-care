@@ -102,8 +102,8 @@ class Dashboard extends Component
 
     public function transferToken()
     {
-        $isDoctorOnHold = Doctor::where('id', $this->selectedDoctorId)->where('is_on_hold', true)->exists();
-        if ($isDoctorOnHold) {
+        $doctor = Doctor::find($this->selectedDoctorId);
+        if (!$doctor || $doctor->is_on_hold) {
             return;
         }
 
@@ -119,23 +119,21 @@ class Dashboard extends Component
             $currentTokenNum = (int) $current->token_number;
             $newTokenStr = (string) ($currentTokenNum + $depth);
 
-            // Shift the next X tokens down by 1
-            $nextTokensToShift = Queue::whereHas('appointment', function ($query) use ($today) {
-                $query->where('doctor_id', $this->selectedDoctorId)
-                    ->whereDate('appointment_date', $today);
-            })
-                ->where('status', 'waiting')
-                ->whereRaw('CAST(token_number AS UNSIGNED) > ?', [$currentTokenNum])
-                ->orderByRaw('CAST(token_number AS UNSIGNED) ASC')
-                ->take($depth)
+            // Shift ALL appointments for this doctor/day that are in the way
+            $appointmentsToShift = Appointment::where('doctor_id', $this->selectedDoctorId)
+                ->whereDate('appointment_date', $today)
+                ->whereRaw('CAST(token AS UNSIGNED) > ?', [$currentTokenNum])
+                ->whereRaw('CAST(token AS UNSIGNED) <= ?', [$currentTokenNum + $depth])
+                ->orderByRaw('CAST(token AS UNSIGNED) ASC')
                 ->get();
 
-            foreach ($nextTokensToShift as $q) {
-                $num = (int) $q->token_number;
+            foreach ($appointmentsToShift as $appointment) {
+                $num = (int) $appointment->token;
                 $newNumStr = (string) ($num - 1);
-                $q->update(['token_number' => $newNumStr]);
-                if ($q->appointment) {
-                    $q->appointment->update(['token' => $newNumStr]);
+                $appointment->update(['token' => $newNumStr]);
+
+                if ($appointment->queue) {
+                    $appointment->queue->update(['token_number' => $newNumStr]);
                 }
             }
 
