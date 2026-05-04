@@ -23,15 +23,17 @@ class CallNextTokenService
             $clinic = Clinic::find($clinicId);
             $clinicName = $clinic ? $clinic->name : 'Unknown Clinic';
 
-            // 1. Complete current serving patient if any
+            // 1. Complete current serving or hold patient if any
             $current = Queue::whereHas('appointment', function ($q) use ($clinicId, $doctorId, $today) {
-                $q->where('clinic_id', $clinicId)
-                    ->whereDate('appointment_date', $today);
+                if ($clinicId) {
+                    $q->where('clinic_id', $clinicId);
+                }
+                $q->whereDate('appointment_date', $today);
 
                 if ($doctorId) {
                     $q->where('doctor_id', $doctorId);
                 }
-            })->where('status', 'serving')->first();
+            })->whereIn('status', ['serving', 'hold'])->first();
 
             if ($current) {
                 $current->update(['status' => 'completed']);
@@ -43,8 +45,10 @@ class CallNextTokenService
 
             // 2. Find next waiting patient
             $next = Queue::whereHas('appointment', function ($q) use ($clinicId, $doctorId, $today) {
-                $q->where('clinic_id', $clinicId)
-                    ->whereDate('appointment_date', $today);
+                if ($clinicId) {
+                    $q->where('clinic_id', $clinicId);
+                }
+                $q->whereDate('appointment_date', $today);
 
                 if ($doctorId) {
                     $q->where('doctor_id', $doctorId);
