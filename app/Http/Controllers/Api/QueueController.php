@@ -2,22 +2,24 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Events\QueueUpdated;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\QueueResource;
 use App\Models\Queue;
+use App\Services\CallNextTokenService;
 use App\Services\CurrentTokenService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Log;
 
 class QueueController extends Controller
 {
     protected $currentTokenService;
 
-    public function __construct(CurrentTokenService $currentTokenService)
+    protected $callNextTokenService;
+
+    public function __construct(CurrentTokenService $currentTokenService, CallNextTokenService $callNextTokenService)
     {
         $this->currentTokenService = $currentTokenService;
+        $this->callNextTokenService = $callNextTokenService;
     }
 
     /**
@@ -72,54 +74,20 @@ class QueueController extends Controller
 
         $clinic = $request->clinic;
         $doctorId = $request->doctor_id;
-        $today = Carbon::today();
 
-        // 1. Complete current serving patient if any
-        $current = Queue::whereHas('appointment', function ($q) use ($clinic, $doctorId, $today) {
-            $q->where('clinic_id', $clinic->id)
-                ->where('doctor_id', $doctorId)
-                ->whereDate('appointment_date', $today);
-        })->where('status', 'serving')->first();
+        $result = $this->callNextTokenService->callNextToken($clinic->id, $doctorId);
 
-        if ($current) {
-            $current->update(['status' => 'completed']);
-            if ($current->appointment) {
-                $current->appointment->update(['status' => 'completed']);
-            }
-            Log::info("Clinic [{$clinic->name}] ID:{$clinic->id} - Token #{$current->token_number} marked COMPLETED.");
-        }
-
-        // 2. Find next waiting patient
-        $next = Queue::whereHas('appointment', function ($q) use ($clinic, $doctorId, $today) {
-            $q->where('clinic_id', $clinic->id)
-                ->where('doctor_id', $doctorId)
-                ->whereDate('appointment_date', $today);
-        })
-            ->where('status', 'waiting')
-            ->orderByRaw('CAST(token_number AS UNSIGNED) ASC')
-            ->first();
-
-        if ($next) {
-            $next->update([
-                'status' => 'serving',
-                'called_at' => now(),
-            ]);
-
-            // Broadcast for real-time updates
-            broadcast(new QueueUpdated($clinic->id, 'next'))->toOthers();
-
-            Log::info("Clinic [{$clinic->name}] ID:{$clinic->id} - Token #{$next->token_number} is NOW SERVING.");
-
+        if ($result['success']) {
             return response()->json([
                 'status' => true,
-                'message' => 'Next patient called successfully',
-                'data' => new QueueResource($next),
+                'message' => $result['message'],
+                'data' => new QueueResource($result['data']['next_token']),
             ]);
         }
 
         return response()->json([
             'status' => false,
-            'message' => 'No patients in waiting queue',
-        ], 404);
+            'message' => $result['message'],
+        ], $result['message'] === 'No patients in waiting queue' ? 404 : 500);
     }
 }

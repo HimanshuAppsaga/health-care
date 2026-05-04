@@ -9,6 +9,7 @@ use App\Models\Clinic;
 use App\Models\Doctor;
 use App\Models\DoctorSchedule;
 use App\Models\Queue;
+use App\Services\CallNextTokenService;
 use App\Services\CurrentTokenService;
 use App\Services\QueueService;
 use Carbon\Carbon;
@@ -22,9 +23,12 @@ class Dashboard extends Component
 {
     protected $currentTokenService;
 
-    public function boot(CurrentTokenService $currentTokenService)
+    protected $callNextTokenService;
+
+    public function boot(CurrentTokenService $currentTokenService, CallNextTokenService $callNextTokenService)
     {
         $this->currentTokenService = $currentTokenService;
+        $this->callNextTokenService = $callNextTokenService;
     }
 
     public $lastStatus;
@@ -89,28 +93,9 @@ class Dashboard extends Component
             return;
         }
 
-        $today = Carbon::today();
+        $clinicId = auth()->user()->clinic_id;
 
-        $current = Queue::whereHas('appointment', function ($query) use ($today) {
-            $query->where('doctor_id', $this->selectedDoctorId)
-                ->whereDate('appointment_date', $today);
-        })->where('status', 'serving')->first();
-
-        if ($current) {
-            $current->update(['status' => 'completed']);
-        }
-
-        $next = Queue::whereHas('appointment', function ($query) use ($today) {
-            $query->where('doctor_id', $this->selectedDoctorId)
-                ->whereDate('appointment_date', $today);
-        })
-            ->where('status', 'waiting')
-            ->orderByRaw('CAST(token_number AS UNSIGNED) ASC')
-            ->first();
-        if ($next) {
-            $next->update(['status' => 'serving', 'called_at' => now()]);
-            broadcast(new QueueUpdated(1, 'next'))->toOthers();
-        }
+        $this->callNextTokenService->callNextToken($clinicId, $this->selectedDoctorId);
     }
 
     public function markAsDone()
