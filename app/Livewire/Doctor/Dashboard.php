@@ -174,7 +174,7 @@ class Dashboard extends Component
 
         $pendingArrivals = Appointment::where('doctor_id', $doctorId)
             ->whereDate('appointment_date', $today)
-            ->where('status', 'confirmed')
+            ->where('status', 'pending')
             ->count();
 
         $completedToday = Appointment::where('doctor_id', $doctorId)

@@ -54,7 +54,7 @@ class Dashboard extends Component
             // Next Appointment
             $this->nextAppointment = Appointment::where('patient_id', $patientId)
                 ->where('appointment_date', '>=', now()->toDateString())
-                ->where('status', 'confirmed')
+                ->where('status', 'pending')
                 ->with('doctor.user')
                 ->orderBy('appointment_date')
                 ->orderByRaw('CAST(token AS UNSIGNED) ASC')
@@ -63,7 +63,7 @@ class Dashboard extends Component
             // Upcoming Appointments (excluding the next one)
             $this->upcomingAppointments = Appointment::where('patient_id', $patientId)
                 ->where('appointment_date', '>=', now()->toDateString())
-                ->where('status', 'confirmed')
+                ->where('status', 'pending')
                 ->when($this->nextAppointment, function ($query) {
                     $query->where('id', '!=', $this->nextAppointment->id);
                 })

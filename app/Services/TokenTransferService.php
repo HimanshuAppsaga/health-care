@@ -137,7 +137,7 @@ class TokenTransferService
     {
         $appointment->update([
             'token' => $token,
-            'status' => $status === QueueStatus::SERVING ? AppointmentStatus::IN_PROGRESS : AppointmentStatus::CONFIRMED,
+            'status' => AppointmentStatus::PENDING,
         ]);
 
         if ($appointment->queue) {

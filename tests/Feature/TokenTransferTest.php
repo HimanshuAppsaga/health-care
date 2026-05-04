@@ -67,7 +67,7 @@ class TokenTransferTest extends TestCase
                 'patient_id' => $patient->id,
                 'appointment_date' => now()->toDateString(),
                 'token' => $token,
-                'status' => 'confirmed',
+                'status' => 'pending',
                 'name' => "Patient $i",
             ]);
 
@@ -100,6 +100,7 @@ class TokenTransferTest extends TestCase
         $this->assertEquals('30', Appointment::where('name', 'Patient 1')->first()->token);
         $this->assertEquals('40', Appointment::where('name', 'Patient 4')->first()->token); // Unchanged
     }
+
     public function test_it_caps_transfer_to_last_person_in_queue()
     {
         $clinic = Clinic::create(['name' => 'Test Clinic']);
@@ -142,7 +143,7 @@ class TokenTransferTest extends TestCase
                 'patient_id' => $patient->id,
                 'appointment_date' => now()->toDateString(),
                 'token' => $token,
-                'status' => 'confirmed',
+                'status' => 'pending',
                 'name' => "Patient $i",
             ]);
 

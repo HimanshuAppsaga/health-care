@@ -10,7 +10,6 @@ use App\Models\DoctorSchedule;
 use App\Models\Queue;
 use App\Services\CallNextTokenService;
 use App\Services\CurrentTokenService;
-use App\Services\QueueService;
 use App\Services\TokenTransferService;
 use Carbon\Carbon;
 use Livewire\Attributes\Layout;
@@ -108,7 +107,7 @@ class Dashboard extends Component
         $isServing = Queue::whereHas('appointment', function ($query) use ($today) {
             $query->where('doctor_id', $this->selectedDoctorId)
                 ->whereDate('appointment_date', $today);
-        })->where('status', \App\Enums\QueueStatus::SERVING)->exists();
+        })->where('status', QueueStatus::SERVING)->exists();
 
         if ($isServing) {
             return;
@@ -157,7 +156,7 @@ class Dashboard extends Component
 
         $pendingArrivals = Appointment::when($doctorId, fn ($q) => $q->where('doctor_id', $doctorId))
             ->whereDate('appointment_date', $today)
-            ->where('status', 'confirmed')
+            ->where('status', 'pending')
             ->count();
 
         $completedToday = Appointment::when($doctorId, fn ($q) => $q->where('doctor_id', $doctorId))
