@@ -12,6 +12,8 @@ use App\Livewire\Patient\Appointment;
 use App\Livewire\Patient\Dashboard;
 use Illuminate\Support\Facades\Route;
 
+
+
 Route::middleware('guest')->group(function () {
     Route::get('/', Login::class)->name('login');
     Route::get('/register', SignUp::class)->name('register');
@@ -30,6 +32,8 @@ Route::middleware('auth')->group(function () {
     Route::get('/doctor/schedule', Schedule::class)->name('doctor.schedule');
     Route::get('/doctor/schedule/edit/{id?}', EditSchedule::class)->name('doctor.schedule.edit');
     Route::get('/doctor/clinic-settings', ClinicSettings::class)->name('doctor.clinic-settings');
+    Route::get('/doctor/clinic-details/{id}', App\Livewire\Doctor\ClinicDetail::class)->name('doctor.clinic.detail');
+    Route::get('/doctor/clinic-details/{id}/edit', App\Livewire\Doctor\ClinicEdit::class)->name('doctor.clinic.edit');
 
     Route::get('/appointments', AppointmentList::class)->name('appointments.index');
 
