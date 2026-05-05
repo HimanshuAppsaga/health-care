@@ -3,9 +3,9 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Models\Doctor;
+use App\Http\Requests\Api\StoreAppointmentRequest;
+use App\Http\Resources\Api\AppointmentResource;
 use App\Services\AppointmentBookingService;
-use Illuminate\Http\Request;
 
 class AppointmentController extends Controller
 {
@@ -16,27 +16,11 @@ class AppointmentController extends Controller
     /**
      * Store a newly created appointment.
      */
-    public function store(Request $request)
+    public function store(StoreAppointmentRequest $request)
     {
         $clinic = $request->clinic;
 
-        $request->validate([
-            'doctor_id' => [
-                'required',
-                'exists:doctors,id',
-                // Security: Ensure the doctor belongs to this clinic
-                function ($attribute, $value, $fail) use ($clinic) {
-                    if (! Doctor::where('id', $value)->where('clinic_id', $clinic->id)->exists()) {
-                        $fail('The selected doctor does not belong to your clinic.');
-                    }
-                },
-            ],
-            'name' => 'required|string|max:191',
-            'phone' => 'required|string|max:20',
-            'date' => 'nullable|date',
-        ]);
-
-        $data = $request->all();
+        $data = $request->validated();
         $data['clinic_id'] = $clinic->id;
 
         $result = $this->bookingService->bookAppointment($data, auth('sanctum')->user());
@@ -48,14 +32,8 @@ class AppointmentController extends Controller
             ], 422);
         }
 
-        return response()->json([
-            'status' => true,
-            'message' => $result['message'],
-            'token' => $result['data']['token'],
-            'data' => [
-                'appointment' => $result['data']['appointment'],
-                'clinic' => $result['data']['clinic_name'],
-            ],
-        ], 201);
+        return (new AppointmentResource($result))
+            ->response()
+            ->setStatusCode(201);
     }
 }
