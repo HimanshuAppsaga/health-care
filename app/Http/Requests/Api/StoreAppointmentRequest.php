@@ -29,7 +29,8 @@ class StoreAppointmentRequest extends FormRequest
                 'exists:doctors,id',
                 // Security: Ensure the doctor belongs to this clinic
                 function (string $attribute, mixed $value, \Closure $fail) {
-                    if (! Doctor::where('id', $value)->where('clinic_id', $this->clinic?->id)->exists()) {
+
+                    if (! Doctor::where('id', $value)->where('clinic_id', $this->clinic_id)->exists()) {
                         $fail('The selected doctor does not belong to your clinic.');
                     }
                 },

@@ -18,10 +18,8 @@ class AppointmentController extends Controller
      */
     public function store(StoreAppointmentRequest $request)
     {
-        $clinic = $request->attributes->get('clinic');
-        
         $data = $request->validated();
-        $data['clinic_id'] = $clinic->id;
+        $data['clinic_id'] = $request->clinic_id;
 
         $result = $this->bookingService->bookAppointment($data, auth('sanctum')->user());
 
@@ -32,14 +30,18 @@ class AppointmentController extends Controller
             ], 422);
         }
 
-        // return (new AppointmentResource($result))
-        //     ->response()
-        //     ->setStatusCode(201);
-        return response()->json([
-            'success' => true,
-            'message' => 'Token found',
-            'data' => new AppointmentResource($appointment)
-        ]);
-    
+        return (new AppointmentResource($result['data']['appointment']))
+            ->additional([
+                'status' => true,
+                'message' => $result['message'],
+            ])
+            ->response()
+            ->setStatusCode(201);
+        // return response()->json([
+        //     'success' => true,
+        //     'message' => 'Token found',
+        //     'data' => new AppointmentResource($appointment)
+        // ]);
+
     }
 }
