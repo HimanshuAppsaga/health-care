@@ -14,7 +14,6 @@ class AppointmentResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
-
         return [
             'appointment' => $this->resource['data']['appointment'],
             'clinic' => $this->resource['data']['clinic_name'],
