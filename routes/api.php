@@ -19,4 +19,7 @@ Route::middleware('api.key')->group(function () {
         Route::post('/call-next', [QueueController::class, 'callNext']);
         Route::post('/transfer', [QueueController::class, 'transfer']);
     });
+
+    Route::post('/v1/patient/check-token', [App\Http\Controllers\Api\V1\Patient\TokenController::class, 'checkToken']);
+
 });

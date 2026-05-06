@@ -40,7 +40,9 @@ class CheckApiKey
         }
 
         // 5. Attach the clinic data to the request
-        $request->merge(['clinic' => $clinic]);
+         
+        $request->merge(['clinic_id' => $clinic->id]);
+
 
         // Optional: Also set as a request attribute for easier access via $request->attributes->get('clinic')
         // but merge() is more standard for $request->clinic access in Laravel.
