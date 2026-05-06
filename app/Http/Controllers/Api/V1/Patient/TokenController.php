@@ -3,22 +3,19 @@
 namespace App\Http\Controllers\Api\V1\Patient;
 
 use App\Http\Controllers\Controller;
-use App\Models\Appointment;
-use App\Http\Resources\Api\AppointmentResource;
 use App\Http\Requests\Api\CheckTokenRequest;
+use App\Http\Resources\Api\AppointmentResource;
+use App\Models\Appointment;
+use App\Services\ApiService;
 
 class TokenController extends Controller
 {
-   public function checkToken(CheckTokenRequest $request)
+    public function checkToken(CheckTokenRequest $request)
     {
         $clinicId = $request->clinic_id;
 
-        if (!$clinicId) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Clinic ID missing from middleware',
-                'data' => null
-            ], 400);
+        if (! $clinicId) {
+            return ApiService::error('Clinic ID missing from middleware', 400);
         }
 
         $appointment = Appointment::where('clinic_id', $clinicId)
@@ -26,18 +23,10 @@ class TokenController extends Controller
             ->latest()
             ->first();
 
-        if (!$appointment) {
-            return response()->json([
-                'success' => false,
-                'message' => 'No token booked for this user',
-                'data' => null
-            ], 404);
+        if (! $appointment) {
+            return ApiService::error('No token booked for this user', 404);
         }
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Token found',
-            'data' => new AppointmentResource($appointment)
-        ]);
+        return ApiService::respond('appointment', new AppointmentResource($appointment), 'Token found');
     }
 }

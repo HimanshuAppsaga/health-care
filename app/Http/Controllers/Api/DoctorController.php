@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\DoctorResource;
 use App\Models\Doctor;
+use App\Services\ApiService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 
@@ -27,8 +28,10 @@ class DoctorController extends Controller
             ->where('clinic_id', $clinic->id)
             ->paginate(10);
 
-        return DoctorResource::collection($doctors)->additional([
-            'status' => true,
-        ]);
+        return ApiService::respond(
+            'doctors',
+            DoctorResource::collection($doctors),
+            'Doctor list retrieved successfully'
+        );
     }
 }

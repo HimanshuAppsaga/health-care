@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\QueueResource;
 use App\Models\Queue;
+use App\Services\ApiService;
 use App\Services\CallNextTokenService;
 use App\Services\CurrentTokenService;
 use App\Services\TokenTransferService;
@@ -56,17 +57,12 @@ class QueueController extends Controller
             ->orderByRaw('CAST(token_number AS UNSIGNED) ASC')
             ->paginate($request->input('per_page', 15));
 
-        return response()->json([
-            'status' => true,
-            'data' => [
-                'current_patient' => $nowServing ? new QueueResource($nowServing) : null,
-                'waiting_list' => QueueResource::collection($waitingList)->response()->getData(true),
-            ],
-            'meta' => [
-                'clinic_name' => $clinic->name,
-                'date' => $today->toDateString(),
-            ],
-        ]);
+        return ApiService::respond('queue', [
+            'current_patient' => $nowServing ? new QueueResource($nowServing) : null,
+            'waiting_list' => QueueResource::collection($waitingList)->response()->getData(true),
+            'clinic_name' => $clinic->name,
+            'date' => $today->toDateString(),
+        ], 'Live queue retrieved successfully');
     }
 
     /**
@@ -85,17 +81,10 @@ class QueueController extends Controller
         $result = $this->callNextTokenService->callNextToken($clinic->id, $doctorId);
 
         if ($result['success']) {
-            return response()->json([
-                'status' => true,
-                'message' => $result['message'],
-                'data' => new QueueResource($result['data']['next_token']),
-            ]);
+            return ApiService::respond('queue', new QueueResource($result['data']['next_token']), $result['message']);
         }
 
-        return response()->json([
-            'status' => false,
-            'message' => $result['message'],
-        ], $result['message'] === 'No patients in waiting queue' ? 404 : 500);
+        return ApiService::error($result['message'], $result['message'] === 'No patients in waiting queue' ? 404 : 500);
     }
 
     public function transfer(Request $request)
@@ -112,16 +101,9 @@ class QueueController extends Controller
         $result = $this->tokenTransferService->transferToken($clinic->id, $doctorId, $transferCount);
 
         if ($result['success']) {
-            return response()->json([
-                'status' => true,
-                'message' => $result['message'],
-                'data' => $result['data'] ?? null,
-            ]);
+            return ApiService::respond('transfer', $result['data'] ?? null, $result['message']);
         }
 
-        return response()->json([
-            'status' => false,
-            'message' => $result['message'],
-        ], 400);
+        return ApiService::error($result['message'], 400);
     }
 }
