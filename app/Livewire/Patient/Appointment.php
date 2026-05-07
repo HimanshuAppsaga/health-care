@@ -241,7 +241,19 @@ class Appointment extends Component
         } elseif ($this->step == 4) {
             $this->validate([
                 'name' => 'required|string|max:191',
-                'phone' => 'required|digits:10',
+                'phone' => [
+                    'required',
+                    'digits:10',
+                    function ($attribute, $value, $fail) {
+                        $exists = \App\Models\Appointment::where('phone', $value)
+                            ->where('created_at', '>=', now()->subHours(24))
+                            ->exists();
+
+                        if ($exists) {
+                            $fail('appointment is already booked.');
+                        }
+                    },
+                ],
                 'reason' => 'required',
             ]);
         }
@@ -252,7 +264,19 @@ class Appointment extends Component
         $this->selectedDate = Carbon::today()->format('Y-m-d'); // Force today
         $this->validate([
             'name' => 'required|string|max:191',
-            'phone' => 'required|digits:10',
+            'phone' => [
+                'required',
+                'digits:10',
+                function ($attribute, $value, $fail) {
+                    $exists = \App\Models\Appointment::where('phone', $value)
+                        ->where('created_at', '>=', now()->subHours(24))
+                        ->exists();
+
+                    if ($exists) {
+                        $fail('appointment is already booked.');
+                    }
+                },
+            ],
         ]);
 
         if (! $this->selectedDoctorId) {

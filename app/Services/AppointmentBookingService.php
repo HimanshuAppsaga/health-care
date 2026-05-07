@@ -29,6 +29,18 @@ class AppointmentBookingService
                 $phone = $data['phone'];
                 $dateStr = $data['date'] ?? $data['appointment_date'] ?? Carbon::today()->format('Y-m-d');
 
+                // Check if an appointment was already booked for this phone in the last 24 hours
+                $alreadyBooked = AppointmentModel::where('phone', $phone)
+                    ->where('created_at', '>=', now()->subHours(24))
+                    ->exists();
+
+                if ($alreadyBooked) {
+                    return [
+                        'success' => false,
+                        'message' => 'appointment is already booked.',
+                    ];
+                }
+
                 // Get Doctor and Clinic context
                 $doctor = Doctor::with('clinic')->find($doctorId);
                 if (! $doctor) {
