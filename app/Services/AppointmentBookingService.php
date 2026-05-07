@@ -5,7 +5,6 @@ namespace App\Services;
 use App\Events\QueueUpdated;
 use App\Models\Appointment as AppointmentModel;
 use App\Models\Doctor;
-use App\Models\DoctorSchedule;
 use App\Models\Patient;
 use App\Models\Queue;
 use Carbon\Carbon;
@@ -66,16 +65,14 @@ class AppointmentBookingService
                 $dayOfWeek = $date->dayOfWeek; // 0 (Sun) to 6 (Sat)
                 $isToday = $date->isToday();
 
-                $schedules = DoctorSchedule::where('doctor_id', $doctorId)
-                    ->where('day_of_week', $dayOfWeek)
-                    ->get();
+                $schedules = $doctor->working_hours[$dayOfWeek] ?? [];
 
                 $hasAvailableSlot = false;
 
                 foreach ($schedules as $schedule) {
-                    $start = Carbon::createFromFormat('H:i:s', $schedule->start_time);
-                    $end = Carbon::createFromFormat('H:i:s', $schedule->end_time);
-                    $duration = $schedule->slot_duration ?: 30;
+                    $start = Carbon::createFromFormat('H:i:s', $schedule['start_time']);
+                    $end = Carbon::createFromFormat('H:i:s', $schedule['end_time']);
+                    $duration = $schedule['slot_duration'] ?: 30;
 
                     // If the schedule hasn't started yet today, don't allow bookings (Live Queue Logic)
                     if ($isToday && now()->isBefore($start)) {

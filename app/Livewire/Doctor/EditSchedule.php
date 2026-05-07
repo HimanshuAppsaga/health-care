@@ -4,7 +4,6 @@ namespace App\Livewire\Doctor;
 
 use App\Events\ScheduleUpdated;
 use App\Models\Doctor;
-use App\Models\DoctorSchedule;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Layout;
@@ -41,24 +40,23 @@ class EditSchedule extends Component
             $this->weekly_schedules[$day] = [];
         }
 
-        $schedules = DoctorSchedule::where('doctor_id', $doctor->id)
-            ->orderBy('day_of_week')
-            ->orderBy('start_time')
-            ->get();
+        $schedules = $doctor->working_hours ?? [];
 
-        foreach ($schedules as $s) {
-            $start = Carbon::parse($s->start_time);
-            $end = Carbon::parse($s->end_time);
+        foreach ($schedules as $day => $sessions) {
+            foreach ($sessions as $s) {
+                $start = Carbon::parse($s['start_time']);
+                $end = Carbon::parse($s['end_time']);
 
-            $this->weekly_schedules[$s->day_of_week][] = [
-                'id' => $s->id,
-                'start_hour' => $start->format('h'),
-                'start_min' => $start->format('i'),
-                'start_period' => $start->format('A'),
-                'end_hour' => $end->format('h'),
-                'end_min' => $end->format('i'),
-                'end_period' => $end->format('A'),
-            ];
+                $this->weekly_schedules[$day][] = [
+                    'id' => null,
+                    'start_hour' => $start->format('h'),
+                    'start_min' => $start->format('i'),
+                    'start_period' => $start->format('A'),
+                    'end_hour' => $end->format('h'),
+                    'end_min' => $end->format('i'),
+                    'end_period' => $end->format('A'),
+                ];
+            }
         }
 
         // If no sessions for a day, maybe add an empty one?
@@ -107,36 +105,34 @@ class EditSchedule extends Component
             return;
         }
 
-        // Transaction for atomic update
-        \DB::transaction(function () use ($doctor) {
-            // Clear existing schedules for this doctor
-            DoctorSchedule::where('doctor_id', $doctor->id)->delete();
+        $workingHours = [];
 
-            foreach ($this->weekly_schedules as $day => $sessions) {
-                $processedSessions = [];
+        foreach ($this->weekly_schedules as $day => $sessions) {
+            $processedSessions = [];
 
-                foreach ($sessions as $session) {
-                    $startTime = Carbon::createFromFormat('h:i A', "{$session['start_hour']}:{$session['start_min']} {$session['start_period']}")->format('H:i:s');
-                    $endTime = Carbon::createFromFormat('h:i A', "{$session['end_hour']}:{$session['end_min']} {$session['end_period']}")->format('H:i:s');
+            foreach ($sessions as $session) {
+                $startTime = Carbon::createFromFormat('h:i A', "{$session['start_hour']}:{$session['start_min']} {$session['start_period']}")->format('H:i:s');
+                $endTime = Carbon::createFromFormat('h:i A', "{$session['end_hour']}:{$session['end_min']} {$session['end_period']}")->format('H:i:s');
 
-                    // Avoid duplicate timings for the same day
-                    $sessionHash = $startTime.'-'.$endTime;
-                    if (in_array($sessionHash, $processedSessions)) {
-                        continue;
-                    }
-                    $processedSessions[] = $sessionHash;
-
-                    DoctorSchedule::create([
-                        'doctor_id' => $doctor->id,
-                        'day_of_week' => $day,
-                        'start_time' => $startTime,
-                        'end_time' => $endTime,
-                        'max_patients' => 1,
-                        'slot_duration' => 15,
-                    ]);
+                // Avoid duplicate timings for the same day
+                $sessionHash = $startTime.'-'.$endTime;
+                if (in_array($sessionHash, $processedSessions)) {
+                    continue;
                 }
+                $processedSessions[] = $sessionHash;
+
+                $workingHours[$day][] = [
+                    'start_time' => $startTime,
+                    'end_time' => $endTime,
+                    'max_patients' => 1,
+                    'slot_duration' => 15,
+                ];
             }
-        });
+        }
+
+        $doctor->update([
+            'working_hours' => $workingHours,
+        ]);
 
         broadcast(new ScheduleUpdated(1, 'updated'))->toOthers();
 

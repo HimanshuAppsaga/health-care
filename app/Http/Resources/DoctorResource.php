@@ -26,7 +26,7 @@ class DoctorResource extends JsonResource
             'profile_photo' => ($this->user && $this->user->profile_photo_path)
                 ? Storage::disk('public')->url($this->user->profile_photo_path)
                 : null,
-            'schedules' => DoctorScheduleResource::collection($this->whenLoaded('schedules')),
+            'working_hours' => $this->working_hours,
 
         ];
     }

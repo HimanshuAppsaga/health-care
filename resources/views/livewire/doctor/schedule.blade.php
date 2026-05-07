@@ -53,11 +53,11 @@
                                 <div class="flex items-center gap-2">
                                     <span class="material-symbols-outlined text-primary-container text-sm">schedule</span>
                                     <span class="text-lg font-bold text-on-surface">
-                                        {{ \Carbon\Carbon::parse($schedule->start_time)->format('h:i A') }}
+                                        {{ \Carbon\Carbon::parse($schedule['start_time'])->format('h:i A') }}
                                     </span>
                                     <span class="text-slate-300 font-black px-1">—</span>
                                     <span class="text-lg font-bold text-on-surface">
-                                        {{ \Carbon\Carbon::parse($schedule->end_time)->format('h:i A') }}
+                                        {{ \Carbon\Carbon::parse($schedule['end_time'])->format('h:i A') }}
                                     </span>
                                 </div>
                             </div>

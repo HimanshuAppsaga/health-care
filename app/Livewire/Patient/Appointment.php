@@ -3,7 +3,6 @@
 namespace App\Livewire\Patient;
 
 use App\Models\Doctor;
-use App\Models\DoctorSchedule;
 use App\Models\Patient;
 use App\Services\AppointmentBookingService;
 use Carbon\Carbon;
@@ -90,9 +89,7 @@ class Appointment extends Component
             // Try to pick a doctor who has a schedule today
             $dayOfWeek = Carbon::today()->dayOfWeek;
             $this->selectedDoctorId = Doctor::whereHas('user')
-                ->whereHas('schedules', function ($query) use ($dayOfWeek) {
-                    $query->where('day_of_week', $dayOfWeek);
-                })->first()?->id;
+                ->whereNotNull("working_hours->{$dayOfWeek}")->first()?->id;
 
             // Fallback to first doctor if no one has a schedule today
             if (! $this->selectedDoctorId) {
@@ -149,11 +146,10 @@ class Appointment extends Component
         // Typically Laravel/Carbon uses 0=Sunday, 1=Monday...
         // Let's check DoctorSchedule day_of_week
 
-        $schedules = DoctorSchedule::where('doctor_id', $this->selectedDoctorId)
-            ->where('day_of_week', $dayOfWeek)
-            ->get();
+        $doctor = Doctor::find($this->selectedDoctorId);
+        $schedules = $doctor->working_hours[$dayOfWeek] ?? [];
 
-        if ($schedules->isEmpty()) {
+        if (empty($schedules)) {
             return;
         }
 
@@ -161,9 +157,9 @@ class Appointment extends Component
         $bookedSlots = [];
 
         foreach ($schedules as $schedule) {
-            $start = Carbon::createFromFormat('H:i:s', $schedule->start_time);
-            $end = Carbon::createFromFormat('H:i:s', $schedule->end_time);
-            $duration = $schedule->slot_duration ?: 30;
+            $start = Carbon::createFromFormat('H:i:s', $schedule['start_time']);
+            $end = Carbon::createFromFormat('H:i:s', $schedule['end_time']);
+            $duration = $schedule['slot_duration'] ?: 30;
 
             // If the schedule hasn't started yet today, don't allow bookings
             if ($this->selectedDate === Carbon::today()->format('Y-m-d') && now()->isBefore($start)) {

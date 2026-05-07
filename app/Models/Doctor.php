@@ -14,6 +14,7 @@ class Doctor extends Model
         'experience_years',
         'consultation_fee',
         'is_on_hold',
+        'working_hours',
     ];
 
     public function clinic()
@@ -26,6 +27,7 @@ class Doctor extends Model
         return [
             'is_on_hold' => 'boolean',
             'consultation_fee' => 'double',
+            'working_hours' => 'array',
         ];
     }
 
@@ -37,10 +39,5 @@ class Doctor extends Model
     public function appointments()
     {
         return $this->hasMany(Appointment::class);
-    }
-
-    public function schedules()
-    {
-        return $this->hasMany(DoctorSchedule::class);
     }
 }

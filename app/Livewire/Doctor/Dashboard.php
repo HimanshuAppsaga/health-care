@@ -5,7 +5,6 @@ namespace App\Livewire\Doctor;
 use App\Enums\QueueStatus;
 use App\Events\QueueUpdated;
 use App\Models\Appointment;
-use App\Models\DoctorSchedule;
 use App\Models\Queue;
 use App\Services\CallNextTokenService;
 use App\Services\CurrentTokenService;
@@ -238,17 +237,23 @@ class Dashboard extends Component
 
         $isDoctorOnHold = $this->isDoctorOnHold;
 
-        $doctorSchedules = DoctorSchedule::where('doctor_id', $doctorId)
-            ->where('day_of_week', $today->dayOfWeek)
-            ->orderBy('start_time', 'asc')
-            ->get()
-            ->map(function ($schedule) use ($today) {
-                $schedule->booked_count = Appointment::where('doctor_id', $schedule->doctor_id)
-                    ->whereDate('appointment_date', $today)
-                    ->count();
+        $sessions = $doctor->working_hours[$today->dayOfWeek] ?? [];
+        $doctorSchedules = collect();
 
-                return $schedule;
-            });
+        foreach ($sessions as $session) {
+            $sObj = (object) [
+                'doctor_id' => $doctorId,
+                'start_time' => $session['start_time'],
+                'end_time' => $session['end_time'],
+                'max_patients' => $session['max_patients'],
+                'slot_duration' => $session['slot_duration'],
+            ];
+            $sObj->booked_count = Appointment::where('doctor_id', $doctorId)
+                ->whereDate('appointment_date', $today)
+                ->count();
+            $doctorSchedules->push($sObj);
+        }
+        $doctorSchedules = $doctorSchedules->sortBy('start_time');
 
         return view('livewire.doctor.dashboard', [
             'totalAppointments' => $totalAppointments,

@@ -2,7 +2,6 @@
 
 namespace App\Livewire\Doctor;
 
-use App\Models\DoctorSchedule;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
@@ -35,19 +34,9 @@ class Schedule extends Component
             return;
         }
 
-        $allSchedules = DoctorSchedule::where('doctor_id', $doctor->id)
-            ->orderBy('day_of_week')
-            ->orderBy('start_time')
-            ->get();
-
-        // Initialize empty array for all days 0-6
-        $this->schedules = [
+        $this->schedules = $doctor->working_hours ?? [
             1 => [], 2 => [], 3 => [], 4 => [], 5 => [], 6 => [], 0 => [],
         ];
-
-        foreach ($allSchedules as $schedule) {
-            $this->schedules[$schedule->day_of_week][] = $schedule;
-        }
     }
 
     public function render()

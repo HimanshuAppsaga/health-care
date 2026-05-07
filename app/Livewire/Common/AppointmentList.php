@@ -3,7 +3,6 @@
 namespace App\Livewire\Common;
 
 use App\Models\Appointment;
-use App\Models\DoctorSchedule;
 use Carbon\Carbon;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
@@ -100,17 +99,8 @@ class AppointmentList extends Component
             ->orderByRaw('CAST(token AS UNSIGNED) DESC')
             ->paginate(10);
 
-        // Fetch schedules for the doctors and days of week in the current result set
-        $doctorIds = $appointments->pluck('doctor_id')->unique();
-        $daysOfWeek = $appointments->map(fn ($a) => Carbon::parse($a->appointment_date)->dayOfWeek)->unique();
-
-        $schedules = DoctorSchedule::whereIn('doctor_id', $doctorIds)
-            ->whereIn('day_of_week', $daysOfWeek)
-            ->get();
-
         return view('livewire.common.appointment-list', [
             'appointments' => $appointments,
-            'schedules' => $schedules,
         ]);
     }
 

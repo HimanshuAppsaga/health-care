@@ -3,7 +3,6 @@
 namespace App\Livewire\Receptionist;
 
 use App\Models\Doctor;
-use App\Models\DoctorSchedule;
 use App\Models\Patient;
 use App\Services\AppointmentBookingService;
 use Carbon\Carbon;
@@ -89,9 +88,7 @@ class Appointment extends Component
 
             // Try to pick a doctor who has a schedule today
             $dayOfWeek = Carbon::today()->dayOfWeek;
-            $this->selectedDoctorId = Doctor::whereHas('schedules', function ($query) use ($dayOfWeek) {
-                $query->where('day_of_week', $dayOfWeek);
-            })->first()?->id;
+            $this->selectedDoctorId = Doctor::whereNotNull("working_hours->{$dayOfWeek}")->first()?->id;
 
             // Fallback to first doctor if no one has a schedule today
             if (! $this->selectedDoctorId) {
@@ -146,19 +143,18 @@ class Appointment extends Component
         $date = Carbon::parse($this->selectedDate);
         $dayOfWeek = $date->dayOfWeek; // 0 (Sun) to 6 (Sat)
 
-        $schedules = DoctorSchedule::where('doctor_id', $this->selectedDoctorId)
-            ->where('day_of_week', $dayOfWeek)
-            ->get();
+        $doctor = Doctor::find($this->selectedDoctorId);
+        $schedules = $doctor->working_hours[$dayOfWeek] ?? [];
 
-        if ($schedules->isEmpty()) {
+        if (empty($schedules)) {
             return;
         }
 
         foreach ($schedules as $schedule) {
 
-            $start = Carbon::createFromFormat('H:i:s', $schedule->start_time);
-            $end = Carbon::createFromFormat('H:i:s', $schedule->end_time);
-            $duration = $schedule->slot_duration ?: 30;
+            $start = Carbon::createFromFormat('H:i:s', $schedule['start_time']);
+            $end = Carbon::createFromFormat('H:i:s', $schedule['end_time']);
+            $duration = $schedule['slot_duration'] ?: 30;
 
             // If the schedule hasn't started yet today, don't allow bookings
             if ($this->selectedDate === Carbon::today()->format('Y-m-d') && now()->isBefore($start)) {
@@ -305,14 +301,16 @@ class Appointment extends Component
             return null;
         }
 
-        $slotTime = Carbon::parse($this->selectedSlot)->format('H:i:s');
-        $dayOfWeek = Carbon::parse($this->selectedDate)->dayOfWeek;
+        $doctor = Doctor::find($this->selectedDoctorId);
+        $sessions = $doctor->working_hours[$dayOfWeek] ?? [];
 
-        return DoctorSchedule::where('doctor_id', $this->selectedDoctorId)
-            ->where('day_of_week', $dayOfWeek)
-            ->whereTime('start_time', '<=', $slotTime)
-            ->whereTime('end_time', '>', $slotTime)
-            ->first();
+        foreach ($sessions as $session) {
+            if ($session['start_time'] <= $slotTime && $session['end_time'] > $slotTime) {
+                return (object) $session;
+            }
+        }
+
+        return null;
     }
 
     public function render()

@@ -6,7 +6,6 @@ use App\Enums\QueueStatus;
 use App\Models\Appointment;
 use App\Models\Clinic;
 use App\Models\Doctor;
-use App\Models\DoctorSchedule;
 use App\Models\Queue;
 use App\Services\CallNextTokenService;
 use App\Services\CurrentTokenService;
@@ -235,21 +234,29 @@ class Dashboard extends Component
             ->where('status', 'waiting')
             ->count();
 
-        $doctorSchedules = DoctorSchedule::with(['doctor.user'])
-            ->whereHas('doctor', function ($query) use ($doctorId) {
-                $query->when($doctorId, fn ($q) => $q->where('id', $doctorId));
-            })
-            ->where('day_of_week', $today->dayOfWeek)
-            ->orderBy('start_time', 'asc')
-            ->get()
-            ->map(function ($schedule) use ($today) {
-                // Since appointments no longer have times, we can't accurately split them by session.
-                $schedule->booked_count = Appointment::where('doctor_id', $schedule->doctor_id)
+        $doctorsForSchedule = Doctor::with('user')
+            ->when($doctorId, fn ($q) => $q->where('id', $doctorId))
+            ->get();
+
+        $doctorSchedules = collect();
+        foreach ($doctorsForSchedule as $doc) {
+            $sessions = $doc->working_hours[$today->dayOfWeek] ?? [];
+            foreach ($sessions as $session) {
+                $sObj = (object) [
+                    'doctor_id' => $doc->id,
+                    'doctor' => $doc,
+                    'start_time' => $session['start_time'],
+                    'end_time' => $session['end_time'],
+                    'max_patients' => $session['max_patients'],
+                    'slot_duration' => $session['slot_duration'],
+                ];
+                $sObj->booked_count = Appointment::where('doctor_id', $doc->id)
                     ->whereDate('appointment_date', $today)
                     ->count();
-
-                return $schedule;
-            });
+                $doctorSchedules->push($sObj);
+            }
+        }
+        $doctorSchedules = $doctorSchedules->sortBy('start_time');
 
         return view('livewire.receptionist.dashboard', [
             'totalAppointments' => $totalAppointments,
