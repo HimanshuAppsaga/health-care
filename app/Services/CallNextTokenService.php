@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Events\QueueUpdated;
 use App\Models\Clinic;
+use App\Models\Doctor;
 use App\Models\Queue;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Log;
@@ -22,6 +23,16 @@ class CallNextTokenService
             $today = Carbon::today();
             $clinic = Clinic::find($clinicId);
             $clinicName = $clinic ? $clinic->name : 'Unknown Clinic';
+
+            if ($doctorId) {
+                $doctor = Doctor::find($doctorId);
+                if ($doctor && $doctor->is_on_hold) {
+                    return [
+                        'success' => false,
+                        'message' => 'The doctor is currently on hold and cannot call the next patient.',
+                    ];
+                }
+            }
 
             // 1. Complete current serving or hold patient if any
             $current = Queue::whereHas('appointment', function ($q) use ($clinicId, $doctorId, $today) {
