@@ -17,6 +17,7 @@ class Clinic extends Model
         'working_hours',
         'logo',
         'api_key',
+        'transfer_depth',
     ];
 
     /**

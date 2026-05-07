@@ -64,12 +64,11 @@ class QueueController extends Controller
     {
         $request->validate([
             'doctor_id' => 'required|exists:doctors,id',
-            'transfer_count' => 'required|integer|min:1',
         ]);
 
         $clinic = $request->clinic;
         $doctorId = $request->doctor_id;
-        $transferCount = $request->transfer_count;
+        $transferCount = $clinic->transfer_depth ?: 1;
 
         $result = $this->tokenTransferService->transferToken($clinic->id, $doctorId, $transferCount);
 
