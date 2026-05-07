@@ -36,7 +36,7 @@ class StoreAppointmentRequest extends FormRequest
                 },
             ],
             'name' => 'required|string|max:191',
-            'phone' => 'required|string|max:20',
+            'phone' => 'required|digits:10',
             'date' => 'nullable|date',
         ];
     }

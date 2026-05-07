@@ -241,7 +241,7 @@ class Appointment extends Component
         } elseif ($this->step == 4) {
             $this->validate([
                 'name' => 'required|string|max:191',
-                'phone' => 'required|string|max:20',
+                'phone' => 'required|digits:10',
                 'reason' => 'required',
             ]);
         }
@@ -252,7 +252,7 @@ class Appointment extends Component
         $this->selectedDate = Carbon::today()->format('Y-m-d'); // Force today
         $this->validate([
             'name' => 'required|string|max:191',
-            'phone' => 'required|string|max:20',
+            'phone' => 'required|digits:10',
         ]);
 
         if (! $this->selectedDoctorId) {
