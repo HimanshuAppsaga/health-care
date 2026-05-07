@@ -15,6 +15,7 @@ class AppointmentResource extends JsonResource
             'phone' => $this->phone,
             'token' => $this->token,
             'clinic_id' => $this->clinic_id,
+            'doctor_id' => $this->doctor_id,
             'appointment_date' => $this->appointment_date,
             'status' => $this->status,
         ];
