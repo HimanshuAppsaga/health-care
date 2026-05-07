@@ -247,8 +247,6 @@ class Dashboard extends Component
                     'doctor' => $doc,
                     'start_time' => $session['start_time'],
                     'end_time' => $session['end_time'],
-                    'max_patients' => $session['max_patients'],
-                    'slot_duration' => $session['slot_duration'],
                 ];
                 $sObj->booked_count = Appointment::where('doctor_id', $doc->id)
                     ->whereDate('appointment_date', $today)

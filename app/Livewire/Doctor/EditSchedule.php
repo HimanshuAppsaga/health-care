@@ -153,8 +153,6 @@ class EditSchedule extends Component
                 $daySessions[] = [
                     'start_time' => $startTime,
                     'end_time' => $endTime,
-                    'slot_duration' => 15,
-                    'max_patients' => 1,
                 ];
             }
 

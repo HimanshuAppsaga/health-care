@@ -71,8 +71,6 @@ class Doctor extends Model
                     [
                         'start_time' => Carbon::parse($parts[0])->format('H:i:s'),
                         'end_time' => Carbon::parse($parts[1])->format('H:i:s'),
-                        'slot_duration' => 15,
-                        'max_patients' => 1,
                     ],
                 ];
             }

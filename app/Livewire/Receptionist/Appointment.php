@@ -162,7 +162,7 @@ class Appointment extends Component
 
             $start = Carbon::createFromFormat('H:i:s', $schedule['start_time']);
             $end = Carbon::createFromFormat('H:i:s', $schedule['end_time']);
-            $duration = $schedule['slot_duration'] ?: 30;
+            $duration = $schedule['slot_duration'] ?? 15;
 
             // If the schedule hasn't started yet today, don't allow bookings
             if ($this->selectedDate === Carbon::today()->format('Y-m-d') && now()->isBefore($start)) {
