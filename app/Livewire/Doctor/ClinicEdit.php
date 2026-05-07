@@ -29,6 +29,8 @@ class ClinicEdit extends Component
 
     public $working_hours = [];
 
+    public $working_hours_parts = [];
+
     public $logo;
 
     public $removeLogo = false;
@@ -45,6 +47,81 @@ class ClinicEdit extends Component
         $this->latitude = $this->clinic->latitude;
         $this->longitude = $this->clinic->longitude;
         $this->working_hours = $this->clinic->working_hours ?? [];
+        $this->initializeWorkingHoursParts();
+    }
+
+    protected function initializeWorkingHoursParts()
+    {
+        $days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
+        foreach ($days as $day) {
+            $timeString = $this->working_hours[$day] ?? '';
+
+            if ($timeString === 'Closed' || empty($timeString)) {
+                $this->working_hours_parts[$day] = [
+                    'is_closed' => empty($timeString) ? false : true,
+                    'slots' => [
+                        [
+                            'start_hour' => '09',
+                            'start_min' => '00',
+                            'start_period' => 'AM',
+                            'end_hour' => '05',
+                            'end_min' => '00',
+                            'end_period' => 'PM',
+                        ],
+                    ],
+                ];
+            } else {
+                // Parse "09:00 AM - 05:00 PM, 06:00 PM - 09:00 PM"
+                $slots = explode(', ', $timeString);
+                $this->working_hours_parts[$day] = [
+                    'is_closed' => false,
+                    'slots' => [],
+                ];
+
+                foreach ($slots as $slot) {
+                    if (preg_match('/(\d{1,2}):(\d{2})\s*(AM|PM)\s*-\s*(\d{1,2}):(\d{2})\s*(AM|PM)/i', $slot, $matches)) {
+                        $this->working_hours_parts[$day]['slots'][] = [
+                            'start_hour' => str_pad($matches[1], 2, '0', STR_PAD_LEFT),
+                            'start_min' => $matches[2],
+                            'start_period' => strtoupper($matches[3]),
+                            'end_hour' => str_pad($matches[4], 2, '0', STR_PAD_LEFT),
+                            'end_min' => $matches[5],
+                            'end_period' => strtoupper($matches[6]),
+                        ];
+                    }
+                }
+
+                if (empty($this->working_hours_parts[$day]['slots'])) {
+                    // Fallback
+                    $this->working_hours_parts[$day]['slots'][] = [
+                        'start_hour' => '09', 'start_min' => '00', 'start_period' => 'AM',
+                        'end_hour' => '05', 'end_min' => '00', 'end_period' => 'PM',
+                    ];
+                }
+            }
+        }
+    }
+
+    public function addTimeRange($day)
+    {
+        $this->working_hours_parts[$day]['slots'][] = [
+            'start_hour' => '09',
+            'start_min' => '00',
+            'start_period' => 'AM',
+            'end_hour' => '05',
+            'end_min' => '00',
+            'end_period' => 'PM',
+        ];
+    }
+
+    public function removeTimeRange($day, $index)
+    {
+        if (count($this->working_hours_parts[$day]['slots']) > 1) {
+            unset($this->working_hours_parts[$day]['slots'][$index]);
+            $this->working_hours_parts[$day]['slots'] = array_values($this->working_hours_parts[$day]['slots']);
+        } else {
+            $this->working_hours_parts[$day]['is_closed'] = true;
+        }
     }
 
     public function removeExistingLogo()
@@ -63,6 +140,19 @@ class ClinicEdit extends Component
             'name' => 'required|string|max:255',
             'logo' => 'nullable|image|max:2048',
         ]);
+
+        // Reconstruct working_hours from parts
+        foreach ($this->working_hours_parts as $day => $data) {
+            if ($data['is_closed'] || empty($data['slots'])) {
+                $this->working_hours[$day] = 'Closed';
+            } else {
+                $slotStrings = [];
+                foreach ($data['slots'] as $slot) {
+                    $slotStrings[] = "{$slot['start_hour']}:{$slot['start_min']} {$slot['start_period']} - {$slot['end_hour']}:{$slot['end_min']} {$slot['end_period']}";
+                }
+                $this->working_hours[$day] = implode(', ', $slotStrings);
+            }
+        }
 
         // REMOVE LOGO
         if ($this->removeLogo && $this->clinic->logo) {

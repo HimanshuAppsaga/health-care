@@ -174,14 +174,111 @@
                             Operating Hours
                         </h3>
                         
-                        <div class="space-y-3 max-h-[300px] overflow-y-auto pr-2 custom-scrollbar">
+                        <div class="space-y-4 max-h-[600px] overflow-y-auto pr-4 custom-scrollbar">
                             @foreach(['monday','tuesday','wednesday','thursday','friday','saturday','sunday'] as $day)
-                                <div class="flex items-center gap-4 bg-surface-container-low/30 p-2 rounded-2xl border border-outline-variant/10">
-                                    <span class="w-24 capitalize text-xs font-black text-outline pl-2">{{ $day }}</span>
-                                    <input type="text"
-                                           wire:model="working_hours.{{ $day }}"
-                                           class="flex-1 bg-surface border-2 border-outline-variant/20 rounded-xl px-4 py-2 text-sm font-bold focus:border-primary transition-all"
-                                           placeholder="e.g. 09:00 AM - 06:00 PM">
+                                <div class="p-5 rounded-3xl border border-outline-variant/30 bg-surface-container-low/20 hover:bg-surface-container-low/40 transition-all"
+                                     x-data="{ isClosed: @entangle('working_hours_parts.'.$day.'.is_closed') }">
+                                    <div class="flex items-center justify-between gap-4 mb-4">
+                                        <div class="flex items-center gap-3">
+                                            <div class="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
+                                                <span class="material-symbols-outlined text-xl">calendar_today</span>
+                                            </div>
+                                            <span class="capitalize font-black text-on-background tracking-tight text-sm">{{ $day }}</span>
+                                        </div>
+
+                                        <label class="relative inline-flex items-center cursor-pointer group scale-90">
+                                            <input type="checkbox" x-model="isClosed" class="sr-only peer">
+                                            <div class="w-11 h-6 bg-outline-variant peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+                                            <span class="ms-3 text-[10px] font-black text-outline uppercase tracking-widest" x-text="isClosed ? 'Closed' : 'Open'"></span>
+                                        </label>
+                                    </div>
+
+                                    <div class="space-y-3" x-show="!isClosed" x-cloak x-transition>
+                                        @foreach($working_hours_parts[$day]['slots'] as $index => $slot)
+                                            <div class="flex items-center gap-3 animate-in slide-in-from-left-2 duration-300">
+                                                <!-- START TIME -->
+                                                <div class="flex items-center gap-2 time-picker-container px-3 py-2 rounded-xl shadow-sm border border-outline-variant/40">
+                                                    <!-- Hour -->
+                                                    <div x-data="{ open: false, value: @entangle('working_hours_parts.'.$day.'.slots.'.$index.'.start_hour') }" class="relative">
+                                                        <button type="button" @click="open = !open" class="time-unit-btn font-black text-base" x-text="value"></button>
+                                                        <div x-show="open" @click.away="open = false" x-transition class="absolute top-full left-1/2 -translate-x-1/2 mt-2 dropdown-menu min-w-[70px]">
+                                                            @foreach(range(1, 12) as $h)
+                                                                @php $val = str_pad($h, 2, '0', STR_PAD_LEFT); @endphp
+                                                                <div @click="value = '{{ $val }}'; open = false" class="dropdown-item text-xs" :class="value == '{{ $val }}' ? 'active' : ''">{{ $val }}</div>
+                                                            @endforeach
+                                                        </div>
+                                                    </div>
+                                                    <span class="font-black text-outline-variant text-xs">:</span>
+                                                    <!-- Min -->
+                                                    <div x-data="{ open: false, value: @entangle('working_hours_parts.'.$day.'.slots.'.$index.'.start_min') }" class="relative">
+                                                        <button type="button" @click="open = !open" class="time-unit-btn font-black text-base" x-text="value"></button>
+                                                        <div x-show="open" @click.away="open = false" x-transition class="absolute top-full left-1/2 -translate-x-1/2 mt-2 dropdown-menu min-w-[70px]">
+                                                            @foreach(['00', '15', '30', '45'] as $m)
+                                                                <div @click="value = '{{ $m }}'; open = false" class="dropdown-item text-xs" :class="value == '{{ $m }}' ? 'active' : ''">{{ $m }}</div>
+                                                            @endforeach
+                                                        </div>
+                                                    </div>
+                                                    <!-- Period -->
+                                                    <div x-data="{ open: false, value: @entangle('working_hours_parts.'.$day.'.slots.'.$index.'.start_period') }" class="relative">
+                                                        <button type="button" @click="open = !open" class="time-unit-btn font-black text-[10px] text-primary uppercase" x-text="value"></button>
+                                                        <div x-show="open" @click.away="open = false" x-transition class="absolute top-full left-1/2 -translate-x-1/2 mt-2 dropdown-menu min-w-[70px]">
+                                                            @foreach(['AM', 'PM'] as $p)
+                                                                <div @click="value = '{{ $p }}'; open = false" class="dropdown-item text-[10px]" :class="value == '{{ $p }}' ? 'active' : ''">{{ $p }}</div>
+                                                            @endforeach
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                <span class="text-outline-variant font-black text-xs">—</span>
+
+                                                <!-- END TIME -->
+                                                <div class="flex items-center gap-2 time-picker-container px-3 py-2 rounded-xl shadow-sm border border-outline-variant/40">
+                                                    <!-- Hour -->
+                                                    <div x-data="{ open: false, value: @entangle('working_hours_parts.'.$day.'.slots.'.$index.'.end_hour') }" class="relative">
+                                                        <button type="button" @click="open = !open" class="time-unit-btn font-black text-base" x-text="value"></button>
+                                                        <div x-show="open" @click.away="open = false" x-transition class="absolute top-full left-1/2 -translate-x-1/2 mt-2 dropdown-menu min-w-[70px]">
+                                                            @foreach(range(1, 12) as $h)
+                                                                @php $val = str_pad($h, 2, '0', STR_PAD_LEFT); @endphp
+                                                                <div @click="value = '{{ $val }}'; open = false" class="dropdown-item text-xs" :class="value == '{{ $val }}' ? 'active' : ''">{{ $val }}</div>
+                                                            @endforeach
+                                                        </div>
+                                                    </div>
+                                                    <span class="font-black text-outline-variant text-xs">:</span>
+                                                    <!-- Min -->
+                                                    <div x-data="{ open: false, value: @entangle('working_hours_parts.'.$day.'.slots.'.$index.'.end_min') }" class="relative">
+                                                        <button type="button" @click="open = !open" class="time-unit-btn font-black text-base" x-text="value"></button>
+                                                        <div x-show="open" @click.away="open = false" x-transition class="absolute top-full left-1/2 -translate-x-1/2 mt-2 dropdown-menu min-w-[70px]">
+                                                            @foreach(['00', '15', '30', '45'] as $m)
+                                                                <div @click="value = '{{ $m }}'; open = false" class="dropdown-item text-xs" :class="value == '{{ $m }}' ? 'active' : ''">{{ $m }}</div>
+                                                            @endforeach
+                                                        </div>
+                                                    </div>
+                                                    <!-- Period -->
+                                                    <div x-data="{ open: false, value: @entangle('working_hours_parts.'.$day.'.slots.'.$index.'.end_period') }" class="relative">
+                                                        <button type="button" @click="open = !open" class="time-unit-btn font-black text-[10px] text-primary uppercase" x-text="value"></button>
+                                                        <div x-show="open" @click.away="open = false" x-transition class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 dropdown-menu min-w-[70px]">
+                                                            @foreach(['AM', 'PM'] as $p)
+                                                                <div @click="value = '{{ $p }}'; open = false" class="dropdown-item text-[10px]" :class="value == '{{ $p }}' ? 'active' : ''">{{ $p }}</div>
+                                                            @endforeach
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                <!-- REMOVE BUTTON -->
+                                                <button type="button" wire:click="removeTimeRange('{{ $day }}', {{ $index }})" 
+                                                        class="w-8 h-8 flex items-center justify-center text-outline-variant hover:text-error hover:bg-error/10 rounded-lg transition-all">
+                                                    <span class="material-symbols-outlined text-lg">close</span>
+                                                </button>
+                                            </div>
+                                        @endforeach
+
+                                        <!-- ADD BUTTON -->
+                                        <button type="button" wire:click="addTimeRange('{{ $day }}')" 
+                                                class="flex items-center gap-2 px-4 py-2 rounded-xl border border-dashed border-outline-variant text-outline font-bold text-[10px] hover:border-primary hover:text-primary hover:bg-primary/5 transition-all group mt-2">
+                                            <span class="material-symbols-outlined text-sm group-hover:rotate-90 transition-transform">add</span>
+                                            ADD SLOT
+                                        </button>
+                                    </div>
                                 </div>
                             @endforeach
                         </div>
@@ -204,3 +301,62 @@
         </div>
     </div>
 </div>
+
+<style>
+    .time-picker-container {
+        position: relative;
+        z-index: 1;
+        background: rgba(255, 255, 255, 0.8);
+        backdrop-filter: blur(8px);
+        border: 1px solid rgba(var(--primary-rgb), 0.1);
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .time-picker-container:focus-within {
+        z-index: 100;
+        background: white;
+        border-color: var(--primary);
+        box-shadow: 0 10px 25px -5px rgba(var(--primary-rgb), 0.1);
+    }
+    .dropdown-menu {
+        background: white;
+        border: 1px solid rgba(var(--primary-rgb), 0.1);
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+        border-radius: 12px;
+        z-index: 100;
+        max-height: 200px;
+        overflow-y: auto;
+    }
+    .dropdown-item {
+        padding: 8px 12px;
+        font-weight: 700;
+        color: var(--on-background);
+        cursor: pointer;
+        transition: all 0.2s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .dropdown-item:hover {
+        background: var(--primary);
+        color: var(--on-primary);
+    }
+    .dropdown-item.active {
+        background: rgba(var(--primary-rgb), 0.1);
+        color: var(--primary);
+    }
+    .time-unit-btn {
+        padding: 2px 6px;
+        border-radius: 6px;
+        transition: all 0.2s;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 1px;
+    }
+    .time-unit-btn:hover {
+        background: rgba(var(--primary-rgb), 0.1);
+        color: var(--primary);
+    }
+    
+    [x-cloak] { display: none !important; }
+</style>
