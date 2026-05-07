@@ -3,11 +3,9 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Api\IndexDoctorRequest;
 use App\Http\Resources\DoctorResource;
-use App\Models\Doctor;
 use App\Services\ApiService;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Log;
 
 class DoctorController extends Controller
 {
@@ -16,17 +14,9 @@ class DoctorController extends Controller
      *
      * Supports pagination.
      */
-    public function index(Request $request)
+    public function index(IndexDoctorRequest $request)
     {
-        $clinic = $request->clinic;
-
-        // Log clinic access
-        Log::info('API Access: Doctor list retrieved', ['clinic_id' => $clinic->id]);
-
-        // Fetch doctors with user relationship to avoid N+1
-        $doctors = Doctor::with('user')
-            ->where('clinic_id', $clinic->id)
-            ->paginate(10);
+        $doctors = $request->getDoctors();
 
         return ApiService::respond(
             'doctors',
