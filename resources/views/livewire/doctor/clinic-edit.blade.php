@@ -1,5 +1,5 @@
 <div class="px-8 py-8">
-    <div class="max-w-4xl mx-auto">
+    <div class="max-w-6xl mx-auto">
         <!-- Header -->
         <div class="mb-10 flex flex-col md:flex-row md:items-end justify-between gap-6">
             <div>
@@ -187,7 +187,7 @@
                         
                         <div class="space-y-4 max-h-[600px] overflow-y-auto pr-4 custom-scrollbar">
                             @foreach(['monday','tuesday','wednesday','thursday','friday','saturday','sunday'] as $day)
-                                <div class="p-5 rounded-3xl border border-outline-variant/30 bg-surface-container-low/20 hover:bg-surface-container-low/40 transition-all"
+                                <div class="p-4 rounded-3xl border border-outline-variant/30 bg-surface-container-low/20 hover:bg-surface-container-low/40 transition-all"
                                      x-data="{ isClosed: @entangle('working_hours_parts.'.$day.'.is_closed') }">
                                     <div class="flex items-center justify-between gap-4 mb-4">
                                         <div class="flex items-center gap-3">
@@ -206,9 +206,9 @@
 
                                     <div class="space-y-3" x-show="!isClosed" x-cloak x-transition>
                                         @foreach($working_hours_parts[$day]['slots'] as $index => $slot)
-                                            <div class="flex items-center gap-3 animate-in slide-in-from-left-2 duration-300">
+                                            <div class="flex items-center gap-2 animate-in slide-in-from-left-2 duration-300">
                                                 <!-- START TIME -->
-                                                <div class="flex items-center gap-2 time-picker-container px-3 py-2 rounded-xl shadow-sm border border-outline-variant/40">
+                                                <div class="flex items-center gap-1.5 time-picker-container px-2.5 py-1.5 rounded-xl shadow-sm border border-outline-variant/40">
                                                     <!-- Hour -->
                                                     <div x-data="{ open: false, value: @entangle('working_hours_parts.'.$day.'.slots.'.$index.'.start_hour') }" class="relative">
                                                         <button type="button" @click="open = !open" class="time-unit-btn font-black text-base" x-text="value"></button>
@@ -243,7 +243,7 @@
                                                 <span class="text-outline-variant font-black text-xs">—</span>
 
                                                 <!-- END TIME -->
-                                                <div class="flex items-center gap-2 time-picker-container px-3 py-2 rounded-xl shadow-sm border border-outline-variant/40">
+                                                <div class="flex items-center gap-1.5 time-picker-container px-2.5 py-1.5 rounded-xl shadow-sm border border-outline-variant/40">
                                                     <!-- Hour -->
                                                     <div x-data="{ open: false, value: @entangle('working_hours_parts.'.$day.'.slots.'.$index.'.end_hour') }" class="relative">
                                                         <button type="button" @click="open = !open" class="time-unit-btn font-black text-base" x-text="value"></button>
