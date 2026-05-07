@@ -45,9 +45,9 @@
                         <div class="relative group">
                             <div class="w-40 h-40 rounded-3xl overflow-hidden bg-surface flex items-center justify-center border-2 border-outline-variant shadow-inner">
                                 @if ($logo)
-                                    <img src="{{ $logo->temporaryUrl() }}" class="w-full h-full object-cover">
+                                    <img src="{{ $logo->temporaryUrl() }}" class="w-50% h-50% object-contain">
                                 @elseif($clinic->logo && !$removeLogo)
-                                    <img src="{{ asset('storage/'.$clinic->logo) }}" class="w-full h-full object-cover">
+                                    <img src="{{ asset('storage/'.$clinic->logo) }}" class="w-50% h-50% object-contain">
                                 @else
                                     <span class="material-symbols-outlined text-6xl text-outline-variant">apartment</span>
                                 @endif
@@ -203,4 +203,4 @@
             </div>
         </div>
     </div>
-</div>
+</div>

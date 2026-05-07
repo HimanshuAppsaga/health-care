@@ -16,7 +16,7 @@
             {{-- LOGO --}}
             <div class="relative w-32 h-32 rounded-3xl overflow-hidden bg-surface-container-low flex items-center justify-center border-2 border-outline-variant shadow-inner group">
                 @if($clinic->logo)
-                    <img src="{{ asset('storage/'.$clinic->logo) }}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500">
+                    <img src="{{ asset('storage/'.$clinic->logo) }}" class="w-50% h-50% object-contain group-hover:scale-110 transition-transform duration-500">
                 @else
                     <span class="material-symbols-outlined text-5xl text-outline-variant">apartment</span>
                 @endif
@@ -139,4 +139,4 @@
         </div>
     </div>
     @endif
-</div>
+</div>
