@@ -13,14 +13,12 @@ class ClinicController extends Controller
 {
     /**
      * Get details of the authenticated clinic.
-     *
-     * Uses caching for performance.
      */
     public function details(ClinicDetailsRequest $request)
     {
         return ApiService::respond(
             'clinic',
-            new ClinicDetailsResource($request->getCachedClinicDetails()),
+            new ClinicDetailsResource($request->getClinicDetails()),
             'Clinic details retrieved successfully'
         );
     }

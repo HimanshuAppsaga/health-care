@@ -5,7 +5,6 @@ namespace App\Http\Requests\Api;
 use App\Http\Resources\ClinicResource;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 
 class ClinicDetailsRequest extends FormRequest
@@ -29,18 +28,15 @@ class ClinicDetailsRequest extends FormRequest
     }
 
     /**
-     * Get the cached clinic details and log the access.
+     * Get the clinic details and log the access.
      */
-    public function getCachedClinicDetails(): array
+    public function getClinicDetails(): array
     {
         $clinic = $this->clinic;
 
         // Log clinic access
         Log::info('API Access: Clinic Details retrieved', ['clinic_id' => $clinic->id]);
 
-        // Cache the resolved clinic data (array) for 1 hour
-        return Cache::remember("clinic_details_data_{$clinic->id}", 3600, function () use ($clinic) {
-            return (new ClinicResource($clinic))->resolve();
-        });
+        return (new ClinicResource($clinic))->resolve();
     }
 }
