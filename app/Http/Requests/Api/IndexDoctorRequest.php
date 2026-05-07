@@ -39,7 +39,7 @@ class IndexDoctorRequest extends FormRequest
         Log::info('API Access: Doctor list retrieved', ['clinic_id' => $clinic->id]);
 
         // Fetch doctors with user relationship to avoid N+1
-        return Doctor::with(['user', 'schedules'])
+        return Doctor::with(['user'])
             ->where('clinic_id', $clinic->id)
             ->paginate(10);
     }

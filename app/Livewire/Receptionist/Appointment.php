@@ -305,12 +305,25 @@ class Appointment extends Component
 
     public function getSelectedSessionProperty()
     {
-        if (! $this->selectedSlot || ! $this->selectedDoctorId) {
+        if (! $this->selectedSlot || ! $this->selectedDoctorId || ! $this->selectedDate) {
             return null;
         }
 
+        $date = Carbon::parse($this->selectedDate);
+        $dayOfWeek = $date->dayOfWeek;
+        $dayNames = [
+            0 => 'sunday', 1 => 'monday', 2 => 'tuesday', 3 => 'wednesday',
+            4 => 'thursday', 5 => 'friday', 6 => 'saturday',
+        ];
+        $dayName = $dayNames[$dayOfWeek];
+
         $doctor = Doctor::find($this->selectedDoctorId);
-        $sessions = $doctor->working_hours[$dayOfWeek] ?? [];
+        if (! $doctor) {
+            return null;
+        }
+
+        $sessions = $doctor->getScheduleForDay($dayOfWeek);
+        $slotTime = Carbon::createFromFormat('H:i', $this->selectedSlot)->format('H:i:s');
 
         foreach ($sessions as $session) {
             if ($session['start_time'] <= $slotTime && $session['end_time'] > $slotTime) {

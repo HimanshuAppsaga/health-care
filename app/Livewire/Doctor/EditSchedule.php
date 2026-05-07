@@ -145,12 +145,21 @@ class EditSchedule extends Component
                 continue;
             }
 
-            // Take the first session for the simple format
-            $session = $sessions[0];
-            $startTime = Carbon::createFromFormat('h:i A', "{$session['start_hour']}:{$session['start_min']} {$session['start_period']}")->format('h:i A');
-            $endTime = Carbon::createFromFormat('h:i A', "{$session['end_hour']}:{$session['end_min']} {$session['end_period']}")->format('h:i A');
+            $daySessions = [];
+            foreach ($sessions as $session) {
+                $startTime = Carbon::createFromFormat('h:i A', "{$session['start_hour']}:{$session['start_min']} {$session['start_period']}")->format('H:i:s');
+                $endTime = Carbon::createFromFormat('h:i A', "{$session['end_hour']}:{$session['end_min']} {$session['end_period']}")->format('H:i:s');
 
-            $workingHours[$name] = "{$startTime} - {$endTime}";
+                $daySessions[] = [
+                    'start_time' => $startTime,
+                    'end_time' => $endTime,
+                    'slot_duration' => 15,
+                    'max_patients' => 1,
+                ];
+            }
+
+            $workingHours[$name] = $daySessions;
+
         }
 
         $doctor->update([
