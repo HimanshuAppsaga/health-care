@@ -25,6 +25,7 @@ class Doctor extends Model
     {
         return [
             'is_on_hold' => 'boolean',
+            'consultation_fee' => 'double',
         ];
     }
 

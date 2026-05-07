@@ -20,7 +20,7 @@ class DoctorResource extends JsonResource
             'specialization' => $this->specialization,
             'qualification' => $this->qualification,
             'experience_years' => $this->experience_years,
-            'consultation_fee' => $this->consultation_fee,
+            'consultation_fee' => (float) $this->consultation_fee,
             'is_on_hold' => $this->is_on_hold,
             'profile_photo' => $this->user->profile_photo_path ?? null,
         ];
