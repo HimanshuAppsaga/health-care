@@ -36,13 +36,24 @@ class QueueController extends Controller
      */
     /**
      * GET /api/queue/live
-     * Returns full live queue data for a clinic/doctor
+     * Returns current serving patient for a clinic/doctor
      */
     public function live(LiveQueueRequest $request)
     {
-        $data = $request->getLiveQueueData($this->currentTokenService);
+        $data = $request->getCurrentPatientData($this->currentTokenService);
 
-        return ApiService::respond('queue', $data, 'Live queue retrieved successfully');
+        return ApiService::respond('queue', $data, 'Current patient retrieved successfully');
+    }
+
+    /**
+     * GET /api/queue/waiting-list
+     * Returns waiting list for a clinic/doctor
+     */
+    public function waitingList(LiveQueueRequest $request)
+    {
+        $data = $request->getWaitingListData();
+
+        return ApiService::respond('queue', $data, 'Waiting list retrieved successfully');
     }
 
     /**

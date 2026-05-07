@@ -4,6 +4,7 @@ use App\Http\Controllers\Api\AppointmentController;
 use App\Http\Controllers\Api\ClinicController;
 use App\Http\Controllers\Api\DoctorController;
 use App\Http\Controllers\Api\QueueController;
+use App\Http\Controllers\Api\V1\Patient\TokenController;
 use Illuminate\Support\Facades\Route;
 
 Route::post('/appointments/book', [AppointmentController::class, 'store'])->middleware('api.key');
@@ -16,10 +17,11 @@ Route::middleware('api.key')->group(function () {
     // Queue Manager API
     Route::prefix('queue')->group(function () {
         Route::get('/live', [QueueController::class, 'live']);
+        Route::get('/waiting-list', [QueueController::class, 'waitingList']);
         Route::post('/call-next', [QueueController::class, 'callNext']);
         Route::post('/transfer', [QueueController::class, 'transfer']);
     });
 
-    Route::post('/v1/patient/check-token', [App\Http\Controllers\Api\V1\Patient\TokenController::class, 'checkToken']);
+    Route::post('/v1/patient/check-token', [TokenController::class, 'checkToken']);
 
 });

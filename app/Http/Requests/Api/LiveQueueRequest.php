@@ -33,9 +33,28 @@ class LiveQueueRequest extends FormRequest
     }
 
     /**
-     * Get the live queue data.
+     * Get the current patient data.
      */
-    public function getLiveQueueData(CurrentTokenService $currentTokenService): array
+    public function getCurrentPatientData(CurrentTokenService $currentTokenService): array
+    {
+        $clinic = $this->clinic;
+        $doctorId = $this->input('doctor_id');
+        $today = Carbon::today();
+
+        $result = $currentTokenService->getCurrentToken($clinic->id, $doctorId);
+        $nowServing = $result['data']['current_token'];
+
+        return [
+            'current_patient' => $nowServing ? new QueueResource($nowServing) : null,
+            'clinic_name' => $clinic->name,
+            'date' => $today->toDateString(),
+        ];
+    }
+
+    /**
+     * Get the waiting list data.
+     */
+    public function getWaitingListData(): array
     {
         $clinic = $this->clinic;
         $doctorId = $this->input('doctor_id');
@@ -51,15 +70,11 @@ class LiveQueueRequest extends FormRequest
                 }
             });
 
-        $result = $currentTokenService->getCurrentToken($clinic->id, $doctorId);
-        $nowServing = $result['data']['current_token'];
-
-        $waitingList = (clone $query)->where('status', 'waiting')
+        $waitingList = $query->where('status', 'waiting')
             ->orderByRaw('CAST(token_number AS UNSIGNED) ASC')
             ->paginate($this->input('per_page', 15));
 
         return [
-            'current_patient' => $nowServing ? new QueueResource($nowServing) : null,
             'waiting_list' => QueueResource::collection($waitingList)->response()->getData(true),
             'clinic_name' => $clinic->name,
             'date' => $today->toDateString(),
