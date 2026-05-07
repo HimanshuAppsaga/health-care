@@ -12,12 +12,7 @@
                 <p class="text-outline font-medium">Update your clinic's public information, location, and operations.</p>
             </div>
             
-            <button wire:click="update" wire:loading.attr="disabled"
-                    class="px-8 py-4 bg-primary text-on-primary rounded-2xl font-black text-sm flex items-center gap-2 hover:bg-primary/90 transition-all shadow-lg shadow-primary/25 disabled:opacity-50">
-                <span class="material-symbols-outlined text-lg" wire:loading.remove wire:target="update">save</span>
-                <span class="animate-spin material-symbols-outlined text-lg" wire:loading wire:target="update">sync</span>
-                Save Changes
-            </button>
+            <div></div>
         </div>
 
         <!-- Success Message -->
@@ -360,3 +355,10 @@
     
     [x-cloak] { display: none !important; }
 </style>
+@script
+<script>
+    $wire.on('scroll-to-top', () => {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+</script>
+@endscript

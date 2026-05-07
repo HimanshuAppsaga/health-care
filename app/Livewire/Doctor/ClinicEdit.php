@@ -188,6 +188,7 @@ class ClinicEdit extends Component
         $this->removeLogo = false;
 
         session()->flash('success', 'Clinic updated successfully!');
+        $this->dispatch('scroll-to-top');
     }
 
     public function render()
