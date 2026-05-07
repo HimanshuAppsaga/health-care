@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Api\CallNextTokenRequest;
 use App\Http\Requests\Api\LiveQueueRequest;
 use App\Http\Resources\QueueResource;
 use App\Services\ApiService;
@@ -48,16 +49,9 @@ class QueueController extends Controller
      * POST /api/queue/call-next
      * Move next patient to "in-progress" (serving)
      */
-    public function callNext(Request $request)
+    public function callNext(CallNextTokenRequest $request)
     {
-        $request->validate([
-            'doctor_id' => 'required|exists:doctors,id',
-        ]);
-
-        $clinic = $request->clinic;
-        $doctorId = $request->doctor_id;
-
-        $result = $this->callNextTokenService->callNextToken($clinic->id, $doctorId);
+        $result = $this->callNextTokenService->callNextToken($request->clinic->id, $request->doctor_id);
 
         if ($result['success']) {
             return ApiService::respond('queue', new QueueResource($result['data']['next_token']), $result['message']);
