@@ -17,26 +17,28 @@
 
         <!-- Success Message -->
         @if (session()->has('success'))
-            <div x-data="{ show: true }" 
-                 x-show="show" 
-                 x-init="setTimeout(() => show = false, 5000)"
-                 x-transition:leave="transition ease-in duration-300"
-                 x-transition:leave-start="opacity-100 scale-100"
-                 x-transition:leave-end="opacity-0 scale-95"
-                 class="fixed top-24 right-8 z-[100] pointer-events-none">
-                <div class="p-4 bg-primary text-on-primary border border-primary/20 rounded-2xl flex items-center gap-4 animate-in fade-in slide-in-from-right-4 duration-500 max-w-md shadow-2xl shadow-primary/40 pointer-events-auto">
-                    <div class="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center shrink-0">
-                        <span class="material-symbols-outlined font-black text-white">check_circle</span>
+            @teleport('body')
+                <div x-data="{ show: true }" 
+                     x-show="show" 
+                     x-init="setTimeout(() => show = false, 5000)"
+                     x-transition:leave="transition ease-in duration-300"
+                     x-transition:leave-start="opacity-100 scale-100"
+                     x-transition:leave-end="opacity-0 scale-95"
+                     class="fixed top-8 right-8 z-[9999] pointer-events-none">
+                    <div class="p-4 bg-primary text-on-primary border border-primary/20 rounded-2xl flex items-center gap-4 animate-in fade-in slide-in-from-right-4 duration-500 min-w-[320px] max-w-md shadow-2xl shadow-primary/40 pointer-events-auto">
+                        <div class="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center shrink-0">
+                            <span class="material-symbols-outlined font-black text-white">check_circle</span>
+                        </div>
+                        <div class="flex-1">
+                            <p class="text-xs font-black uppercase tracking-widest opacity-70 mb-0.5">Success</p>
+                            <p class="font-bold text-white">{{ session('success') }}</p>
+                        </div>
+                        <button @click="show = false" class="w-8 h-8 flex items-center justify-center hover:bg-white/10 rounded-lg transition-colors">
+                            <span class="material-symbols-outlined text-base text-white">close</span>
+                        </button>
                     </div>
-                    <div class="flex-1">
-                        <p class="text-xs font-black uppercase tracking-widest opacity-70 mb-0.5">Success</p>
-                        <p class="font-bold text-white">{{ session('success') }}</p>
-                    </div>
-                    <button @click="show = false" class="w-8 h-8 flex items-center justify-center hover:bg-white/10 rounded-lg transition-colors">
-                        <span class="material-symbols-outlined text-base text-white">close</span>
-                    </button>
                 </div>
-            </div>
+            @endteleport
         @endif
 
         <!-- Main Form Card -->
