@@ -40,4 +40,45 @@ class Doctor extends Model
     {
         return $this->hasMany(Appointment::class);
     }
+
+    /**
+     * Get normalized schedule for a given day (0-6).
+     */
+    public function getScheduleForDay(int $dayOfWeek): array
+    {
+        $dayNames = [
+            0 => 'sunday',
+            1 => 'monday',
+            2 => 'tuesday',
+            3 => 'wednesday',
+            4 => 'thursday',
+            5 => 'friday',
+            6 => 'saturday',
+        ];
+
+        $dayName = $dayNames[$dayOfWeek];
+        $hours = $this->working_hours[$dayName] ?? $this->working_hours[$dayOfWeek] ?? 'Closed';
+
+        if ($hours === 'Closed') {
+            return [];
+        }
+
+        if (is_string($hours)) {
+            $parts = explode(' - ', $hours);
+            if (count($parts) === 2) {
+                return [
+                    [
+                        'start_time' => Carbon::parse($parts[0])->format('H:i:s'),
+                        'end_time' => Carbon::parse($parts[1])->format('H:i:s'),
+                        'slot_duration' => 15,
+                        'max_patients' => 1,
+                    ],
+                ];
+            }
+
+            return [];
+        }
+
+        return (array) $hours;
+    }
 }

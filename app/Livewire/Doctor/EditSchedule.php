@@ -16,6 +16,16 @@ class EditSchedule extends Component
 {
     public $weekly_schedules = [];
 
+    protected $daysMap = [
+        1 => 'monday',
+        2 => 'tuesday',
+        3 => 'wednesday',
+        4 => 'thursday',
+        5 => 'friday',
+        6 => 'saturday',
+        0 => 'sunday',
+    ];
+
     public $doctor_id;
 
     public function mount($id = null)
@@ -34,28 +44,47 @@ class EditSchedule extends Component
 
         $this->doctor_id = $doctor->id;
 
-        // Initialize all days (1=Mon, ..., 6=Sat, 0=Sun)
-        $days = [1, 2, 3, 4, 5, 6, 0];
-        foreach ($days as $day) {
-            $this->weekly_schedules[$day] = [];
-        }
+        $hours = $doctor->working_hours ?? [];
 
-        $schedules = $doctor->working_hours ?? [];
+        foreach ($this->daysMap as $num => $name) {
+            $this->weekly_schedules[$num] = [];
+            $value = $hours[$name] ?? $hours[$num] ?? 'Closed';
 
-        foreach ($schedules as $day => $sessions) {
-            foreach ($sessions as $s) {
-                $start = Carbon::parse($s['start_time']);
-                $end = Carbon::parse($s['end_time']);
+            if ($value === 'Closed') {
+                continue;
+            }
 
-                $this->weekly_schedules[$day][] = [
-                    'id' => null,
-                    'start_hour' => $start->format('h'),
-                    'start_min' => $start->format('i'),
-                    'start_period' => $start->format('A'),
-                    'end_hour' => $end->format('h'),
-                    'end_min' => $end->format('i'),
-                    'end_period' => $end->format('A'),
-                ];
+            if (is_string($value)) {
+                $parts = explode(' - ', $value);
+                if (count($parts) === 2) {
+                    $start = Carbon::parse($parts[0]);
+                    $end = Carbon::parse($parts[1]);
+
+                    $this->weekly_schedules[$num][] = [
+                        'id' => null,
+                        'start_hour' => $start->format('h'),
+                        'start_min' => $start->format('i'),
+                        'start_period' => $start->format('A'),
+                        'end_hour' => $end->format('h'),
+                        'end_min' => $end->format('i'),
+                        'end_period' => $end->format('A'),
+                    ];
+                }
+            } elseif (is_array($value)) {
+                foreach ($value as $s) {
+                    $start = Carbon::parse($s['start_time']);
+                    $end = Carbon::parse($s['end_time']);
+
+                    $this->weekly_schedules[$num][] = [
+                        'id' => null,
+                        'start_hour' => $start->format('h'),
+                        'start_min' => $start->format('i'),
+                        'start_period' => $start->format('A'),
+                        'end_hour' => $end->format('h'),
+                        'end_min' => $end->format('i'),
+                        'end_period' => $end->format('A'),
+                    ];
+                }
             }
         }
 
@@ -107,27 +136,21 @@ class EditSchedule extends Component
 
         $workingHours = [];
 
-        foreach ($this->weekly_schedules as $day => $sessions) {
-            $processedSessions = [];
+        foreach ($this->daysMap as $num => $name) {
+            $sessions = $this->weekly_schedules[$num] ?? [];
 
-            foreach ($sessions as $session) {
-                $startTime = Carbon::createFromFormat('h:i A', "{$session['start_hour']}:{$session['start_min']} {$session['start_period']}")->format('H:i:s');
-                $endTime = Carbon::createFromFormat('h:i A', "{$session['end_hour']}:{$session['end_min']} {$session['end_period']}")->format('H:i:s');
+            if (empty($sessions)) {
+                $workingHours[$name] = 'Closed';
 
-                // Avoid duplicate timings for the same day
-                $sessionHash = $startTime.'-'.$endTime;
-                if (in_array($sessionHash, $processedSessions)) {
-                    continue;
-                }
-                $processedSessions[] = $sessionHash;
-
-                $workingHours[$day][] = [
-                    'start_time' => $startTime,
-                    'end_time' => $endTime,
-                    'max_patients' => 1,
-                    'slot_duration' => 15,
-                ];
+                continue;
             }
+
+            // Take the first session for the simple format
+            $session = $sessions[0];
+            $startTime = Carbon::createFromFormat('h:i A', "{$session['start_hour']}:{$session['start_min']} {$session['start_period']}")->format('h:i A');
+            $endTime = Carbon::createFromFormat('h:i A', "{$session['end_hour']}:{$session['end_min']} {$session['end_period']}")->format('h:i A');
+
+            $workingHours[$name] = "{$startTime} - {$endTime}";
         }
 
         $doctor->update([

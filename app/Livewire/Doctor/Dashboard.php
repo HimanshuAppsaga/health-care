@@ -237,7 +237,7 @@ class Dashboard extends Component
 
         $isDoctorOnHold = $this->isDoctorOnHold;
 
-        $sessions = $doctor->working_hours[$today->dayOfWeek] ?? [];
+        $sessions = $doctor->getScheduleForDay($today->dayOfWeek);
         $doctorSchedules = collect();
 
         foreach ($sessions as $session) {

@@ -34,9 +34,10 @@ class Schedule extends Component
             return;
         }
 
-        $this->schedules = $doctor->working_hours ?? [
-            1 => [], 2 => [], 3 => [], 4 => [], 5 => [], 6 => [], 0 => [],
-        ];
+        $this->schedules = [];
+        foreach ([1, 2, 3, 4, 5, 6, 0] as $num) {
+            $this->schedules[$num] = $doctor->getScheduleForDay($num);
+        }
     }
 
     public function render()

@@ -240,7 +240,7 @@ class Dashboard extends Component
 
         $doctorSchedules = collect();
         foreach ($doctorsForSchedule as $doc) {
-            $sessions = $doc->working_hours[$today->dayOfWeek] ?? [];
+            $sessions = $doc->getScheduleForDay($today->dayOfWeek);
             foreach ($sessions as $session) {
                 $sObj = (object) [
                     'doctor_id' => $doc->id,

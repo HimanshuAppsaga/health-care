@@ -65,7 +65,7 @@ class AppointmentBookingService
                 $dayOfWeek = $date->dayOfWeek; // 0 (Sun) to 6 (Sat)
                 $isToday = $date->isToday();
 
-                $schedules = $doctor->working_hours[$dayOfWeek] ?? [];
+                $schedules = $doctor->getScheduleForDay($dayOfWeek);
 
                 $hasAvailableSlot = false;
 

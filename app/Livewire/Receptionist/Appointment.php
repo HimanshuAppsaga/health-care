@@ -88,7 +88,15 @@ class Appointment extends Component
 
             // Try to pick a doctor who has a schedule today
             $dayOfWeek = Carbon::today()->dayOfWeek;
-            $this->selectedDoctorId = Doctor::whereNotNull("working_hours->{$dayOfWeek}")->first()?->id;
+            $dayNames = [
+                0 => 'sunday', 1 => 'monday', 2 => 'tuesday', 3 => 'wednesday',
+                4 => 'thursday', 5 => 'friday', 6 => 'saturday',
+            ];
+            $dayName = $dayNames[$dayOfWeek];
+
+            $this->selectedDoctorId = Doctor::whereHas('user')
+                ->where('working_hours->'.$dayName, '!=', 'Closed')
+                ->first()?->id;
 
             // Fallback to first doctor if no one has a schedule today
             if (! $this->selectedDoctorId) {
@@ -144,7 +152,7 @@ class Appointment extends Component
         $dayOfWeek = $date->dayOfWeek; // 0 (Sun) to 6 (Sat)
 
         $doctor = Doctor::find($this->selectedDoctorId);
-        $schedules = $doctor->working_hours[$dayOfWeek] ?? [];
+        $schedules = $doctor->getScheduleForDay($dayOfWeek);
 
         if (empty($schedules)) {
             return;
