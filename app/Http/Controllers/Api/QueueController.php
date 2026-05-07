@@ -5,12 +5,12 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\CallNextTokenRequest;
 use App\Http\Requests\Api\LiveQueueRequest;
+use App\Http\Requests\Api\TransferTokenRequest;
 use App\Http\Resources\QueueResource;
 use App\Services\ApiService;
 use App\Services\CallNextTokenService;
 use App\Services\CurrentTokenService;
 use App\Services\TokenTransferService;
-use Illuminate\Http\Request;
 
 class QueueController extends Controller
 {
@@ -60,12 +60,8 @@ class QueueController extends Controller
         return ApiService::error($result['message'], $result['message'] === 'No patients in waiting queue' ? 404 : 500);
     }
 
-    public function transfer(Request $request)
+    public function transfer(TransferTokenRequest $request)
     {
-        $request->validate([
-            'doctor_id' => 'required|exists:doctors,id',
-        ]);
-
         $clinic = $request->clinic;
         $doctorId = $request->doctor_id;
         $transferCount = $clinic->transfer_depth ?: 1;
