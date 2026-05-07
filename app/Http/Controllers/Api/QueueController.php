@@ -73,11 +73,7 @@ class QueueController extends Controller
 
     public function transfer(TransferTokenRequest $request)
     {
-        $clinic = $request->clinic;
-        $doctorId = $request->doctor_id;
-        $transferCount = $clinic->transfer_depth ?: 1;
-
-        $result = $this->tokenTransferService->transferToken($clinic->id, $doctorId, $transferCount);
+        $result = $request->transferToken($this->tokenTransferService);
 
         if ($result['success']) {
             return ApiService::respond('transfer', $result['data'] ?? null, $result['message']);
