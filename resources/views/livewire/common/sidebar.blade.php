@@ -29,7 +29,7 @@
                             @endphp
                             <div class="relative">
                                 <a 
-                                    href="{{ Route::has($item['route']) ? route($item['route']) : '#' }}" 
+                                    href="{{ Route::has($item['route']) ? route($item['route'], $item['params'] ?? []) : '#' }}" 
                                     class="flex items-center gap-4 px-8 py-3.5 text-sm font-semibold transition-all duration-200 group
                                         {{ $isActive 
                                             ? 'bg-primary-container text-on-primary-container' 

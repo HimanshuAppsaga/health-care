@@ -1,100 +1,142 @@
-<div class="max-w-5xl mx-auto p-6 space-y-6">
-
+<div class="px-8 py-8">
     {{-- EMPTY STATE --}}
     @if(!$clinic)
-        <div class="p-4 bg-red-100 text-red-700 rounded-lg">
-            Clinic not found
+        <div class="max-w-5xl mx-auto p-12 bg-error-container/10 border border-error/20 rounded-[2rem] text-center">
+            <span class="material-symbols-outlined text-6xl text-error mb-4">error</span>
+            <h2 class="text-2xl font-black text-on-error-container">Clinic Not Found</h2>
+            <p class="text-outline mt-2">The clinic you are looking for does not exist or has been removed.</p>
         </div>
     @else
 
-    {{-- HEADER --}}
-    <div class="bg-white shadow-lg rounded-2xl p-6 border flex gap-5 items-center">
-
-        {{-- LOGO --}}
-        <div class="w-20 h-20 rounded-xl overflow-hidden bg-gray-100 flex items-center justify-center">
-            @if($clinic->logo)
-                <img src="{{ asset('storage/'.$clinic->logo) }}" class="w-full h-full object-cover">
-            @else
-                <span class="text-gray-400 text-xs">No Logo</span>
-            @endif
-        </div>
-
-        {{-- NAME + DESCRIPTION --}}
-        <div>
-            <h1 class="text-3xl font-bold text-gray-800">
-                {{ $clinic->name }}
-            </h1>
-
-            <p class="text-gray-600 mt-1">
-                {{ $clinic->description ?? 'No description available' }}
-            </p>
-        </div>
-    </div>
-
-    {{-- GRID --}}
-    <div class="grid md:grid-cols-2 gap-6">
-
-        {{-- ADDRESS + CONTACT --}}
-        <div class="bg-white shadow rounded-xl p-5 border space-y-2">
-            <h2 class="text-lg font-semibold">Contact & Address</h2>
-
-            <p><span class="font-medium">Phone:</span> {{ $clinic->contact_number ?? 'N/A' }}</p>
-
-            <p><span class="font-medium">Address:</span> {{ $clinic->address ?? 'N/A' }}</p>
-        </div>
-
-        {{-- LOCATION --}}
-        <div class="bg-white shadow rounded-xl p-5 border">
-            <h2 class="text-lg font-semibold mb-2">Location</h2>
-
-            @if($clinic->latitude && $clinic->longitude)
-                <p class="text-sm text-gray-600 mb-2">
-                    {{ $clinic->latitude }}, {{ $clinic->longitude }}
-                </p>
-
-                <a target="_blank"
-                   class="text-blue-600 underline"
-                   href="https://www.google.com/maps?q={{ $clinic->latitude }},{{ $clinic->longitude }}">
-                    Open Map
-                </a>
-            @else
-                <p class="text-gray-500">No location set</p>
-            @endif
-        </div>
-    </div>
-
-    {{-- ABOUT --}}
-    @if($clinic->about_clinic)
-    <div class="bg-white shadow rounded-xl p-5 border">
-        <h2 class="text-lg font-semibold mb-2">About Clinic</h2>
-        <p class="text-gray-700">{{ $clinic->about_clinic }}</p>
-    </div>
-    @endif
-
-    {{-- WORKING HOURS --}}
-    <div class="bg-white shadow rounded-xl p-5 border">
-        <h2 class="text-lg font-semibold mb-4">Working Hours</h2>
-
-        @php
-            $hours = is_array($clinic->working_hours)
-                ? $clinic->working_hours
-                : json_decode($clinic->working_hours, true);
-        @endphp
-
-        @if(!empty($hours))
-            <div class="space-y-2">
-                @foreach($hours as $day => $time)
-                    <div class="flex justify-between border-b pb-1">
-                        <span class="capitalize">{{ $day }}</span>
-                        <span>{{ $time }}</span>
-                    </div>
-                @endforeach
+    <div class="max-w-5xl mx-auto space-y-8">
+        {{-- HEADER CARD --}}
+        <div class="bg-surface rounded-[2.5rem] p-10 clinical-shadow border border-outline-variant flex flex-col md:flex-row gap-8 items-center relative overflow-hidden">
+            <div class="absolute top-0 right-0 w-64 h-64 bg-primary/5 blur-3xl rounded-full -mr-32 -mt-32"></div>
+            
+            {{-- LOGO --}}
+            <div class="relative w-32 h-32 rounded-3xl overflow-hidden bg-surface-container-low flex items-center justify-center border-2 border-outline-variant shadow-inner group">
+                @if($clinic->logo)
+                    <img src="{{ asset('storage/'.$clinic->logo) }}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500">
+                @else
+                    <span class="material-symbols-outlined text-5xl text-outline-variant">apartment</span>
+                @endif
             </div>
-        @else
-            <p class="text-gray-500">No working hours available</p>
-        @endif
+
+            {{-- NAME + DESCRIPTION --}}
+            <div class="flex-1 text-center md:text-left relative">
+                <div class="flex flex-col md:flex-row md:items-center gap-4 mb-3">
+                    <h1 class="text-4xl font-black text-on-background tracking-tight">
+                        {{ $clinic->name }}
+                    </h1>
+                    <span class="px-3 py-1 bg-primary/10 text-primary text-[10px] font-black uppercase rounded-full border border-primary/20 self-center md:self-auto">Active Clinic</span>
+                </div>
+
+                <p class="text-lg text-outline font-medium leading-relaxed max-w-2xl">
+                    {{ $clinic->description ?? 'Providing exceptional healthcare services with a focus on patient well-being and modern clinical practices.' }}
+                </p>
+                
+                <div class="mt-6 flex flex-wrap gap-3 justify-center md:justify-start">
+                    <a href="{{ route('doctor.clinic.edit', $clinic->id) }}" wire:navigate class="px-6 py-3 bg-primary text-on-primary rounded-2xl font-black text-sm flex items-center gap-2 hover:bg-primary/90 transition-all shadow-lg shadow-primary/25">
+                        <span class="material-symbols-outlined text-lg">edit</span>
+                        Edit Clinic Profile
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        {{-- INFO GRID --}}
+        <div class="grid md:grid-cols-3 gap-8">
+            {{-- CONTACT INFO --}}
+            <div class="md:col-span-2 space-y-8">
+                <div class="bg-surface rounded-[2rem] p-8 clinical-shadow border border-outline-variant">
+                    <h2 class="text-xl font-black text-on-background mb-6 flex items-center gap-2">
+                        <span class="material-symbols-outlined text-primary">contact_support</span>
+                        Contact & Address
+                    </h2>
+                    
+                    <div class="grid sm:grid-cols-2 gap-6">
+                        <div class="p-6 rounded-2xl bg-surface-container-low border border-outline-variant/30">
+                            <p class="text-xs font-black text-outline-variant uppercase tracking-widest mb-2">Phone Number</p>
+                            <p class="text-lg font-bold text-on-background flex items-center gap-2">
+                                <span class="material-symbols-outlined text-secondary">phone</span>
+                                {{ $clinic->contact_number ?? 'Not Provided' }}
+                            </p>
+                        </div>
+                        <div class="p-6 rounded-2xl bg-surface-container-low border border-outline-variant/30">
+                            <p class="text-xs font-black text-outline-variant uppercase tracking-widest mb-2">Location Address</p>
+                            <p class="text-lg font-bold text-on-background flex items-start gap-2">
+                                <span class="material-symbols-outlined text-secondary">location_on</span>
+                                {{ $clinic->address ?? 'No address registered' }}
+                            </p>
+                        </div>
+                    </div>
+
+                    @if($clinic->latitude && $clinic->longitude)
+                        <div class="mt-6 p-6 rounded-2xl bg-primary/5 border border-primary/10">
+                            <div class="flex justify-between items-center">
+                                <div>
+                                    <p class="text-xs font-black text-primary uppercase tracking-widest mb-1">Geographic Coordinates</p>
+                                    <p class="text-sm font-medium text-outline">{{ $clinic->latitude }}, {{ $clinic->longitude }}</p>
+                                </div>
+                                <a target="_blank"
+                                   class="px-4 py-2 bg-white text-primary border border-primary/20 rounded-xl text-xs font-black hover:bg-primary hover:text-white transition-all flex items-center gap-2 shadow-sm"
+                                   href="https://www.google.com/maps?q={{ $clinic->latitude }},{{ $clinic->longitude }}">
+                                    <span class="material-symbols-outlined text-sm">map</span>
+                                    Open in Google Maps
+                                </a>
+                            </div>
+                        </div>
+                    @endif
+                </div>
+
+                {{-- ABOUT --}}
+                @if($clinic->about_clinic)
+                <div class="bg-surface rounded-[2rem] p-8 clinical-shadow border border-outline-variant">
+                    <h2 class="text-xl font-black text-on-background mb-6 flex items-center gap-2">
+                        <span class="material-symbols-outlined text-primary">info</span>
+                        About the Clinic
+                    </h2>
+                    <div class="prose prose-blue max-w-none">
+                        <p class="text-on-surface-variant leading-relaxed font-medium">
+                            {{ $clinic->about_clinic }}
+                        </p>
+                    </div>
+                </div>
+                @endif
+            </div>
+
+            {{-- WORKING HOURS --}}
+            <div class="space-y-8">
+                <div class="bg-surface rounded-[2rem] p-8 clinical-shadow border border-outline-variant">
+                    <h2 class="text-xl font-black text-on-background mb-6 flex items-center gap-2">
+                        <span class="material-symbols-outlined text-primary">schedule</span>
+                        Working Hours
+                    </h2>
+
+                    @php
+                        $hours = is_array($clinic->working_hours)
+                            ? $clinic->working_hours
+                            : json_decode($clinic->working_hours, true);
+                        $days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
+                    @endphp
+
+                    <div class="space-y-3">
+                        @foreach($days as $day)
+                            @php $time = $hours[$day] ?? 'Closed'; @endphp
+                            <div class="flex justify-between items-center p-3 rounded-xl {{ $time === 'Closed' ? 'bg-error-container/5 opacity-60' : 'bg-surface-container-low border border-outline-variant/20' }}">
+                                <span class="capitalize text-sm font-black text-outline">{{ $day }}</span>
+                                <span class="text-sm font-bold {{ $time === 'Closed' ? 'text-error' : 'text-on-background' }}">{{ $time }}</span>
+                            </div>
+                        @endforeach
+                    </div>
+                    
+                    <div class="mt-6 pt-6 border-t border-outline-variant/30 text-center">
+                        <p class="text-[10px] font-black text-outline-variant uppercase tracking-widest">Last Updated</p>
+                        <p class="text-xs font-bold text-outline">{{ $clinic->updated_at->format('M d, Y • h:i A') }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
-
     @endif
-
-</div>
+</div>

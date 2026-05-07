@@ -2,10 +2,10 @@
 
 namespace App\Livewire\Doctor;
 
-use Livewire\Component;
-use Livewire\WithFileUploads;
 use App\Models\Clinic;
 use Illuminate\Support\Facades\Storage;
+use Livewire\Component;
+use Livewire\WithFileUploads;
 
 class ClinicEdit extends Component
 {
@@ -14,15 +14,23 @@ class ClinicEdit extends Component
     public $clinic;
 
     public $name;
+
     public $description;
+
     public $address;
+
     public $contact_number;
+
     public $about_clinic;
+
     public $latitude;
+
     public $longitude;
+
     public $working_hours = [];
 
     public $logo;
+
     public $removeLogo = false;
 
     public function mount($id)
@@ -95,6 +103,6 @@ class ClinicEdit extends Component
     public function render()
     {
         return view('livewire.doctor.clinic-edit')
-            ->layout('layouts.app');
+            ->layout('components.layouts.app', ['title' => 'Edit Clinic']);
     }
 }
