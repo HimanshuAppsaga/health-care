@@ -19,7 +19,7 @@ class TokenController extends Controller
         }
 
         $appointment = Appointment::where('clinic_id', $clinicId)
-            ->where('phone', trim($request->phone))
+            ->where('id', $request->appointment_id)
             ->latest()
             ->first();
 

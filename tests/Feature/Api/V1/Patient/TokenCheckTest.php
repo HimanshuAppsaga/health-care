@@ -16,7 +16,7 @@ class TokenCheckTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_it_can_check_token_with_only_phone_number(): void
+    public function test_it_can_check_token_with_appointment_id(): void
     {
         $clinic = Clinic::create([
             'name' => 'Test Clinic',
@@ -55,17 +55,17 @@ class TokenCheckTest extends TestCase
         ]);
 
         $response = $this->postJson('/api/v1/patient/check-token', [
-            'phone' => '1234567890',
+            'appointment_id' => $appointment->id,
         ], [
             'X-API-KEY' => 'test-api-key',
         ]);
 
         $response->assertStatus(200)
             ->assertJsonPath('data.message', 'Token found')
-            ->assertJsonPath('data.appointment.phone', '1234567890');
+            ->assertJsonPath('data.appointment.id', $appointment->id);
     }
 
-    public function test_it_returns_validation_error_if_phone_is_missing(): void
+    public function test_it_returns_validation_error_if_appointment_id_is_missing(): void
     {
         $clinic = Clinic::create([
             'name' => 'Test Clinic',
@@ -77,6 +77,6 @@ class TokenCheckTest extends TestCase
         ]);
 
         $response->assertStatus(422)
-            ->assertJsonValidationErrors(['phone']);
+            ->assertJsonValidationErrors(['appointment_id']);
     }
 }
