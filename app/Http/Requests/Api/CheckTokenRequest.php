@@ -9,7 +9,6 @@ class CheckTokenRequest extends FormRequest
     public function rules()
     {
         return [
-            'name' => 'required|string',
             'phone' => 'required|digits:10',
         ];
     }

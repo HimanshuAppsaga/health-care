@@ -7,16 +7,17 @@ use Illuminate\Database\Eloquent\Model;
 class Clinic extends Model
 {
     protected $fillable = [
-    'name',
-    'description',
-    'address',
-    'contact_number',
-    'about_clinic',
-    'latitude',
-    'longitude',
-    'working_hours',
-    'logo', // ✅ MUST be here
-];
+        'name',
+        'description',
+        'address',
+        'contact_number',
+        'about_clinic',
+        'latitude',
+        'longitude',
+        'working_hours',
+        'logo',
+        'api_key',
+    ];
 
     /**
      * The attributes that should be hidden for serialization.
@@ -26,7 +27,7 @@ class Clinic extends Model
     protected $hidden = [
         'api_key',
     ];
-    
+
     protected $casts = [
         'working_hours' => 'array',
     ];
