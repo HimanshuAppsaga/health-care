@@ -34,7 +34,7 @@ class CallNextTokenService
                 }
             }
 
-            // 1. Complete current serving or hold patient if any
+            // 1. Check if there is already a patient being served or on hold
             $current = Queue::whereHas('appointment', function ($q) use ($clinicId, $doctorId, $today) {
                 if ($clinicId) {
                     $q->where('clinic_id', $clinicId);
@@ -47,11 +47,10 @@ class CallNextTokenService
             })->whereIn('status', ['serving', 'hold'])->first();
 
             if ($current) {
-                $current->update(['status' => 'completed']);
-                if ($current->appointment) {
-                    $current->appointment->update(['status' => 'completed']);
-                }
-                Log::info("Clinic [{$clinicName}] ID:{$clinicId} - Token #{$current->token_number} marked COMPLETED.");
+                return [
+                    'success' => false,
+                    'message' => 'A patient is already being served. Please complete the current patient before calling the next one.',
+                ];
             }
 
             // 2. Find next waiting patient
