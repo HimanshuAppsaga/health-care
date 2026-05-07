@@ -23,7 +23,7 @@
                  x-transition:leave="transition ease-in duration-300"
                  x-transition:leave-start="opacity-100 scale-100"
                  x-transition:leave-end="opacity-0 scale-95"
-                 class="sticky top-8 z-[100] mb-8 flex justify-end pointer-events-none">
+                 class="fixed top-24 right-8 z-[100] pointer-events-none">
                 <div class="p-4 bg-primary text-on-primary border border-primary/20 rounded-2xl flex items-center gap-4 animate-in fade-in slide-in-from-right-4 duration-500 max-w-md shadow-2xl shadow-primary/40 pointer-events-auto">
                     <div class="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center shrink-0">
                         <span class="material-symbols-outlined font-black text-white">check_circle</span>
