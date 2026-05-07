@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Api;
 
+use App\Models\Appointment;
 use App\Models\Doctor;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
@@ -36,7 +37,19 @@ class StoreAppointmentRequest extends FormRequest
                 },
             ],
             'name' => 'required|string|max:191',
-            'phone' => 'required|digits:10',
+            'phone' => [
+                'required',
+                'digits:10',
+                function (string $attribute, mixed $value, \Closure $fail) {
+                    $exists = Appointment::where('phone', $value)
+                        ->where('created_at', '>=', now()->subHours(24))
+                        ->exists();
+
+                    if ($exists) {
+                        $fail('appointment is already booked.');
+                    }
+                },
+            ],
             'date' => 'nullable|date',
         ];
     }
