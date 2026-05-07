@@ -17,9 +17,16 @@ class ClinicResource extends JsonResource
         return [
             'id' => $this->id,
             'name' => $this->name,
+            'description' => $this->description,
+            'about_clinic' => $this->about_clinic,
+            'working_hours' => $this->working_hours,
+            'contact_number' => $this->contact_number,
+            'latitude' => $this->latitude,
+            'longitude' => $this->longitude,
             'logo' => $this->logo,
             'address' => $this->address,
             'created_at' => $this->created_at->format('Y-m-d H:i:s'),
+            'updated_at' => $this->updated_at->format('Y-m-d H:i:s'),
         ];
     }
-}
+}  
