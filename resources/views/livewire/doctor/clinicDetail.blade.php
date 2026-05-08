@@ -137,7 +137,7 @@
                                         <span class="text-xs font-bold text-error bg-error-container/10 px-2.5 py-0.5 rounded-md border border-error/20">Closed</span>
                                     @else
                                         @php
-                                            $slots = str_contains($time, ',') ? explode(',', $time) : [$time];
+                                            $slots = str_contains($time, ',') ? array_unique(array_map('trim', explode(',', $time))) : [trim($time)];
                                         @endphp
                                         @foreach($slots as $slot)
                                             <span class="text-[11px] font-bold text-primary bg-primary/5 px-2.5 py-0.5 rounded-md border border-primary/10 hover:bg-primary/10 transition-colors cursor-default whitespace-nowrap">

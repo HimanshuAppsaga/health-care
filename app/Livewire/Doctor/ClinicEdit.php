@@ -150,7 +150,7 @@ class ClinicEdit extends Component
                 foreach ($data['slots'] as $slot) {
                     $slotStrings[] = "{$slot['start_hour']}:{$slot['start_min']} {$slot['start_period']} - {$slot['end_hour']}:{$slot['end_min']} {$slot['end_period']}";
                 }
-                $this->working_hours[$day] = implode(', ', $slotStrings);
+                $this->working_hours[$day] = implode(', ', array_unique($slotStrings));
             }
         }
 

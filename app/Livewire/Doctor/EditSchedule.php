@@ -150,10 +150,14 @@ class EditSchedule extends Component
                 $startTime = Carbon::createFromFormat('h:i A', "{$session['start_hour']}:{$session['start_min']} {$session['start_period']}")->format('H:i:s');
                 $endTime = Carbon::createFromFormat('h:i A', "{$session['end_hour']}:{$session['end_min']} {$session['end_period']}")->format('H:i:s');
 
-                $daySessions[] = [
+                $sessionData = [
                     'start_time' => $startTime,
                     'end_time' => $endTime,
                 ];
+
+                if (! in_array($sessionData, $daySessions)) {
+                    $daySessions[] = $sessionData;
+                }
             }
 
             $workingHours[$name] = $daySessions;
