@@ -16,7 +16,7 @@
             {{-- PROFILE PHOTO --}}
             <div class="relative w-32 h-32 rounded-3xl overflow-hidden bg-surface-container-low flex items-center justify-center border-2 border-outline-variant shadow-inner group">
                 @if($doctor->user->profile_photo_path)
-                    <img src="{{ asset('storage/'.$doctor->user->profile_photo_path) }}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500">
+                    <img src="{{ asset('storage/'.$doctor->user->profile_photo_path) }}" class="w-50% h-50% object-cover group-hover:scale-110 transition-transform duration-500">
                 @else
                     <span class="material-symbols-outlined text-5xl text-outline-variant">person</span>
                 @endif

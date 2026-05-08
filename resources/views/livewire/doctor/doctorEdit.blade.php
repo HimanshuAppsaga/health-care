@@ -56,9 +56,9 @@
                         <div class="relative group">
                             <div class="w-40 h-40 rounded-3xl overflow-hidden bg-surface flex items-center justify-center border-2 border-outline-variant shadow-inner">
                                 @if ($photo)
-                                    <img src="{{ $photo->temporaryUrl() }}" class="w-full h-full object-cover">
+                                    <img src="{{ $photo->temporaryUrl() }}" class="w-50% h-50% object-cover">
                                 @elseif($doctor->user->profile_photo_path && !$removePhoto)
-                                    <img src="{{ asset('storage/'.$doctor->user->profile_photo_path) }}" class="w-full h-full object-cover">
+                                    <img src="{{ asset('storage/'.$doctor->user->profile_photo_path) }}" class="w-50% h-50% object-cover">
                                 @else
                                     <span class="material-symbols-outlined text-6xl text-outline-variant">person</span>
                                 @endif
