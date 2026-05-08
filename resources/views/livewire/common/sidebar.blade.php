@@ -7,11 +7,11 @@
         <div class="flex flex-col justify-center h-28 px-8">
             <div class="flex items-center gap-3">
                 <div class="flex-shrink-0">
-                    <span class="text-2xl font-bold tracking-tight text-primary">ClinicOS</span>
+                    <span class="text-2xl font-bold tracking-tight text-primary">{{ $title }}</span>
                 </div>
             </div>
             @if(!$isCollapsed)
-                <span class="text-xs font-medium text-outline mt-0.5">Admin Console</span>
+                <span class="text-xs font-medium text-outline mt-0.5">{{ $subtitle }}</span>
             @endif
         </div>
 
