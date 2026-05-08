@@ -75,7 +75,7 @@ class LiveQueueRequest extends FormRequest
             ->paginate($this->input('per_page', 15));
 
         return [
-            'waiting_list' => QueueResource::collection($waitingList)->response()->getData(true),
+            'waiting_list' => QueueResource::collection($waitingList)->response()->getData(true)['data'],
             'clinic_name' => $clinic->name,
             'date' => $today->toDateString(),
         ];
