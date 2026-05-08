@@ -67,17 +67,23 @@ class Doctor extends Model
         }
 
         if (is_string($hours)) {
-            $parts = explode(' - ', $hours);
-            if (count($parts) === 2) {
-                return [
-                    [
+            $sessions = [];
+            $ranges = explode(',', $hours);
+            foreach ($ranges as $range) {
+                $range = trim($range);
+                if (empty($range)) {
+                    continue;
+                }
+                $parts = explode(' - ', $range);
+                if (count($parts) === 2) {
+                    $sessions[] = [
                         'start_time' => Carbon::parse($parts[0])->format('H:i:s'),
                         'end_time' => Carbon::parse($parts[1])->format('H:i:s'),
-                    ],
-                ];
+                    ];
+                }
             }
 
-            return [];
+            return $sessions;
         }
 
         return (array) $hours;
