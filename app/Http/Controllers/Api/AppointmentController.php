@@ -7,6 +7,7 @@ use App\Http\Requests\Api\StoreAppointmentRequest;
 use App\Http\Resources\Api\AppointmentResource;
 use App\Services\ApiService;
 use App\Services\AppointmentBookingService;
+use Illuminate\Validation\ValidationException;
 
 class AppointmentController extends Controller
 {
@@ -25,7 +26,9 @@ class AppointmentController extends Controller
         $result = $this->bookingService->bookAppointment($data, auth('sanctum')->user());
 
         if (! $result['success']) {
-            return ApiService::error($result['message'], 422);
+            throw ValidationException::withMessages([
+                'schedule' => [$result['message']],
+            ]);
         }
 
         return ApiService::respond(

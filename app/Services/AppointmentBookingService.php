@@ -64,7 +64,7 @@ class AppointmentBookingService
                 $date = Carbon::parse($dateStr);
                 $bookingStatus = $this->checkBookingStatus($doctor, $date);
 
-                if (!$bookingStatus['allowed']) {
+                if (! $bookingStatus['allowed']) {
                     return [
                         'success' => false,
                         'message' => $bookingStatus['message'],
@@ -153,10 +153,6 @@ class AppointmentBookingService
 
     /**
      * Check if appointment booking is allowed for a doctor on a specific date.
-     *
-     * @param  Doctor  $doctor
-     * @param  Carbon  $date
-     * @return array
      */
     public function checkBookingStatus(Doctor $doctor, Carbon $date): array
     {
@@ -173,7 +169,7 @@ class AppointmentBookingService
             ];
         }
 
-        if (!$date->isToday()) {
+        if (! $date->isToday()) {
             return [
                 'allowed' => true,
                 'message' => 'Allowed',
@@ -196,7 +192,7 @@ class AppointmentBookingService
         foreach ($schedules as $schedule) {
             $start = Carbon::createFromFormat('H:i:s', $schedule['start_time']);
             $end = Carbon::createFromFormat('H:i:s', $schedule['end_time']);
-            
+
             // Set date to today
             $start->setDate($now->year, $now->month, $now->day);
             $end->setDate($now->year, $now->month, $now->day);
@@ -219,7 +215,7 @@ class AppointmentBookingService
 
             if ($now->isBefore($bookingStart)) {
                 $allPast = false;
-                if (!$upcomingSchedule) {
+                if (! $upcomingSchedule) {
                     $upcomingSchedule = $schedule;
                 }
             }
@@ -228,9 +224,10 @@ class AppointmentBookingService
         if ($upcomingSchedule) {
             $start = Carbon::createFromFormat('H:i:s', $upcomingSchedule['start_time']);
             $bookingStart = $start->copy()->subMinutes(15);
+
             return [
                 'allowed' => false,
-                'message' => 'Appointment booking will start at ' . $bookingStart->format('h:i A'),
+                'message' => 'That slot is not available. Appointment booking will start at '.$bookingStart->format('h:i A'),
                 'schedule' => $upcomingSchedule,
                 'booking_start' => $bookingStart->format('h:i A'),
                 'booking_end' => Carbon::createFromFormat('H:i:s', $upcomingSchedule['end_time'])->subMinutes(15)->format('h:i A'),
@@ -241,6 +238,7 @@ class AppointmentBookingService
             $lastSchedule = end($schedules);
             $start = Carbon::createFromFormat('H:i:s', $lastSchedule['start_time']);
             $end = Carbon::createFromFormat('H:i:s', $lastSchedule['end_time']);
+
             return [
                 'allowed' => false,
                 'message' => "Today's appointment booking time has ended",
