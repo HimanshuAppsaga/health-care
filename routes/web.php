@@ -22,9 +22,6 @@ Route::middleware('guest')->group(function () {
 });
 
 Route::middleware('auth')->group(function () {
-    Route::get('/patient/dashboard', Dashboard::class)->name('patient.dashboard');
-    Route::get('/patient/book-appointment', Appointment::class)->name('patient.book-appointment');
-
     Route::get('/receptionist/dashboard', App\Livewire\Receptionist\Dashboard::class)->name('receptionist.dashboard');
     Route::get('/receptionist/book-appointment', App\Livewire\Receptionist\Appointment::class)->name('receptionist.book-appointment');
 
