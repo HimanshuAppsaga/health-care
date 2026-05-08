@@ -120,12 +120,32 @@
                         $days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
                     @endphp
 
-                    <div class="space-y-3">
+                    <div class="space-y-2">
                         @foreach($days as $day)
                             @php $time = $hours[$day] ?? 'Closed'; @endphp
-                            <div class="flex justify-between items-center p-3 rounded-xl {{ $time === 'Closed' ? 'bg-error-container/5 opacity-60' : 'bg-surface-container-low border border-outline-variant/20' }}">
-                                <span class="capitalize text-sm font-black text-outline">{{ $day }}</span>
-                                <span class="text-sm font-bold {{ $time === 'Closed' ? 'text-error' : 'text-on-background' }}">{{ $time }}</span>
+                            <div class="flex justify-between items-start p-3 rounded-xl transition-all duration-300 {{ $time === 'Closed' ? 'bg-error-container/5 opacity-60' : 'bg-surface-container-low border border-outline-variant/20 hover:border-primary/30 hover:bg-primary/5' }}">
+                                
+                                {{-- Day Label --}}
+                                <div class="flex items-center gap-2 mt-0.5">
+                                    <div class="w-1.5 h-1.5 rounded-full {{ $time === 'Closed' ? 'bg-outline-variant' : 'bg-primary' }}"></div>
+                                    <span class="capitalize text-xs font-black {{ $time === 'Closed' ? 'text-outline' : 'text-on-background' }}">{{ $day }}</span>
+                                </div>
+
+                                {{-- Time Slots --}}
+                                <div class="flex flex-col items-end gap-1.5">
+                                    @if($time === 'Closed')
+                                        <span class="text-xs font-bold text-error bg-error-container/10 px-2.5 py-0.5 rounded-md border border-error/20">Closed</span>
+                                    @else
+                                        @php
+                                            $slots = str_contains($time, ',') ? explode(',', $time) : [$time];
+                                        @endphp
+                                        @foreach($slots as $slot)
+                                            <span class="text-[11px] font-bold text-primary bg-primary/5 px-2.5 py-0.5 rounded-md border border-primary/10 hover:bg-primary/10 transition-colors cursor-default whitespace-nowrap">
+                                                {{ trim($slot) }}
+                                            </span>
+                                        @endforeach
+                                    @endif
+                                </div>
                             </div>
                         @endforeach
                     </div>
