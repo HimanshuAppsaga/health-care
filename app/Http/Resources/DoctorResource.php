@@ -50,13 +50,15 @@ class DoctorResource extends JsonResource
                     ];
                 }, $slots);
             } elseif (is_string($slots) && $slots !== 'Closed' && str_contains($slots, ' - ')) {
-                $parts = explode(' - ', $slots);
-                $formatted[$day] = [
-                    [
+                $ranges = explode(',', $slots);
+                $formatted[$day] = [];
+                foreach ($ranges as $range) {
+                    $parts = explode(' - ', trim($range));
+                    $formatted[$day][] = [
                         'start_time' => isset($parts[0]) ? Carbon::parse(trim($parts[0]))->format('h:i A') : null,
                         'end_time' => isset($parts[1]) ? Carbon::parse(trim($parts[1]))->format('h:i A') : null,
-                    ],
-                ];
+                    ];
+                }
             } else {
                 $formatted[$day] = $slots;
             }
