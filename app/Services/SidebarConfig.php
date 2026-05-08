@@ -14,8 +14,6 @@ class SidebarConfig
                 'Medical' => [
                     ['name' => 'Dashboard', 'route' => 'doctor.dashboard', 'icon' => 'layout-dashboard'],
                     ['name' => 'Appointments', 'route' => 'appointments.index', 'icon' => 'calendar'],
-                    ['name' => 'Clinic Detail', 'route' => 'doctor.clinic.detail', 'params' => ['id' => $clinicId], 'icon' => 'building'],
-                    ['name' => 'My Profile', 'route' => 'doctor.profile.detail', 'params' => ['id' => $user?->doctor?->id], 'icon' => 'user'],
                 ],
             ],
             'receptionist' => [

@@ -65,8 +65,48 @@
         <div class="mt-auto py-6">
             <!-- Clinic Settings -->
             @if(auth()->user()->hasRole('doctor'))
+                @php 
+                    $user = auth()->user();
+                    $clinicId = $user->doctor?->clinic_id ?? 0;
+                    $doctorId = $user->doctor?->id ?? 0;
+                    
+                    $isClinicDetailActive = request()->routeIs('doctor.clinic.detail');
+                    $isProfileActive = request()->routeIs('doctor.profile.detail');
+                    $isSettingsActive = request()->routeIs('doctor.clinic-settings');
+                @endphp
+
+                <!-- Clinic Detail -->
+                <div class="px-4 mb-2">
+                    <a href="{{ route('doctor.clinic.detail', ['id' => $clinicId]) }}" wire:navigate 
+                        class="flex items-center gap-4 px-4 py-3 text-sm font-semibold transition-all duration-200 group rounded-xl
+                            {{ $isClinicDetailActive 
+                                ? 'bg-primary-container text-on-primary-container' 
+                                : 'text-outline hover:text-on-surface hover:bg-surface-container' }}"
+                    >
+                        <x-icon name="building" class="w-5 h-5 {{ $isClinicDetailActive ? 'text-on-primary-container' : 'text-outline-variant group-hover:text-outline' }}" />
+                        @if(!$isCollapsed)
+                            <span>Clinic Detail</span>
+                        @endif
+                    </a>
+                </div>
+
+                <!-- My Profile -->
+                <div class="px-4 mb-2">
+                    <a href="{{ route('doctor.profile.detail', ['id' => $doctorId]) }}" wire:navigate 
+                        class="flex items-center gap-4 px-4 py-3 text-sm font-semibold transition-all duration-200 group rounded-xl
+                            {{ $isProfileActive 
+                                ? 'bg-primary-container text-on-primary-container' 
+                                : 'text-outline hover:text-on-surface hover:bg-surface-container' }}"
+                    >
+                        <x-icon name="user" class="w-5 h-5 {{ $isProfileActive ? 'text-on-primary-container' : 'text-outline-variant group-hover:text-outline' }}" />
+                        @if(!$isCollapsed)
+                            <span>My Profile</span>
+                        @endif
+                    </a>
+                </div>
+
+                <!-- Clinic Settings -->
                 <div class="px-4 mb-4">
-                    @php $isSettingsActive = request()->routeIs('doctor.clinic-settings'); @endphp
                     <a href="{{ route('doctor.clinic-settings') }}" wire:navigate 
                         class="flex items-center gap-4 px-4 py-3 text-sm font-semibold transition-all duration-200 group rounded-xl
                             {{ $isSettingsActive 
