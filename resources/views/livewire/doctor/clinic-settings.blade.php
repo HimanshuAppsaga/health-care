@@ -125,20 +125,23 @@
 
         <!-- Additional Settings Placeholder -->
         <div class="mt-8 grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div class="bg-surface p-6 rounded-2xl border border-outline-variant opacity-50 cursor-not-allowed">
-                <div class="flex items-center gap-3 mb-4">
-                    <span class="material-symbols-outlined text-outline">domain</span>
-                    <h3 class="font-bold">Clinic Profile</h3>
+            @if($clinic)
+                <a href="{{ route('doctor.clinic.detail', $clinic->id) }}" wire:navigate class="block bg-surface p-6 rounded-2xl border border-outline-variant hover:border-primary hover:bg-surface-container-low transition-all group">
+                    <div class="flex items-center gap-3 mb-4">
+                        <span class="material-symbols-outlined text-outline group-hover:text-primary transition-colors">domain</span>
+                        <h3 class="font-bold text-on-background group-hover:text-primary transition-colors">Clinic Profile</h3>
+                    </div>
+                    <p class="text-sm text-outline">Update clinic name, address, and contact details.</p>
+                </a>
+            @else
+                <div class="bg-surface p-6 rounded-2xl border border-outline-variant opacity-50 cursor-not-allowed">
+                    <div class="flex items-center gap-3 mb-4">
+                        <span class="material-symbols-outlined text-outline">domain</span>
+                        <h3 class="font-bold">Clinic Profile</h3>
+                    </div>
+                    <p class="text-sm text-outline">Update clinic name, address, and contact details.</p>
                 </div>
-                <p class="text-sm text-outline">Update clinic name, address, and contact details.</p>
-            </div>
-            <div class="bg-surface p-6 rounded-2xl border border-outline-variant opacity-50 cursor-not-allowed">
-                <div class="flex items-center gap-3 mb-4">
-                    <span class="material-symbols-outlined text-outline">notifications_active</span>
-                    <h3 class="font-bold">Notification Prefs</h3>
-                </div>
-                <p class="text-sm text-outline">Configure how you receive alerts and updates.</p>
-            </div>
+            @endif
         </div>
     </div>
 </div>
