@@ -61,7 +61,7 @@
                             <p class="text-xs font-black text-outline-variant uppercase tracking-widest mb-2">Consultation Fee</p>
                             <p class="text-lg font-bold text-on-background flex items-center gap-2">
                                 <span class="material-symbols-outlined text-secondary">payments</span>
-                                ${{ $doctor->consultation_fee ?? '0.00' }}
+                                {{ $doctor->consultation_fee ?? '0.00' }}
                             </p>
                         </div>
                         <div class="p-6 rounded-2xl bg-surface-container-low border border-outline-variant/30">
