@@ -15,7 +15,9 @@ class AppointmentBookingTimeWindowTest extends TestCase
     use RefreshDatabase;
 
     protected $clinic;
+
     protected $doctor;
+
     protected $patient;
 
     protected function setUp(): void
@@ -66,7 +68,7 @@ class AppointmentBookingTimeWindowTest extends TestCase
     {
         // Schedule is 09:00 AM - 10:00 AM
         // Window is 08:45 AM - 09:45 AM
-        
+
         // Set time to Monday 08:50 AM (2026-05-11 is a Monday)
         Carbon::setTestNow(Carbon::parse('2026-05-11 08:50:00'));
 
@@ -99,9 +101,7 @@ class AppointmentBookingTimeWindowTest extends TestCase
 
         $response->assertStatus(422);
         $response->assertJson([
-            'data' => [
-                'message' => 'Appointment booking will start at 08:45 AM',
-            ],
+            'message' => 'That slot is not available. Appointment booking will start at 08:45 AM',
         ]);
     }
 
@@ -119,9 +119,7 @@ class AppointmentBookingTimeWindowTest extends TestCase
 
         $response->assertStatus(422);
         $response->assertJson([
-            'data' => [
-                'message' => "Today's appointment booking time has ended",
-            ],
+            'message' => "Today's appointment booking time has ended",
         ]);
     }
 
@@ -146,9 +144,7 @@ class AppointmentBookingTimeWindowTest extends TestCase
 
         $response->assertStatus(422);
         $response->assertJson([
-            'data' => [
-                'message' => 'No slot available for today',
-            ],
+            'message' => 'No slot available for today',
         ]);
     }
 }

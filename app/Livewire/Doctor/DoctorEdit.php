@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Doctor;
 
+use App\Events\ScheduleUpdated;
 use App\Models\Doctor;
 use App\Models\User;
 use Illuminate\Support\Facades\Storage;
@@ -196,6 +197,8 @@ class DoctorEdit extends Component
             'consultation_fee' => $this->consultation_fee,
             'working_hours' => $this->working_hours,
         ]);
+
+        broadcast(new ScheduleUpdated($this->doctor->clinic_id))->toOthers();
 
         $this->photo = null;
         $this->removePhoto = false;

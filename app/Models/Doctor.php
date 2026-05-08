@@ -76,9 +76,13 @@ class Doctor extends Model
                 }
                 $parts = explode(' - ', $range);
                 if (count($parts) === 2) {
+                    $endTimeStr = Carbon::parse($parts[1])->format('H:i:s');
+                    if ($endTimeStr === '00:00:00') {
+                        $endTimeStr = '23:59:59';
+                    }
                     $sessions[] = [
                         'start_time' => Carbon::parse($parts[0])->format('H:i:s'),
-                        'end_time' => Carbon::parse($parts[1])->format('H:i:s'),
+                        'end_time' => $endTimeStr,
                     ];
                 }
             }
