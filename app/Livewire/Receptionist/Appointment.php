@@ -50,6 +50,10 @@ class Appointment extends Component
 
     public $availableSlots = [];
 
+    public $bookingAllowed = true;
+
+    public $bookingMessage = '';
+
     // Summary
     public $selectedClinic;
 
@@ -94,13 +98,17 @@ class Appointment extends Component
             ];
             $dayName = $dayNames[$dayOfWeek];
 
-            $this->selectedDoctorId = Doctor::whereHas('user')
-                ->where('working_hours->'.$dayName, '!=', 'Closed')
-                ->first()?->id;
+            $this->selectedDoctorId = session('receptionist_selected_doctor_id');
 
-            // Fallback to first doctor if no one has a schedule today
-            if (! $this->selectedDoctorId) {
-                $this->selectedDoctorId = $this->doctors->first()?->id;
+            if (!$this->selectedDoctorId) {
+                $this->selectedDoctorId = Doctor::whereHas('user')
+                    ->where('working_hours->' . $dayName, '!=', 'Closed')
+                    ->first()?->id;
+
+                // Fallback to first doctor if no one has a schedule today
+                if (!$this->selectedDoctorId) {
+                    $this->selectedDoctorId = $this->doctors->first()?->id;
+                }
             }
 
             if ($this->selectedDoctorId) {
@@ -149,14 +157,25 @@ class Appointment extends Component
         // Doctors can still be booked even if they are temporarily pausing their current session.
 
         $date = Carbon::parse($this->selectedDate);
-        $dayOfWeek = $date->dayOfWeek; // 0 (Sun) to 6 (Sat)
-
         $doctor = Doctor::find($this->selectedDoctorId);
-        $schedules = $doctor->getScheduleForDay($dayOfWeek);
 
-        if (empty($schedules)) {
+        if (!$doctor) {
             return;
         }
+
+        // Check booking status using reusable logic
+        $status = $this->bookingService->checkBookingStatus($doctor, $date);
+        $this->bookingAllowed = $status['allowed'];
+        $this->bookingMessage = $status['message'];
+
+        if (!$this->bookingAllowed) {
+            $this->availableSlots = [];
+            $this->selectedSlot = null;
+            return;
+        }
+
+        $dayOfWeek = $date->dayOfWeek;
+        $schedules = $doctor->getScheduleForDay($dayOfWeek);
 
         foreach ($schedules as $schedule) {
 

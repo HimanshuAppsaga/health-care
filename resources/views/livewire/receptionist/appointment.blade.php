@@ -37,10 +37,10 @@
                         </div>
                     @endif
 
-                    @if(empty($availableSlots))
+                    @if(!$bookingAllowed)
                         <div class="mb-6 p-4 bg-red-50 text-red-500 rounded-xl text-xs font-bold border border-red-100 flex items-center gap-2">
                             <span class="material-symbols-outlined text-sm">event_busy</span>
-                            No slots available for today.
+                            {{ $bookingMessage }}
                         </div>
                     @endif
 
@@ -60,7 +60,7 @@
                     <div class="pt-6">
                         <button wire:click="bookAppointment" 
                                 wire:loading.attr="disabled"
-                                @if(empty($availableSlots)) disabled @endif
+                                @if(!$bookingAllowed) disabled @endif
                                 class="group relative w-full py-4 bg-gradient-to-r from-primary to-indigo-600 text-white rounded-2xl font-bold text-lg shadow-[0_10px_25px_-5px_rgba(var(--primary-rgb),0.4)] hover:shadow-[0_20px_35px_-10px_rgba(var(--primary-rgb),0.5)] transition-all duration-300 transform hover:-translate-y-1 active:scale-[0.98] flex items-center justify-center overflow-hidden disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none">
                             <!-- Shimmer Effect -->
                             <div class="absolute inset-0 w-full h-full bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:animate-shimmer"></div>

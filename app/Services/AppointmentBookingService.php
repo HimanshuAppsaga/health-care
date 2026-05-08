@@ -60,49 +60,14 @@ class AppointmentBookingService
                 $clinicId = $doctor->clinic_id;
                 $clinic = $doctor->clinic;
 
-                // Check availability (Same logic as API Controller)
+                // Check availability using reusable logic
                 $date = Carbon::parse($dateStr);
-                $dayOfWeek = $date->dayOfWeek; // 0 (Sun) to 6 (Sat)
-                $isToday = $date->isToday();
+                $bookingStatus = $this->checkBookingStatus($doctor, $date);
 
-                $schedules = $doctor->getScheduleForDay($dayOfWeek);
-
-                $hasAvailableSlot = false;
-
-                foreach ($schedules as $schedule) {
-                    $start = Carbon::createFromFormat('H:i:s', $schedule['start_time']);
-                    $end = Carbon::createFromFormat('H:i:s', $schedule['end_time']);
-                    $duration = $schedule['slot_duration'] ?? 15;
-
-                    // If the schedule hasn't started yet today, don't allow bookings (Live Queue Logic)
-                    if ($isToday && now()->isBefore($start)) {
-                        continue;
-                    }
-
-                    // Check if there's at least one slot that is not in the past
-                    $tempStart = $start->copy();
-                    while ($tempStart->copy()->addMinutes($duration)->lte($end)) {
-                        if ($isToday) {
-                            if ($tempStart->copy()->addMinutes($duration)->isAfter(now())) {
-                                $hasAvailableSlot = true;
-                                break;
-                            }
-                        } else {
-                            $hasAvailableSlot = true;
-                            break;
-                        }
-                        $tempStart->addMinutes($duration);
-                    }
-
-                    if ($hasAvailableSlot) {
-                        break;
-                    }
-                }
-
-                if (! $hasAvailableSlot) {
+                if (!$bookingStatus['allowed']) {
                     return [
                         'success' => false,
-                        'message' => 'No slots available for the selected date.',
+                        'message' => $bookingStatus['message'],
                     ];
                 }
 
@@ -184,5 +149,113 @@ class AppointmentBookingService
                 'message' => 'Something went wrong while booking the appointment. Please try again.',
             ];
         }
+    }
+
+    /**
+     * Check if appointment booking is allowed for a doctor on a specific date.
+     *
+     * @param  Doctor  $doctor
+     * @param  Carbon  $date
+     * @return array
+     */
+    public function checkBookingStatus(Doctor $doctor, Carbon $date): array
+    {
+        $dayOfWeek = $date->dayOfWeek;
+        $schedules = $doctor->getScheduleForDay($dayOfWeek);
+
+        if (empty($schedules)) {
+            return [
+                'allowed' => false,
+                'message' => 'No slot available for today',
+                'schedule' => null,
+                'booking_start' => null,
+                'booking_end' => null,
+            ];
+        }
+
+        if (!$date->isToday()) {
+            return [
+                'allowed' => true,
+                'message' => 'Allowed',
+                'schedule' => $schedules[0] ?? null,
+                'booking_start' => null,
+                'booking_end' => null,
+            ];
+        }
+
+        $now = now();
+
+        // Sort schedules by start time
+        usort($schedules, function ($a, $b) {
+            return strcmp($a['start_time'], $b['start_time']);
+        });
+
+        $allPast = true;
+        $upcomingSchedule = null;
+
+        foreach ($schedules as $schedule) {
+            $start = Carbon::createFromFormat('H:i:s', $schedule['start_time']);
+            $end = Carbon::createFromFormat('H:i:s', $schedule['end_time']);
+            
+            // Set date to today
+            $start->setDate($now->year, $now->month, $now->day);
+            $end->setDate($now->year, $now->month, $now->day);
+
+            $bookingStart = $start->copy()->subMinutes(15);
+            $bookingEnd = $end->copy()->subMinutes(15);
+
+            $bookingStartStr = $bookingStart->format('h:i A');
+            $bookingEndStr = $bookingEnd->format('h:i A');
+
+            if ($now->between($bookingStart, $bookingEnd)) {
+                return [
+                    'allowed' => true,
+                    'message' => 'Allowed',
+                    'schedule' => $schedule,
+                    'booking_start' => $bookingStartStr,
+                    'booking_end' => $bookingEndStr,
+                ];
+            }
+
+            if ($now->isBefore($bookingStart)) {
+                $allPast = false;
+                if (!$upcomingSchedule) {
+                    $upcomingSchedule = $schedule;
+                }
+            }
+        }
+
+        if ($upcomingSchedule) {
+            $start = Carbon::createFromFormat('H:i:s', $upcomingSchedule['start_time']);
+            $bookingStart = $start->copy()->subMinutes(15);
+            return [
+                'allowed' => false,
+                'message' => 'Appointment booking will start at ' . $bookingStart->format('h:i A'),
+                'schedule' => $upcomingSchedule,
+                'booking_start' => $bookingStart->format('h:i A'),
+                'booking_end' => Carbon::createFromFormat('H:i:s', $upcomingSchedule['end_time'])->subMinutes(15)->format('h:i A'),
+            ];
+        }
+
+        if ($allPast) {
+            $lastSchedule = end($schedules);
+            $start = Carbon::createFromFormat('H:i:s', $lastSchedule['start_time']);
+            $end = Carbon::createFromFormat('H:i:s', $lastSchedule['end_time']);
+            return [
+                'allowed' => false,
+                'message' => "Today's appointment booking time has ended",
+                'schedule' => $lastSchedule,
+                'booking_start' => $start->subMinutes(15)->format('h:i A'),
+                'booking_end' => $end->subMinutes(15)->format('h:i A'),
+            ];
+        }
+
+        return [
+            'allowed' => false,
+            'message' => 'No slot available for today',
+            'schedule' => null,
+            'booking_start' => null,
+            'booking_end' => null,
+        ];
     }
 }
