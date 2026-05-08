@@ -10,8 +10,8 @@ use App\Livewire\Doctor\ClinicEdit;
 use App\Livewire\Doctor\ClinicSettings;
 use App\Livewire\Doctor\DoctorDetail;
 use App\Livewire\Doctor\DoctorEdit;
-use App\Livewire\Doctor\EditSchedule;
-use App\Livewire\Doctor\Schedule;
+use App\Livewire\Receptionist\Appointment;
+use App\Livewire\Receptionist\Dashboard;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware('guest')->group(function () {
@@ -22,12 +22,10 @@ Route::middleware('guest')->group(function () {
 });
 
 Route::middleware('auth')->group(function () {
-    Route::get('/receptionist/dashboard', App\Livewire\Receptionist\Dashboard::class)->name('receptionist.dashboard');
-    Route::get('/receptionist/book-appointment', App\Livewire\Receptionist\Appointment::class)->name('receptionist.book-appointment');
+    Route::get('/receptionist/dashboard', Dashboard::class)->name('receptionist.dashboard');
+    Route::get('/receptionist/book-appointment', Appointment::class)->name('receptionist.book-appointment');
 
     Route::get('/doctor/dashboard', App\Livewire\Doctor\Dashboard::class)->name('doctor.dashboard');
-    Route::get('/doctor/schedule', Schedule::class)->name('doctor.schedule');
-    Route::get('/doctor/schedule/edit/{id?}', EditSchedule::class)->name('doctor.schedule.edit');
     Route::get('/doctor/clinic-settings', ClinicSettings::class)->name('doctor.clinic-settings');
     Route::get('/doctor/clinic-details/{id}', ClinicDetail::class)->name('doctor.clinic.detail');
     Route::get('/doctor/clinic-details/{id}/edit', ClinicEdit::class)->name('doctor.clinic.edit');
