@@ -164,18 +164,122 @@
                             Map Coordinates
                         </h3>
                         
+                        <!-- Google Maps JS -->
+                        <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAOVYRIgupAurZup5y1PRh8Ismb1A3lLao&libraries=places"></script>
+
                         <div class="grid grid-cols-2 gap-4">
                             <div class="group">
                                 <label class="text-[10px] font-black text-outline-variant uppercase tracking-widest ml-4 mb-1 block">Latitude</label>
-                                <input type="text" wire:model="latitude" placeholder="e.g. 40.7128"
-                                       class="w-full bg-surface-container-low border-2 border-outline-variant/30 rounded-xl px-4 py-3 font-bold focus:border-primary transition-all">
+                                <input type="text" wire:model="latitude" placeholder="e.g. 40.7128" readonly
+                                       class="w-full bg-surface-container-low border-2 border-outline-variant/30 rounded-xl px-4 py-3 font-bold focus:border-primary transition-all cursor-not-allowed opacity-70">
                             </div>
                             <div class="group">
                                 <label class="text-[10px] font-black text-outline-variant uppercase tracking-widest ml-4 mb-1 block">Longitude</label>
-                                <input type="text" wire:model="longitude" placeholder="e.g. -74.0060"
-                                       class="w-full bg-surface-container-low border-2 border-outline-variant/30 rounded-xl px-4 py-3 font-bold focus:border-primary transition-all">
+                                <input type="text" wire:model="longitude" placeholder="e.g. -74.0060" readonly
+                                       class="w-full bg-surface-container-low border-2 border-outline-variant/30 rounded-xl px-4 py-3 font-bold focus:border-primary transition-all cursor-not-allowed opacity-70">
                             </div>
                         </div>
+
+                        <!-- Map Container -->
+                        <div class="mt-4" wire:ignore 
+                             x-data="{
+                                 map: null,
+                                 marker: null,
+                                 autocomplete: null,
+                                 initMap() {
+                                     let lat = parseFloat($wire.latitude) || 21.2688948;
+                                     let lng = parseFloat($wire.longitude) || 72.9771112;
+                                     
+                                     let center = { lat: lat, lng: lng };
+                                     
+                                     this.map = new google.maps.Map(this.$refs.mapContainer, {
+                                         center: center,
+                                         zoom: 13,
+                                     });
+                                     
+                                     this.marker = new google.maps.Marker({
+                                         position: center,
+                                         map: this.map,
+                                         draggable: true,
+                                     });
+                                     
+                                     this.marker.addListener('dragend', () => {
+                                         let position = this.marker.getPosition();
+                                         $wire.latitude = position.lat().toFixed(6);
+                                         $wire.longitude = position.lng().toFixed(6);
+                                     });
+                                     
+                                     this.map.addListener('click', (e) => {
+                                         this.marker.setPosition(e.latLng);
+                                         $wire.latitude = e.latLng.lat().toFixed(6);
+                                         $wire.longitude = e.latLng.lng().toFixed(6);
+                                     });
+                                     
+                                     // Setup Autocomplete
+                                     this.autocomplete = new google.maps.places.Autocomplete(this.$refs.searchInput);
+                                     this.autocomplete.addListener('place_changed', () => {
+                                         let place = this.autocomplete.getPlace();
+                                         if (!place.geometry || !place.geometry.location) {
+                                             return;
+                                         }
+                                         
+                                         let location = place.geometry.location;
+                                         this.map.setCenter(location);
+                                         this.map.setZoom(17);
+                                         this.marker.setPosition(location);
+                                         
+                                         $wire.latitude = location.lat().toFixed(6);
+                                         $wire.longitude = location.lng().toFixed(6);
+                                     });
+                                     
+                                     $wire.$watch('latitude', (value) => {
+                                         let lat = parseFloat(value);
+                                         let lng = parseFloat($wire.longitude);
+                                         if (!isNaN(lat) && !isNaN(lng)) {
+                                             let pos = { lat: lat, lng: lng };
+                                             this.marker.setPosition(pos);
+                                             this.map.setCenter(pos);
+                                         }
+                                     });
+                                     
+                                     $wire.$watch('longitude', (value) => {
+                                         let lat = parseFloat($wire.latitude);
+                                         let lng = parseFloat(value);
+                                         if (!isNaN(lat) && !isNaN(lng)) {
+                                             let pos = { lat: lat, lng: lng };
+                                             this.marker.setPosition(pos);
+                                             this.map.setCenter(pos);
+                                         }
+                                     });
+                                 }
+                             }" 
+                             x-init="
+                                 if (typeof google === 'undefined') {
+                                     let checkGoogle = setInterval(() => {
+                                         if (typeof google !== 'undefined' && google.maps) {
+                                             clearInterval(checkGoogle);
+                                             initMap();
+                                         }
+                                     }, 100);
+                                 } else {
+                                     initMap();
+                                 }
+                             ">
+                            
+                            <!-- Search Bar -->
+                            <div class="relative mb-4">
+                                <div class="group flex items-center gap-2 bg-surface-container-low border-2 border-outline-variant/30 rounded-xl px-4 py-3 focus-within:border-primary transition-all">
+                                    <span class="material-symbols-outlined text-outline group-focus-within:text-primary">search</span>
+                                    <input type="text" x-ref="searchInput" 
+                                           placeholder="Search location..."
+                                           class="w-full bg-transparent border-none focus:ring-0 font-bold text-sm p-0 placeholder:text-outline-variant">
+                                </div>
+                            </div>
+
+                            <!-- Map -->
+                            <div x-ref="mapContainer" style="height: 300px; border-radius: 1rem; border: 2px solid #e2e8f0;"></div>
+                        </div>
+
                         <p class="text-[10px] text-outline italic ml-2">Coordinates are used to show your clinic on maps and for patient discovery.</p>
                     </div>
 
