@@ -5,14 +5,14 @@ use App\Livewire\Auth\Login;
 use App\Livewire\Auth\ResetPassword;
 use App\Livewire\Auth\SignUp;
 use App\Livewire\Common\AppointmentList;
+use App\Livewire\Doctor\ClinicDetail;
+use App\Livewire\Doctor\ClinicEdit;
 use App\Livewire\Doctor\ClinicSettings;
+use App\Livewire\Doctor\DoctorDetail;
+use App\Livewire\Doctor\DoctorEdit;
 use App\Livewire\Doctor\EditSchedule;
 use App\Livewire\Doctor\Schedule;
-use App\Livewire\Patient\Appointment;
-use App\Livewire\Patient\Dashboard;
 use Illuminate\Support\Facades\Route;
-
-
 
 Route::middleware('guest')->group(function () {
     Route::get('/', Login::class)->name('login');
@@ -29,8 +29,10 @@ Route::middleware('auth')->group(function () {
     Route::get('/doctor/schedule', Schedule::class)->name('doctor.schedule');
     Route::get('/doctor/schedule/edit/{id?}', EditSchedule::class)->name('doctor.schedule.edit');
     Route::get('/doctor/clinic-settings', ClinicSettings::class)->name('doctor.clinic-settings');
-    Route::get('/doctor/clinic-details/{id}', App\Livewire\Doctor\ClinicDetail::class)->name('doctor.clinic.detail');
-    Route::get('/doctor/clinic-details/{id}/edit', App\Livewire\Doctor\ClinicEdit::class)->name('doctor.clinic.edit');
+    Route::get('/doctor/clinic-details/{id}', ClinicDetail::class)->name('doctor.clinic.detail');
+    Route::get('/doctor/clinic-details/{id}/edit', ClinicEdit::class)->name('doctor.clinic.edit');
+    Route::get('/doctor/profile/{id}', DoctorDetail::class)->name('doctor.profile.detail');
+    Route::get('/doctor/profile/{id}/edit', DoctorEdit::class)->name('doctor.profile.edit');
 
     Route::get('/appointments', AppointmentList::class)->name('appointments.index');
 

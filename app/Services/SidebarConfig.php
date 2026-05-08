@@ -16,6 +16,7 @@ class SidebarConfig
                     ['name' => 'Appointments', 'route' => 'appointments.index', 'icon' => 'calendar'],
                     ['name' => 'Schedule', 'route' => 'doctor.schedule', 'icon' => 'clock'],
                     ['name' => 'Clinic Detail', 'route' => 'doctor.clinic.detail', 'params' => ['id' => $clinicId], 'icon' => 'building'],
+                    ['name' => 'My Profile', 'route' => 'doctor.profile.detail', 'params' => ['id' => $user?->doctor?->id], 'icon' => 'user'],
                 ],
             ],
             'receptionist' => [
