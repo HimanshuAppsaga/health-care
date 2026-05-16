@@ -7,6 +7,7 @@ use App\Models\Appointment;
 use App\Models\Clinic;
 use App\Models\Doctor;
 use App\Models\Queue;
+use App\Services\AppointmentService;
 use App\Services\CallNextTokenService;
 use App\Services\CurrentTokenService;
 use App\Services\TokenTransferService;
@@ -221,11 +222,11 @@ class Dashboard extends Component
             ->take(3)
             ->get();
 
-        $todaysAppointments = Appointment::with(['doctor.user'])
-            ->when($doctorId, fn ($q) => $q->where('doctor_id', $doctorId))
-            ->whereDate('appointment_date', $today)
-            ->orderByRaw('CAST(token AS UNSIGNED) ASC')
-            ->get();
+        $appointmentService = app(AppointmentService::class);
+        $todaysAppointments = $appointmentService->getTodayAppointments([
+            'doctor_id' => $doctorId,
+            'clinic_id' => auth()->user()->clinic_id,
+        ]);
 
         $waitingCount = Queue::whereHas('appointment', function ($query) use ($today, $doctorId) {
             $query->when($doctorId, fn ($q) => $q->where('doctor_id', $doctorId))

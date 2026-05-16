@@ -2,8 +2,7 @@
 
 namespace App\Livewire\Common;
 
-use App\Models\Appointment;
-use Carbon\Carbon;
+use App\Services\AppointmentService;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
 use Livewire\Attributes\Url;
@@ -72,62 +71,26 @@ class AppointmentList extends Component
     public function render()
     {
         $user = auth()->user();
-        $query = Appointment::with(['doctor.user', 'patient.user', 'queue']);
+        $appointmentService = app(AppointmentService::class);
+
+        $filters = [
+            'search' => $this->search,
+            'status' => $this->status,
+            'date_range' => $this->dateRange,
+            'start_date' => $this->startDate,
+            'end_date' => $this->endDate,
+            'clinic_id' => $user->clinic_id,
+        ];
 
         if ($user->hasRole('patient')) {
-            $query->where('patient_id', $user->patient->id);
+            $filters['patient_id'] = $user->patient->id;
         }
 
-        // Search
-        if ($this->search) {
-            $query->where(function ($q) {
-                $q->where('name', 'like', '%'.$this->search.'%')
-                    ->orWhere('phone', 'like', '%'.$this->search.'%')
-                    ->orWhere('token', 'like', '%'.$this->search.'%');
-            });
-        }
-
-        // Status filter
-        if ($this->status) {
-            $query->where('status', $this->status);
-        }
-
-        // Date filter
-        $this->applyDateFilter($query);
-
-        $appointments = $query->orderBy('appointment_date', 'desc')
-            ->orderByRaw('CAST(token AS UNSIGNED) DESC')
-            ->paginate(10);
+        $appointments = $appointmentService->getAppointments($filters, true);
 
         return view('livewire.common.appointment-list', [
             'appointments' => $appointments,
         ]);
-    }
-
-    protected function applyDateFilter($query)
-    {
-        $today = Carbon::today();
-
-        switch ($this->dateRange) {
-            case 'today':
-                $query->whereDate('appointment_date', $today);
-                break;
-            case 'week':
-                $query->whereBetween('appointment_date', [$today->copy()->startOfWeek(), $today->copy()->endOfWeek()]);
-                break;
-            case 'month':
-                $query->whereBetween('appointment_date', [$today->copy()->startOfMonth(), $today->copy()->endOfMonth()]);
-                break;
-            case 'custom':
-                if ($this->startDate && $this->endDate) {
-                    $query->whereBetween('appointment_date', [$this->startDate, $this->endDate]);
-                } elseif ($this->startDate) {
-                    $query->whereDate('appointment_date', $this->startDate);
-                } elseif ($this->endDate) {
-                    $query->whereDate('appointment_date', $this->endDate);
-                }
-                break;
-        }
     }
 
     public function setDateRange($range)
