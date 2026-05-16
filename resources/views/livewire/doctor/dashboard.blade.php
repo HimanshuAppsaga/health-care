@@ -125,6 +125,7 @@
                         <thead class="bg-surface-container-low/50">
                             <tr>
                                 <th class="px-6 py-4 text-xs font-bold text-outline uppercase tracking-wider">Patient Name</th>
+                                <th class="px-6 py-4 text-xs font-bold text-outline uppercase tracking-wider">Mobile</th>
                                 <th class="px-6 py-4 text-xs font-bold text-outline uppercase tracking-wider">Token</th>
                                 <th class="px-6 py-4 text-xs font-bold text-outline uppercase tracking-wider text-right">Status</th>
                             </tr>
@@ -133,6 +134,7 @@
                             @forelse($todaysAppointments as $appointment)
                             <tr class="hover:bg-primary-container/10 transition-colors">
                                 <td class="px-6 py-4 font-medium text-on-background">{{ $appointment->name ?? 'Unknown' }}</td>
+                                <td class="px-6 py-4 text-on-surface-variant font-bold">{{ $appointment->phone ?? '--' }}</td>
                                 <td class="px-6 py-4 text-on-surface-variant font-bold">{{ $appointment->token ?? '--' }}</td>
                                 <td class="px-6 py-4 text-right">
                                     @if($appointment->status->value === 'pending')
@@ -144,7 +146,7 @@
                             </tr>
                             @empty
                             <tr>
-                                <td colspan="3" class="px-6 py-8 text-center text-outline font-medium">No appointments for today.</td>
+                                <td colspan="4" class="px-6 py-8 text-center text-outline font-medium">No appointments for today.</td>
                             </tr>
                             @endforelse
                         </tbody>
