@@ -9,6 +9,7 @@ use App\Models\Queue;
 use App\Services\CallNextTokenService;
 use App\Services\CurrentTokenService;
 use App\Services\QueueService;
+use App\Services\ScheduleService;
 use App\Services\TokenTransferService;
 use Carbon\Carbon;
 use Livewire\Attributes\Layout;
@@ -25,14 +26,18 @@ class Dashboard extends Component
 
     protected $tokenTransferService;
 
+    protected $scheduleService;
+
     public function boot(
         CurrentTokenService $currentTokenService,
         CallNextTokenService $callNextTokenService,
-        TokenTransferService $tokenTransferService
+        TokenTransferService $tokenTransferService,
+        ScheduleService $scheduleService
     ) {
         $this->currentTokenService = $currentTokenService;
         $this->callNextTokenService = $callNextTokenService;
         $this->tokenTransferService = $tokenTransferService;
+        $this->scheduleService = $scheduleService;
     }
 
     public bool $isDoctorOnHold = false;
@@ -237,21 +242,9 @@ class Dashboard extends Component
 
         $isDoctorOnHold = $this->isDoctorOnHold;
 
-        $sessions = $doctor->getScheduleForDay($today->dayOfWeek);
-        $doctorSchedules = collect();
+        $isDoctorOnHold = $this->isDoctorOnHold;
 
-        foreach ($sessions as $session) {
-            $sObj = (object) [
-                'doctor_id' => $doctorId,
-                'start_time' => $session['start_time'],
-                'end_time' => $session['end_time'],
-            ];
-            $sObj->booked_count = Appointment::where('doctor_id', $doctorId)
-                ->whereDate('appointment_date', $today)
-                ->count();
-            $doctorSchedules->push($sObj);
-        }
-        $doctorSchedules = $doctorSchedules->sortBy('start_time');
+        $doctorSchedules = $this->scheduleService->getTodaySchedules($doctorId);
 
         return view('livewire.doctor.dashboard', [
             'totalAppointments' => $totalAppointments,

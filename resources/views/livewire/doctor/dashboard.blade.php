@@ -177,11 +177,22 @@
                 </div>
                 <div class="space-y-4">
                     @forelse($doctorSchedules as $schedule)
-                        <div class="p-4 rounded-xl bg-surface-container-low border border-outline-variant/30 group hover:border-primary/30 transition-all">
-                            <div class="flex items-center gap-3">
-                                <div class="flex items-center gap-2 text-outline text-sm font-bold">
-                                    <span class="material-symbols-outlined text-base">schedule</span>
-                                    <span>{{ \Carbon\Carbon::parse($schedule->start_time)->format('h:i A') }} - {{ \Carbon\Carbon::parse($schedule->end_time)->format('h:i A') }}</span>
+                        <div class="p-4 rounded-xl {{ $schedule->status === 'active' ? 'bg-primary/5 border-primary/30 ring-1 ring-primary/20' : 'bg-surface-container-low border-outline-variant/30' }} border group transition-all relative overflow-hidden">
+                            @if($schedule->status === 'active')
+                                <div class="absolute top-0 right-0 w-16 h-16 bg-primary/5 blur-xl rounded-full -mr-8 -mt-8"></div>
+                            @endif
+                            
+                            <div class="flex items-center justify-between gap-3 relative">
+                                <div class="flex items-center gap-3 text-on-background text-sm font-bold">
+                                    <span class="material-symbols-outlined text-base {{ $schedule->status === 'active' ? 'text-primary' : 'text-outline' }}">schedule</span>
+                                    <span class="{{ $schedule->status === 'active' ? 'text-primary' : '' }}">{{ $schedule->start_time }} - {{ $schedule->end_time }}</span>
+                                </div>
+                                
+                                <div class="flex items-center gap-2">
+                                    <span class="w-1.5 h-1.5 rounded-full {{ $schedule->status === 'active' ? 'bg-green-500 animate-pulse' : ($schedule->status === 'pending' ? 'bg-amber-500' : 'bg-outline-variant') }}"></span>
+                                    <span class="text-[10px] font-black uppercase tracking-widest {{ $schedule->status === 'active' ? 'text-green-600' : ($schedule->status === 'pending' ? 'text-amber-600' : 'text-outline') }}">
+                                        {{ $schedule->status }}
+                                    </span>
                                 </div>
                             </div>
                         </div>
