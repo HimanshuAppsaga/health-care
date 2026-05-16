@@ -3,6 +3,7 @@
 use App\Http\Controllers\Api\AppointmentController;
 use App\Http\Controllers\Api\ClinicController;
 use App\Http\Controllers\Api\DoctorController;
+use App\Http\Controllers\Api\Mobile\AppointmentHistoryController;
 use App\Http\Controllers\Api\Mobile\TodayAppointmentController;
 use App\Http\Controllers\Api\QueueController;
 use App\Http\Controllers\Api\ScheduleController;
@@ -27,4 +28,5 @@ Route::middleware('api.key')->group(function () {
     Route::post('/v1/patient/check-token', [TokenController::class, 'checkToken']);
     Route::get('/today-schedule', [ScheduleController::class, 'todaySchedule']);
     Route::get('/today-appointments', [TodayAppointmentController::class, 'index']);
+    Route::get('/appointment-history', [AppointmentHistoryController::class, 'index']);
 });

@@ -13,7 +13,7 @@ class AppointmentService
      */
     public function getAppointments(array $filters = [], bool $paginate = false): mixed
     {
-        $dateRange = $filters['date_range'] ?? 'today';
+        $dateRange = $filters['date_range'] ?? 'all';
         $startDate = $filters['start_date'] ?? null;
         $endDate = $filters['end_date'] ?? null;
         $doctorId = $filters['doctor_id'] ?? null;
@@ -41,7 +41,9 @@ class AppointmentService
         $query->orderBy('appointment_date', 'desc')
             ->orderByRaw('CAST(token AS UNSIGNED) DESC');
 
-        return $paginate ? $query->paginate(10) : $query->get();
+        $perPage = $filters['per_page'] ?? 10;
+
+        return $paginate ? $query->paginate($perPage) : $query->get();
     }
 
     /**
