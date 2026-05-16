@@ -24,7 +24,7 @@ class TodayAppointmentController extends Controller
         $appointments = $appointmentService->getTodayAppointments($filters);
 
         return ApiService::respond(
-            'appointments',
+            'todays appointments',
             TodayAppointmentResource::collection($appointments),
             'Today appointments fetched successfully'
         );
