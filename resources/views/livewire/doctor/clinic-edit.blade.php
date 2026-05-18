@@ -321,7 +321,7 @@
                                            @input.debounce.500ms="searchLocation()"
                                            @keydown.enter.prevent=""
                                            placeholder="Search location..."
-                                           class="w-full bg-transparent border-none focus:ring-0 font-bold text-sm p-0 placeholder:text-outline-variant">
+                                           class="w-full bg-transparent border-0 outline-none focus:outline-none focus:ring-0 font-bold text-sm p-0 placeholder:text-outline-variant">
                                 </div>
 
                                 <!-- Autocomplete Dropdown Menu -->
