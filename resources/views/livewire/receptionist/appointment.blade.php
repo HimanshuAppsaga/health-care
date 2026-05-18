@@ -1,4 +1,4 @@
-<div class="max-w-6xl mx-auto pt-6">    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+<div class="max-w-6xl mx-auto pt-6 px-4 sm:px-6 lg:px-8">    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
         <!-- Left Column: Flow Steps -->
         <div class="lg:col-span-8 space-y-6">
             <!-- Section 4: Visit Info -->

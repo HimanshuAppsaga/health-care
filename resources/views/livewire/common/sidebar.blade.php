@@ -1,8 +1,16 @@
 <div class="relative flex">
     <!-- Sidebar -->
     <aside 
-        class="flex flex-col h-screen transition-all duration-300 ease-in-out bg-surface border-r border-outline-variant {{ $isCollapsed ? 'w-20' : 'w-72' }}"
+        class="flex flex-col h-screen transition-all duration-300 ease-in-out bg-surface border-r border-outline-variant w-72 lg:{{ $isCollapsed ? 'w-20' : 'w-72' }} relative"
     >
+        <!-- Close Button (Mobile Only) -->
+        <button 
+            @click="mobileSidebarOpen = false" 
+            class="lg:hidden absolute top-4 right-4 p-2 rounded-xl text-outline hover:text-on-surface hover:bg-surface-container transition-all"
+        >
+            <span class="material-symbols-outlined">close</span>
+        </button>
+
         <!-- Logo Section -->
         <div class="flex flex-col justify-center h-28 px-8">
             <div class="flex items-center gap-3">

@@ -1,7 +1,7 @@
-<div class="px-8 py-8">
+<div class="px-4 sm:px-8 py-6 sm:py-8">
     {{-- EMPTY STATE --}}
     @if(!$clinic)
-        <div class="max-w-5xl mx-auto p-12 bg-error-container/10 border border-error/20 rounded-[2rem] text-center">
+        <div class="max-w-5xl mx-auto p-6 sm:p-12 bg-error-container/10 border border-error/20 rounded-[2rem] text-center">
             <span class="material-symbols-outlined text-6xl text-error mb-4">error</span>
             <h2 class="text-2xl font-black text-on-error-container">Clinic Not Found</h2>
             <p class="text-outline mt-2">The clinic you are looking for does not exist or has been removed.</p>
@@ -10,7 +10,7 @@
 
     <div class="max-w-5xl mx-auto space-y-8">
         {{-- HEADER CARD --}}
-        <div class="bg-surface rounded-[2.5rem] p-10 clinical-shadow border border-outline-variant flex flex-col md:flex-row gap-8 items-center relative overflow-hidden">
+        <div class="bg-surface rounded-[2rem] sm:rounded-[2.5rem] p-6 sm:p-10 clinical-shadow border border-outline-variant flex flex-col md:flex-row gap-8 items-center relative overflow-hidden">
             <div class="absolute top-0 right-0 w-64 h-64 bg-primary/5 blur-3xl rounded-full -mr-32 -mt-32"></div>
             
             {{-- LOGO --}}
@@ -48,7 +48,7 @@
         <div class="grid md:grid-cols-3 gap-8">
             {{-- CONTACT INFO --}}
             <div class="md:col-span-2 space-y-8">
-                <div class="bg-surface rounded-[2rem] p-8 clinical-shadow border border-outline-variant">
+                <div class="bg-surface rounded-[2rem] p-6 sm:p-8 clinical-shadow border border-outline-variant">
                     <h2 class="text-xl font-black text-on-background mb-6 flex items-center gap-2">
                         <span class="material-symbols-outlined text-primary">contact_support</span>
                         Contact & Address
@@ -91,7 +91,7 @@
 
                 {{-- ABOUT --}}
                 @if($clinic->about_clinic)
-                <div class="bg-surface rounded-[2rem] p-8 clinical-shadow border border-outline-variant">
+                <div class="bg-surface rounded-[2rem] p-6 sm:p-8 clinical-shadow border border-outline-variant">
                     <h2 class="text-xl font-black text-on-background mb-6 flex items-center gap-2">
                         <span class="material-symbols-outlined text-primary">info</span>
                         About the Clinic
@@ -107,7 +107,7 @@
 
             {{-- WORKING HOURS --}}
             <div class="space-y-8">
-                <div class="bg-surface rounded-[2rem] p-8 clinical-shadow border border-outline-variant">
+                <div class="bg-surface rounded-[2rem] p-6 sm:p-8 clinical-shadow border border-outline-variant">
                     <h2 class="text-xl font-black text-on-background mb-6 flex items-center gap-2">
                         <span class="material-symbols-outlined text-primary">schedule</span>
                         Working Hours

@@ -1,4 +1,4 @@
-<div class="px-8 py-8">
+<div class="px-4 sm:px-8 py-6 sm:py-8">
     <div class="max-w-6xl mx-auto">
         <!-- Header -->
         <div class="mb-10 flex flex-col md:flex-row md:items-end justify-between gap-6">
@@ -7,9 +7,9 @@
                     <a href="{{ route('doctor.clinic.detail', $clinic->id) }}" wire:navigate class="w-10 h-10 rounded-xl bg-surface border border-outline-variant flex items-center justify-center text-outline hover:text-primary hover:border-primary transition-all">
                         <span class="material-symbols-outlined">arrow_back</span>
                     </a>
-                    <h1 class="text-3xl font-black text-on-background tracking-tight">Edit Clinic Profile</h1>
+                    <h1 class="text-2xl sm:text-3xl font-black text-on-background tracking-tight">Edit Clinic Profile</h1>
                 </div>
-                <p class="text-outline font-medium">Update your clinic's public information, location, and operations.</p>
+                <p class="text-outline font-medium text-sm sm:text-base">Update your clinic's public information, location, and operations.</p>
             </div>
             
             <div></div>
@@ -42,8 +42,8 @@
         @endif
 
         <!-- Main Form Card -->
-        <div class="bg-surface rounded-[2.5rem] border border-outline-variant clinical-shadow overflow-hidden">
-            <div class="p-10 space-y-12">
+        <div class="bg-surface rounded-[2rem] sm:rounded-[2.5rem] border border-outline-variant clinical-shadow overflow-hidden">
+            <div class="p-5 sm:p-10 space-y-8 sm:space-y-12">
                 
                 {{-- LOGO SECTION --}}
                 <div class="bg-surface-container-low/50 p-8 rounded-3xl border border-outline-variant/30">
@@ -372,7 +372,7 @@
 
                                     <div class="space-y-3" x-show="!isClosed" x-cloak x-transition>
                                         @foreach($working_hours_parts[$day]['slots'] as $index => $slot)
-                                            <div class="flex items-center gap-2 animate-in slide-in-from-left-2 duration-300">
+                                            <div class="flex flex-wrap items-center gap-y-2 gap-x-1.5 sm:gap-2 animate-in slide-in-from-left-2 duration-300">
                                                 <!-- START TIME -->
                                                 <div class="flex items-center gap-1.5 time-picker-container px-2.5 py-1.5 rounded-xl shadow-sm border border-outline-variant/40">
                                                     <!-- Hour -->

@@ -1,14 +1,14 @@
-<div class="p-8">
+<div class="p-4 sm:p-8">
     <!-- Header Section -->
     <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
         <div>
-            <h1 class="text-3xl font-black text-on-background flex items-center gap-3">
-                <span class="w-12 h-12 bg-primary text-on-primary rounded-2xl flex items-center justify-center">
+            <h1 class="text-2xl sm:text-3xl font-black text-on-background flex items-center gap-3">
+                <span class="w-12 h-12 bg-primary text-on-primary rounded-2xl flex items-center justify-center shrink-0">
                     <span class="material-symbols-outlined text-2xl">calendar_month</span>
                 </span>
-                Appointment History
+                <span class="truncate">Appointment History</span>
             </h1>
-            <p class="text-outline font-medium mt-1 ml-15">View and manage all appointments across the clinic</p>
+            <p class="text-outline font-medium mt-1 ml-0 sm:ml-15 text-sm sm:text-base">View and manage all appointments across the clinic</p>
         </div>
         
         <div class="flex items-center gap-3">
@@ -87,7 +87,7 @@
     <!-- Appointments Table -->
     <div class="bg-surface rounded-[2rem] shadow-clinical border border-outline-variant overflow-hidden">
         <div class="overflow-x-auto">
-            <table class="w-full text-left border-collapse">
+            <table class="w-full min-w-[700px] text-left border-collapse">
                 <thead>
                     <tr class="bg-surface-container-low/50">
                         <th class="px-8 py-6 text-xs font-black text-outline uppercase tracking-widest">Date</th>

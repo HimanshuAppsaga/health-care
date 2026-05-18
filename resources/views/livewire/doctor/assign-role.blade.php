@@ -1,4 +1,4 @@
-<div class="px-8 py-8">
+<div class="px-4 sm:px-8 py-6 sm:py-8">
     <div class="max-w-xl mx-auto">
         <!-- Header Section -->
         <div class="mb-8">
@@ -23,7 +23,7 @@
         <!-- Card Container -->
         <div class="bg-surface rounded-[2rem] clinical-shadow border border-outline-variant overflow-hidden bg-white">
             <!-- Card Header -->
-            <div class="p-8 border-b border-outline-variant bg-surface-container-low">
+            <div class="p-6 sm:p-8 border-b border-outline-variant bg-surface-container-low">
                 <div class="flex items-center gap-4">
                     <div class="w-12 h-12 bg-primary-container/20 rounded-2xl flex items-center justify-center text-primary">
                         <span class="material-symbols-outlined text-2xl" style="font-variation-settings: 'FILL' 1;">shield_person</span>
@@ -36,7 +36,7 @@
             </div>
 
             <!-- Card Body Form -->
-            <div class="p-8">
+            <div class="p-6 sm:p-8">
                 <form wire:submit.prevent="assign" class="space-y-6">
                     <!-- Email Input -->
                     <div>

@@ -1,4 +1,4 @@
-<div class="px-8 py-8">
+<div class="px-4 sm:px-8 py-6 sm:py-8">
     <div class="max-w-4xl mx-auto">
         <!-- Header Section -->
         <div class="mb-8">
@@ -22,7 +22,7 @@
 
         <!-- API Key Card -->
         <div class="bg-surface rounded-[2rem] clinical-shadow border border-outline-variant overflow-hidden">
-            <div class="p-8 border-b border-outline-variant bg-surface-container-low">
+            <div class="p-6 sm:p-8 border-b border-outline-variant bg-surface-container-low">
                 <div class="flex items-center gap-4">
                     <div class="w-12 h-12 bg-primary-container/20 rounded-2xl flex items-center justify-center text-primary">
                         <span class="material-symbols-outlined text-2xl" style="font-variation-settings: 'FILL' 1;">key</span>
@@ -34,18 +34,18 @@
                 </div>
             </div>
 
-            <div class="p-8">
+            <div class="p-6 sm:p-8">
                 @if($apiKey)
                     <div class="space-y-6">
                         <div class="p-6 bg-surface-container-highest rounded-2xl border border-outline-variant group relative">
                             <label class="text-xs font-bold text-outline uppercase tracking-widest block mb-3">Your API Key</label>
-                            <div class="flex items-center gap-4">
-                                <code class="flex-1 text-sm font-mono font-bold text-primary break-all bg-white/50 p-3 rounded-xl border border-outline-variant/30">
+                            <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4">
+                                <code class="flex-1 text-sm font-mono font-bold text-primary break-all bg-white/50 p-3 rounded-xl border border-outline-variant/30 text-center sm:text-left">
                                     {{ $apiKey }}
                                 </code>
                                 <button 
                                     onclick="navigator.clipboard.writeText('{{ $apiKey }}'); alert('Copied to clipboard!');"
-                                    class="p-3 bg-primary text-white rounded-xl hover:bg-primary-container hover:text-on-primary-container transition-all active:scale-95 flex-shrink-0"
+                                    class="p-3 bg-primary text-white rounded-xl hover:bg-primary-container hover:text-on-primary-container transition-all active:scale-95 flex items-center justify-center flex-shrink-0"
                                     title="Copy to clipboard"
                                 >
                                     <span class="material-symbols-outlined">content_copy</span>
@@ -88,7 +88,7 @@
 
         <!-- Queue Settings Card -->
         <div class="mt-8 bg-surface rounded-[2rem] clinical-shadow border border-outline-variant overflow-hidden">
-            <div class="p-8 border-b border-outline-variant bg-surface-container-low">
+            <div class="p-6 sm:p-8 border-b border-outline-variant bg-surface-container-low">
                 <div class="flex items-center gap-4">
                     <div class="w-12 h-12 bg-secondary-container/20 rounded-2xl flex items-center justify-center text-secondary">
                         <span class="material-symbols-outlined text-2xl" style="font-variation-settings: 'FILL' 1;">queue</span>
@@ -100,7 +100,7 @@
                 </div>
             </div>
 
-            <div class="p-8">
+            <div class="p-6 sm:p-8">
                 <div class="max-w-md">
                     <label for="transferDepth" class="text-sm font-bold text-on-surface mb-2 block">Transfer Token Depth (1-9)</label>
                     <p class="text-xs text-outline mb-4">Number of positions a patient moves back when "Transfer Token" is clicked.</p>

@@ -2,7 +2,7 @@
     <!-- No inline overrides needed, using global app.css theme -->
 
     <!-- Stats Grid -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8 mt-6 px-8">
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8 mt-6 px-4 sm:px-6 lg:px-8">
         <div class="bg-surface p-6 rounded-2xl clinical-shadow border border-outline-variant flex items-center justify-between group hover:border-primary/30 transition-all">
             <div>
                 <p class="text-sm font-medium text-outline mb-1">Total Appointments</p>
@@ -35,11 +35,11 @@
         </div>
     </div>
 
-    <div class="grid grid-cols-12 gap-8 px-8 pb-12">
+    <div class="grid grid-cols-12 gap-4 sm:gap-6 lg:gap-8 px-4 sm:px-6 lg:px-8 pb-12">
         <!-- Center Column: Live Queue -->
-        <div class="col-span-12 lg:col-span-8 flex flex-col gap-8">
+        <div class="col-span-12 lg:col-span-8 flex flex-col gap-4 sm:gap-6 lg:gap-8">
             <div class="bg-surface rounded-[2rem] clinical-shadow border border-outline-variant overflow-hidden">
-                <div class="p-8 border-b border-outline-variant flex justify-between items-center bg-surface-container-low">
+                <div class="p-4 sm:p-8 border-b border-outline-variant flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-surface-container-low">
                     <h2 class="text-xl font-black flex items-center gap-2">
                         <span class="w-2 h-2 rounded-full {{ $isDoctorOnHold ? 'bg-orange-500' : 'bg-red-500 animate-pulse' }}"></span>
                         Live Queue Manager
@@ -48,7 +48,7 @@
                         @endif
                     </h2>
                     @if($nowServing && $nowServing->appointment && $nowServing->appointment->doctor)
-                        <span class="text-xs font-bold text-outline-variant tracking-widest uppercase">{{ $nowServing->appointment->doctor->user->department ?? 'General Dept' }} • Dr. {{ $nowServing->appointment->doctor->user->name ?? 'Unknown' }}</span>
+                        <span class="text-xs font-bold text-outline-variant tracking-widest uppercase truncate max-w-full">Dr. {{ $nowServing->appointment->doctor->user->name ?? 'Unknown' }}</span>
                     @endif
                 </div>
                 <div class="p-8 flex flex-col items-center justify-center text-center">
@@ -80,7 +80,7 @@
                         @endforelse
                     </div>
                     
-                    <div class="flex gap-4 w-full max-w-2xl">
+                    <div class="flex flex-col sm:flex-row gap-4 w-full max-w-2xl px-4 sm:px-0">
                         <button wire:click="callNextPatient" 
                             @if($nowServing || $isDoctorOnHold) disabled @endif 
                             class="flex-1 py-4 bg-secondary text-white rounded-2xl font-black text-lg clinical-shadow shadow-secondary/30 transition-all flex items-center justify-center gap-2 
@@ -121,7 +121,7 @@
                     </a>
                 </div>
                 <div class="overflow-x-auto">
-                    <table class="w-full text-left">
+                    <table class="w-full min-w-[600px] text-left">
                         <thead class="bg-surface-container-low/50">
                             <tr>
                                 <th class="px-6 py-4 text-xs font-bold text-outline uppercase tracking-wider">Patient Name</th>

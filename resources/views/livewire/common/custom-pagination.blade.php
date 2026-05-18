@@ -1,6 +1,6 @@
-<div>
-    @if ($paginator->hasPages())
-        <nav role="navigation" aria-label="Pagination Navigation" class="flex items-center bg-[#5200cc] rounded-xl overflow-hidden shadow-xl border border-[#5200cc]/20">
+@if ($paginator->hasPages())
+<div class="overflow-x-auto max-w-full py-1">
+    <nav role="navigation" aria-label="Pagination Navigation" class="flex items-center bg-[#5200cc] rounded-xl overflow-hidden shadow-xl border border-[#5200cc]/20 w-max">
             {{-- Previous Page Link --}}
             @if ($paginator->onFirstPage())
                 <span class="px-4 py-3 text-white/30 border-r border-white/10 cursor-default flex items-center justify-center">
@@ -46,5 +46,5 @@
                 </span>
             @endif
         </nav>
-    @endif
-</div>
+    </div>
+@endif
