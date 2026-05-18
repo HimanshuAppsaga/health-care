@@ -94,8 +94,8 @@ class QueueTransferTest extends TestCase
         // Patient 3 (Waiting) -> Token 2
         // Patient 1 (Waiting) -> Token 3
 
-        $response = $this->postJson('/api/queue/transfer', [
-            'api_key' => 'test-api-key',
+        $response = $this->withHeaders(['x-api-key' => 'test-api-key'])
+            ->postJson('/api/queue/transfer', [
             'doctor_id' => $this->doctor->id,
             // No transfer_count provided
         ]);
@@ -116,8 +116,8 @@ class QueueTransferTest extends TestCase
     {
         $this->clinic->update(['transfer_depth' => 0]);
 
-        $response = $this->postJson('/api/queue/transfer', [
-            'api_key' => 'test-api-key',
+        $response = $this->withHeaders(['x-api-key' => 'test-api-key'])
+            ->postJson('/api/queue/transfer', [
             'doctor_id' => $this->doctor->id,
         ]);
 

@@ -23,8 +23,8 @@ class SidebarConfig
                     ['name' => 'Book Appointment', 'route' => 'receptionist.book-appointment', 'icon' => 'calendar'],
                 ],
             ],
-           
         ];
+
         return $config[$role] ?? [];
     }
 }

@@ -22,7 +22,7 @@ class Sidebar extends Component
     {
         $user = Auth::user();
         if ($user) {
-            $role = $user->roles()->first()?->name;
+            $role = $user->role?->name;
             if ($role) {
                 $this->menuItems = SidebarConfig::getMenuForRole($role);
 

@@ -15,7 +15,7 @@ class SidebarApiTest extends TestCase
     {
         $user = User::factory()->create();
         $role = Role::firstOrCreate(['name' => 'doctor']);
-        $user->roles()->attach($role);
+        $user->update(['role_id' => $role->id]);
 
         $response = $this->actingAs($user, 'sanctum')
             ->getJson('/api/sidebar');

@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Auth;
 
+use App\Models\Role;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Layout;
@@ -39,9 +40,10 @@ class SignUp extends Component
             'is_active' => true,
         ]);
 
-        $role = \App\Models\Role::firstOrCreate(['name' => 'patient']);
-        if (! $user->roles()->where('role_id', $role->id)->exists()) {
-            $user->roles()->attach($role);
+        $role = Role::firstOrCreate(['name' => 'patient']);
+        if ($user->role_id !== $role->id) {
+            $user->role_id = $role->id;
+            $user->save();
         }
 
         Auth::login($user);

@@ -10,7 +10,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
-#[Fillable(['name', 'email', 'profile_photo_path', 'phone', 'password', 'is_active', 'employee_id', 'department', 'joining_date', 'bio', 'emergency_contact_name', 'emergency_contact_phone', 'address', 'unit', 'supervisor_name', 'rating', 'last_login_at'])]
+#[Fillable(['name', 'email', 'profile_photo_path', 'phone', 'password', 'is_active', 'employee_id', 'department', 'joining_date', 'bio', 'emergency_contact_name', 'emergency_contact_phone', 'address', 'unit', 'supervisor_name', 'rating', 'last_login_at', 'role_id'])]
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable
 {
@@ -30,18 +30,18 @@ class User extends Authenticatable
         ];
     }
 
-    public function roles()
+    public function role()
     {
-        return $this->belongsToMany(Role::class, 'user_roles');
+        return $this->belongsTo(Role::class);
     }
 
     public function hasRole(string|array $role): bool
     {
         if (is_array($role)) {
-            return $this->roles()->whereIn('name', $role)->exists();
+            return $this->role && in_array($this->role->name, $role);
         }
 
-        return $this->roles()->where('name', $role)->exists();
+        return $this->role && $this->role->name === $role;
     }
 
     public function patient()
