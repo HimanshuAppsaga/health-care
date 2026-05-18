@@ -56,7 +56,7 @@ class Dashboard extends Component
 
     public function mount()
     {
-        $this->doctors = Doctor::whereHas('user')->get();
+        $this->doctors = Doctor::activeDoctor()->get();
 
         $this->selectedDoctorId = session('receptionist_selected_doctor_id');
 
@@ -235,7 +235,7 @@ class Dashboard extends Component
             ->where('status', 'waiting')
             ->count();
 
-        $doctorsForSchedule = Doctor::with('user')
+        $doctorsForSchedule = Doctor::activeDoctor()->with('user')
             ->when($doctorId, fn ($q) => $q->where('id', $doctorId))
             ->get();
 

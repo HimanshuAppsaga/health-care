@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Livewire\Doctor\AssignRole;
 use App\Models\Clinic;
+use App\Models\Doctor;
 use App\Models\Role;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -131,5 +132,36 @@ class AssignRoleTest extends TestCase
         $this->assertEquals($this->doctorRole->id, $targetUser->role_id);
         $this->assertNotNull($targetUser->doctor);
         $this->assertEquals(1, $targetUser->doctor->clinic_id);
+    }
+
+    public function test_doctor_profile_excluded_from_active_doctors_when_role_changed_to_receptionist(): void
+    {
+        Clinic::firstOrCreate(
+            ['id' => 1],
+            ['name' => 'Default Clinic', 'address' => 'Main Street']
+        );
+
+        // Initially create a doctor user (which ensures profile exists)
+        $user = User::factory()->create(['role_id' => $this->doctorRole->id]);
+        $user->ensureDoctorProfileExists();
+
+        // Verify they are initially fetched in active doctors
+        $this->assertTrue(Doctor::activeDoctor()->where('user_id', $user->id)->exists());
+
+        // Update their role to receptionist
+        Livewire::actingAs($this->doctorUser)
+            ->test(AssignRole::class)
+            ->set('email', $user->email)
+            ->set('role_id', (string) $this->receptionistRole->id)
+            ->call('assign')
+            ->assertHasNoErrors();
+
+        // Verify their user has receptionist role and doctor model is deleted from the database
+        $user->refresh();
+        $this->assertEquals($this->receptionistRole->id, $user->role_id);
+        $this->assertNull($user->doctor);
+
+        // Verify they are now EXCLUDED from active doctors
+        $this->assertFalse(Doctor::activeDoctor()->where('user_id', $user->id)->exists());
     }
 }

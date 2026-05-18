@@ -58,7 +58,7 @@ class Dashboard extends Component
 
         // Fallbacks if doctor or clinic are still not found
         if (! $doctorId) {
-            $firstDoctor = Doctor::first();
+            $firstDoctor = Doctor::activeDoctor()->first();
             $doctorId = $firstDoctor ? $firstDoctor->id : null;
         }
         if (! $clinicId) {

@@ -39,6 +39,15 @@ class Doctor extends Model
         return $this->belongsTo(User::class);
     }
 
+    public function scopeActiveDoctor($query)
+    {
+        return $query->whereHas('user', function ($q) {
+            $q->whereHas('role', function ($r) {
+                $r->where('name', 'doctor');
+            });
+        });
+    }
+
     public function appointments()
     {
         return $this->hasMany(Appointment::class);

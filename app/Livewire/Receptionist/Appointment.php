@@ -88,7 +88,7 @@ class Appointment extends Component
                 $this->phone = $patient->phone;
             }
 
-            $this->doctors = Doctor::whereHas('user')->get();
+            $this->doctors = Doctor::activeDoctor()->get();
 
             // Try to pick a doctor who has a schedule today
             $dayOfWeek = Carbon::today()->dayOfWeek;
@@ -100,13 +100,13 @@ class Appointment extends Component
 
             $this->selectedDoctorId = session('receptionist_selected_doctor_id');
 
-            if (!$this->selectedDoctorId) {
-                $this->selectedDoctorId = Doctor::whereHas('user')
-                    ->where('working_hours->' . $dayName, '!=', 'Closed')
+            if (! $this->selectedDoctorId) {
+                $this->selectedDoctorId = Doctor::activeDoctor()
+                    ->where('working_hours->'.$dayName, '!=', 'Closed')
                     ->first()?->id;
 
                 // Fallback to first doctor if no one has a schedule today
-                if (!$this->selectedDoctorId) {
+                if (! $this->selectedDoctorId) {
                     $this->selectedDoctorId = $this->doctors->first()?->id;
                 }
             }
@@ -122,7 +122,7 @@ class Appointment extends Component
 
     public function updatedSelectedClinicId($value)
     {
-        $this->doctors = Doctor::whereHas('user')
+        $this->doctors = Doctor::activeDoctor()
             ->get();
 
         $this->selectedDoctorId = null;
@@ -159,7 +159,7 @@ class Appointment extends Component
         $date = Carbon::parse($this->selectedDate);
         $doctor = Doctor::find($this->selectedDoctorId);
 
-        if (!$doctor) {
+        if (! $doctor) {
             return;
         }
 
@@ -168,9 +168,10 @@ class Appointment extends Component
         $this->bookingAllowed = $status['allowed'];
         $this->bookingMessage = $status['message'];
 
-        if (!$this->bookingAllowed) {
+        if (! $this->bookingAllowed) {
             $this->availableSlots = [];
             $this->selectedSlot = null;
+
             return;
         }
 
@@ -301,7 +302,7 @@ class Appointment extends Component
         ]);
 
         if (! $this->selectedDoctorId) {
-            $this->selectedDoctorId = Doctor::whereHas('user')->first()?->id;
+            $this->selectedDoctorId = Doctor::activeDoctor()->first()?->id;
         }
 
         $data = [

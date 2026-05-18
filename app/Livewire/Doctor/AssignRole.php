@@ -54,6 +54,8 @@ class AssignRole extends Component
 
         if ($user->hasRole('doctor')) {
             $user->ensureDoctorProfileExists();
+        } else {
+            $user->doctor()->delete();
         }
 
         session()->flash('message', "Role updated successfully! {$user->name} is now a ".ucfirst($newRole).'.');
