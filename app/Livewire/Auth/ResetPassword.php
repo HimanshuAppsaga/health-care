@@ -44,7 +44,11 @@ class ResetPassword extends Component
             function ($user, $password) {
                 $user->forceFill([
                     'password' => $password,
-                ])->setRememberToken(Str::random(60))->save();
+                ]);
+
+                $user->setRememberToken(Str::random(60));
+
+                $user->save();
 
                 event(new PasswordReset($user));
             }
