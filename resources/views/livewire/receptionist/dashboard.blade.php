@@ -191,12 +191,12 @@
                     </a>
 
                     <!-- Test Sound Button -->
-                    <button type="button" wire:click="$dispatch('notify', { type: 'test' })" class="w-full flex items-center gap-4 p-4 rounded-2xl bg-primary-container/20 text-primary font-bold hover:bg-primary hover:text-on-primary transition-all group">
+                    {{-- <button type="button" wire:click="$dispatch('notify', { type: 'test' })" class="w-full flex items-center gap-4 p-4 rounded-2xl bg-primary-container/20 text-primary font-bold hover:bg-primary hover:text-on-primary transition-all group">
                         <div class="w-10 h-10 rounded-xl bg-surface flex items-center justify-center group-hover:bg-primary/20">
                             <span class="material-symbols-outlined">volume_up</span>
                         </div>
                         <span>Test Notification Sound</span>
-                    </button>
+                    </button> --}}
                 </div>
             </div>
 
