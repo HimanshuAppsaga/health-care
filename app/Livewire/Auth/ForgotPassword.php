@@ -2,7 +2,8 @@
 
 namespace App\Livewire\Auth;
 
-use Illuminate\Support\Facades\Password;
+use App\Services\AuthenticationService;
+use Illuminate\Validation\ValidationException;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
 use Livewire\Attributes\Validate;
@@ -17,22 +18,17 @@ class ForgotPassword extends Component
 
     public string $status = '';
 
-    public function sendResetLink()
+    public function sendResetLink(AuthenticationService $authService)
     {
         $this->validate();
 
-        $status = Password::sendResetLink(
-            ['email' => $this->email]
-        );
-
-        if ($status === Password::RESET_LINK_SENT) {
-            $this->status = trans($status);
+        try {
+            $message = $authService->forgotPassword(['email' => $this->email]);
+            $this->status = $message;
             $this->email = '';
-
-            return;
+        } catch (ValidationException $e) {
+            $this->addError('email', $e->errors()['email'][0] ?? trans('passwords.user'));
         }
-
-        $this->addError('email', trans($status));
     }
 
     public function render()

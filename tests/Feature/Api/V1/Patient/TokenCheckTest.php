@@ -61,7 +61,7 @@ class TokenCheckTest extends TestCase
         ]);
 
         $response->assertStatus(200)
-            ->assertJsonPath('data.message', 'Token found')
+            ->assertJsonPath('message', 'Token found')
             ->assertJsonPath('data.appointment.id', $appointment->id);
     }
 

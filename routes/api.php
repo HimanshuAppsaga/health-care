@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\AppointmentController;
+use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\ClinicController;
 use App\Http\Controllers\Api\DoctorController;
 use App\Http\Controllers\Api\Mobile\AppointmentHistoryController;
@@ -10,6 +11,14 @@ use App\Http\Controllers\Api\ScheduleController;
 use App\Http\Controllers\Api\V1\Patient\TokenController;
 use App\Services\SidebarConfig;
 use Illuminate\Support\Facades\Route;
+
+// Mobile Authentication APIs protected by clinic API key validation
+Route::middleware('api.key.validate')->group(function () {
+    Route::post('/auth/login', [AuthController::class, 'login']);
+    Route::post('/auth/register', [AuthController::class, 'register']);
+    Route::post('/auth/forgot-password', [AuthController::class, 'forgotPassword']);
+    Route::post('/auth/reset-password', [AuthController::class, 'resetPassword']);
+});
 
 Route::post('/appointments/book', [AppointmentController::class, 'store'])->middleware('api.key');
 

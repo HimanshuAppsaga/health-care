@@ -77,7 +77,7 @@ class TodayScheduleTest extends TestCase
         $response->assertStatus(200);
 
         // Should only have doctor 1's schedule
-        $data = $response->json('data');
+        $data = $response->json('data.schedules');
         $this->assertNotEmpty($data);
         foreach ($data as $item) {
             $this->assertEquals($doctor1->user->name, $item['doctor_name']);

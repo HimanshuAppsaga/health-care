@@ -8,7 +8,7 @@ use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
-class ApiKeyMiddleware
+class ValidateApiKey
 {
     /**
      * Handle an incoming request.
@@ -17,23 +17,24 @@ class ApiKeyMiddleware
      */
     public function handle(Request $request, Closure $next): Response
     {
-        $apiKey = $request->header('x-api-key') ?? $request->input('api_key');
+        $apiKey = $request->header('X-API-KEY') ?: $request->input('api_key');
 
-        if (! $apiKey) {
-            return ApiService::error('API Key is missing', 401);
+        if (empty($apiKey)) {
+            return ApiService::error('API key is required', Response::HTTP_UNAUTHORIZED);
         }
 
         $clinic = Clinic::where('api_key', $apiKey)->first();
 
         if (! $clinic) {
-            return ApiService::error('Invalid API Key', 401);
+            return ApiService::error('Invalid API key', Response::HTTP_FORBIDDEN);
         }
 
-        // Share the clinic context with the request
+        // Attach clinic context to the request for downstream controllers/requests
         $request->merge([
             'clinic' => $clinic,
             'clinic_id' => $clinic->id,
         ]);
+
         $request->attributes->add(['clinic' => $clinic]);
 
         return $next($request);

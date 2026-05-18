@@ -96,12 +96,12 @@ class QueueTransferTest extends TestCase
 
         $response = $this->withHeaders(['x-api-key' => 'test-api-key'])
             ->postJson('/api/queue/transfer', [
-            'doctor_id' => $this->doctor->id,
-            // No transfer_count provided
-        ]);
+                'doctor_id' => $this->doctor->id,
+                // No transfer_count provided
+            ]);
 
         $response->assertStatus(200);
-        $response->assertJsonPath('data.message', 'Token successfully transferred behind 2 patients.');
+        $response->assertJsonPath('message', 'Token successfully transferred behind 2 patients.');
 
         // Verify the tokens in database
         $this->assertEquals('1', Appointment::where('patient_id', $this->patient2->id)->first()->token);
@@ -118,12 +118,12 @@ class QueueTransferTest extends TestCase
 
         $response = $this->withHeaders(['x-api-key' => 'test-api-key'])
             ->postJson('/api/queue/transfer', [
-            'doctor_id' => $this->doctor->id,
-        ]);
+                'doctor_id' => $this->doctor->id,
+            ]);
 
         $response->assertStatus(200);
         // If depth is 0, we might want to default to 1 or just do nothing.
         // My implementation will default to 1.
-        $response->assertJsonPath('data.message', 'Token successfully transferred behind 1 patients.');
+        $response->assertJsonPath('message', 'Token successfully transferred behind 1 patients.');
     }
 }

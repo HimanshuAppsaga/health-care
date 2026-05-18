@@ -81,9 +81,7 @@ class AppointmentBookingTimeWindowTest extends TestCase
 
         $response->assertStatus(201);
         $response->assertJson([
-            'data' => [
-                'message' => 'Appointment booked successfully!',
-            ],
+            'message' => 'Appointment booked successfully!',
         ]);
     }
 

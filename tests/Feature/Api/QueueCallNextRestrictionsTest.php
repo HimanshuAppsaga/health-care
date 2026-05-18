@@ -18,8 +18,11 @@ class QueueCallNextRestrictionsTest extends TestCase
     use RefreshDatabase;
 
     protected $clinic;
+
     protected $doctor;
+
     protected $patient1;
+
     protected $patient2;
 
     protected function setUp(): void
@@ -92,7 +95,7 @@ class QueueCallNextRestrictionsTest extends TestCase
         ]);
 
         $response->assertStatus(200);
-        $response->assertJsonPath('data.message', 'Next patient called successfully');
+        $response->assertJsonPath('message', 'Next patient called successfully');
     }
 
     public function test_it_fails_calling_next_when_doctor_is_on_hold()

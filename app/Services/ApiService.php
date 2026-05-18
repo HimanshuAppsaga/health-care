@@ -17,9 +17,10 @@ class ApiService
     public static function respond(string $key, mixed $data, string $message = '', int $code = 200): JsonResponse
     {
         return response()->json([
+            'status' => true,
+            'message' => $message,
             'data' => [
                 $key => $data,
-                'message' => $message,
             ],
         ], $code);
     }
@@ -33,17 +34,17 @@ class ApiService
      */
     public static function error(string $message, int $code = 400, mixed $errors = null): JsonResponse
     {
-        $responseData = [
+        $response = [
+            'status' => false,
             'message' => $message,
+            'data' => [],
         ];
 
         if ($errors !== null) {
-            $responseData['errors'] = $errors;
+            $response['data']['errors'] = $errors;
         }
 
-        return response()->json([
-            'data' => $responseData,
-        ], $code);
+        return response()->json($response, $code);
     }
 
     /**
@@ -52,9 +53,9 @@ class ApiService
     public static function message(string $message, int $code = 200): JsonResponse
     {
         return response()->json([
-            'data' => [
-                'message' => $message,
-            ],
+            'status' => true,
+            'message' => $message,
+            'data' => [],
         ], $code);
     }
 }

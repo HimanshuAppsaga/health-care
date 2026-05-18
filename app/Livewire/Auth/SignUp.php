@@ -2,8 +2,7 @@
 
 namespace App\Livewire\Auth;
 
-use App\Models\Role;
-use App\Models\User;
+use App\Services\AuthenticationService;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
@@ -28,23 +27,15 @@ class SignUp extends Component
     #[Validate('accepted')]
     public bool $terms = false;
 
-    public function register()
+    public function register(AuthenticationService $authService)
     {
         $this->validate();
 
-        $user = User::create([
+        $user = $authService->register([
             'name' => $this->full_name,
             'email' => $this->email,
             'password' => $this->password,
-            'phone' => '', // Temporary empty phone
-            'is_active' => true,
         ]);
-
-        $role = Role::firstOrCreate(['name' => 'patient']);
-        if ($user->role_id !== $role->id) {
-            $user->role_id = $role->id;
-            $user->save();
-        }
 
         Auth::login($user);
 
