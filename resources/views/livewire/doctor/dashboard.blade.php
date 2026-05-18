@@ -120,7 +120,8 @@
                         <span class="material-symbols-outlined text-sm">arrow_forward</span>
                     </a>
                 </div>
-                <div class="overflow-x-auto">
+                <!-- PC & Tablet View (Table) -->
+                <div class="hidden md:block overflow-x-auto">
                     <table class="w-full min-w-[600px] text-left">
                         <thead class="bg-surface-container-low/50">
                             <tr>
@@ -151,6 +152,54 @@
                             @endforelse
                         </tbody>
                     </table>
+                </div>
+
+                <!-- Mobile View (Cards) -->
+                <div class="block md:hidden space-y-4 p-4">
+                    @forelse($todaysAppointments as $appointment)
+                    <div class="bg-surface p-5 rounded-2xl border border-outline-variant hover:border-primary/30 transition-all flex flex-col gap-3 relative overflow-hidden">
+                        <!-- Left Status Accent Bar -->
+                        <div class="absolute left-0 top-0 bottom-0 w-1.5 {{ $appointment->status->value === 'pending' ? 'bg-amber-500' : 'bg-primary' }}"></div>
+                        
+                        <div class="flex justify-between items-start pl-2">
+                            <div>
+                                <p class="text-xs font-black text-outline uppercase tracking-widest mb-1">Patient Name</p>
+                                <h4 class="text-base font-bold text-on-background">{{ $appointment->name ?? 'Unknown' }}</h4>
+                            </div>
+                            <div>
+                                <span class="inline-block px-3 py-1 bg-surface-container-low text-on-surface-variant rounded-lg font-black text-xs border border-outline-variant">
+                                    Token #{{ $appointment->token ?? '--' }}
+                                </span>
+                            </div>
+                        </div>
+                        
+                        <div class="flex justify-between items-center pl-2 pt-2 border-t border-outline-variant/10">
+                            <div>
+                                <p class="text-[10px] font-black text-outline uppercase tracking-widest mb-0.5">Mobile</p>
+                                @if($appointment->phone)
+                                    <a href="tel:{{ $appointment->phone }}" class="text-sm font-bold text-primary hover:underline flex items-center gap-1">
+                                        <span class="material-symbols-outlined text-xs">phone</span>
+                                        {{ $appointment->phone }}
+                                    </a>
+                                @else
+                                    <span class="text-sm font-bold text-on-surface-variant">--</span>
+                                @endif
+                            </div>
+                            <div>
+                                <p class="text-[10px] font-black text-outline uppercase tracking-widest mb-0.5 text-right">Status</p>
+                                @if($appointment->status->value === 'pending')
+                                    <span class="px-3 py-1 bg-yellow-100 text-yellow-700 text-xs font-bold rounded-full">Pending</span>
+                                @else
+                                    <span class="px-3 py-1 bg-gray-100 text-gray-700 text-xs font-bold rounded-full">{{ ucfirst($appointment->status->value) }}</span>
+                                @endif
+                            </div>
+                        </div>
+                    </div>
+                    @empty
+                    <div class="py-8 text-center text-outline font-medium bg-surface rounded-2xl border border-outline-variant">
+                        No appointments for today.
+                    </div>
+                    @endforelse
                 </div>
             </div>
         </div>

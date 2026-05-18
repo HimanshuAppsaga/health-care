@@ -86,7 +86,8 @@
 
     <!-- Appointments Table -->
     <div class="bg-surface rounded-[2rem] shadow-clinical border border-outline-variant overflow-hidden">
-        <div class="overflow-x-auto">
+        <!-- PC & Tablet View (Table) -->
+        <div class="hidden md:block overflow-x-auto">
             <table class="w-full min-w-[700px] text-left border-collapse">
                 <thead>
                     <tr class="bg-surface-container-low/50">
@@ -147,6 +148,71 @@
                     @endforelse
                 </tbody>
             </table>
+        </div>
+
+        <!-- Mobile View (Cards) -->
+        <div class="block md:hidden space-y-4 p-4">
+            @forelse($appointments as $appointment)
+            <div class="bg-surface p-5 rounded-2xl border border-outline-variant hover:border-primary/30 transition-all flex flex-col gap-3 relative overflow-hidden">
+                @php
+                    $statusClasses = [
+                        'pending' => 'bg-amber-100 text-amber-700 border-amber-200',
+                        'completed' => 'bg-primary-container/20 text-primary border-primary-container/30',
+                    ];
+                    $statusValue = $appointment->status->value;
+                    $class = $statusClasses[$statusValue] ?? 'bg-surface-container-low text-on-surface-variant border-outline-variant';
+                @endphp
+                
+                <!-- Left Status Accent Bar -->
+                <div class="absolute left-0 top-0 bottom-0 w-1.5 {{ $statusValue === 'pending' ? 'bg-amber-500' : 'bg-primary' }}"></div>
+                
+                <div class="flex justify-between items-start pl-2">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-full bg-surface-container-low flex items-center justify-center text-primary font-black border border-outline-variant uppercase shrink-0 text-sm">
+                            {{ substr($appointment->name, 0, 1) }}
+                        </div>
+                        <div class="flex flex-col">
+                            <span class="font-bold text-on-background text-base">{{ $appointment->name }}</span>
+                            @if($appointment->phone)
+                                <a href="tel:{{ $appointment->phone }}" class="text-xs text-primary font-bold hover:underline flex items-center gap-1">
+                                    <span class="material-symbols-outlined text-[10px]">phone</span>
+                                    {{ $appointment->phone }}
+                                </a>
+                            @else
+                                <span class="text-xs text-on-surface-variant">--</span>
+                            @endif
+                        </div>
+                    </div>
+                    <div>
+                        <span class="inline-block px-3 py-1 bg-surface-container-low text-on-surface-variant rounded-lg font-black text-xs border border-outline-variant">
+                            Token #{{ $appointment->token ?? '--' }}
+                        </span>
+                    </div>
+                </div>
+                
+                <div class="flex justify-between items-center pl-2 pt-2 border-t border-outline-variant/10">
+                    <div>
+                        <p class="text-[10px] font-black text-outline uppercase tracking-widest mb-0.5">Appointment Date</p>
+                        <span class="text-sm font-bold text-on-background flex items-center gap-1">
+                            <span class="material-symbols-outlined text-xs text-outline">calendar_today</span>
+                            {{ \Carbon\Carbon::parse($appointment->appointment_date)->format('M d, Y') }}
+                        </span>
+                    </div>
+                    <div>
+                        <p class="text-[10px] font-black text-outline uppercase tracking-widest mb-0.5 text-right">Status</p>
+                        <span class="px-3 py-1 {{ $class }} text-[10px] font-black uppercase rounded-full border tracking-widest">
+                            {{ str_replace('_', ' ', $statusValue) }}
+                        </span>
+                    </div>
+                </div>
+            </div>
+            @empty
+            <div class="py-12 text-center text-outline font-medium bg-surface rounded-2xl border border-outline-variant flex flex-col items-center justify-center">
+                <span class="material-symbols-outlined text-5xl mb-3 text-outline-variant">event_busy</span>
+                <p class="text-base font-black uppercase tracking-widest">No appointments found</p>
+                <p class="text-xs font-medium">Try adjusting your filters or search terms</p>
+            </div>
+            @endforelse
         </div>
 
         @if($appointments->hasPages())
