@@ -138,7 +138,7 @@
                                 {{ auth()->user()?->name ?? 'Dr. Sarah Smith' }}
                             </p>
                             <p class="text-[10px] font-semibold text-outline truncate">
-                                {{ ucfirst(auth()->user()?->roles()->first()?->name ?? 'Chief Administrator') }}
+                                {{ ucfirst(auth()->user()?->role?->name ?? 'Chief Administrator') }}
                             </p>
                         </div>
                     @endif
