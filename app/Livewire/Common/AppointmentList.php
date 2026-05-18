@@ -32,6 +32,10 @@ class AppointmentList extends Component
 
     public function mount()
     {
+        if (auth()->user()->hasRole('patient')) {
+            return $this->redirect(route('patient.dashboard'), navigate: true);
+        }
+
         if ($this->startDate || $this->endDate) {
             $this->dateRange = 'custom';
         }

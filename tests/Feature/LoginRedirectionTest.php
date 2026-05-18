@@ -42,7 +42,7 @@ class LoginRedirectionTest extends TestCase
             ->set('email', $user->email)
             ->set('password', 'password')
             ->call('authenticate')
-            ->assertRedirect(route('appointments.index'));
+            ->assertRedirect(route('patient.dashboard'));
     }
 
     public function test_authenticated_receptionist_visiting_login_is_redirected(): void
@@ -53,5 +53,15 @@ class LoginRedirectionTest extends TestCase
         $response = $this->actingAs($user)->get(route('login'));
 
         $response->assertRedirect(route('receptionist.dashboard'));
+    }
+
+    public function test_authenticated_patient_visiting_appointments_is_redirected(): void
+    {
+        $user = User::factory()->create();
+        $user->update(['role_id' => Role::where('name', 'patient')->first()->id]);
+
+        $response = $this->actingAs($user)->get(route('appointments.index'));
+
+        $response->assertRedirect(route('patient.dashboard'));
     }
 }

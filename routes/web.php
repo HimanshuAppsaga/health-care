@@ -33,6 +33,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/doctor/profile/{id}/edit', DoctorEdit::class)->name('doctor.profile.edit');
 
     Route::get('/appointments', AppointmentList::class)->name('appointments.index');
+    Route::get('/patient/dashboard', App\Livewire\Patient\Dashboard::class)->name('patient.dashboard');
 
     // Fail-safe GET logout
     Route::get('/logout', function () {

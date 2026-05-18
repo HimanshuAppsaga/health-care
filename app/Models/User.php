@@ -84,7 +84,7 @@ class User extends Authenticatable
         }
 
         if ($this->hasRole('patient')) {
-            return 'appointments.index';
+            return 'patient.dashboard';
         }
 
         if ($this->hasRole('doctor')) {

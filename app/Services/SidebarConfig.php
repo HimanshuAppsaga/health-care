@@ -23,6 +23,11 @@ class SidebarConfig
                     ['name' => 'Book Appointment', 'route' => 'receptionist.book-appointment', 'icon' => 'calendar'],
                 ],
             ],
+            'patient' => [
+                'Medical' => [
+                    ['name' => 'Dashboard', 'route' => 'patient.dashboard', 'icon' => 'layout-dashboard'],
+                ],
+            ],
         ];
 
         return $config[$role] ?? [];
