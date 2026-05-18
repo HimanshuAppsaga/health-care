@@ -45,9 +45,9 @@
         </div>
 
         {{-- INFO GRID --}}
-        <div class="grid md:grid-cols-3 gap-8">
+        <div class="grid lg:grid-cols-3 gap-8">
             {{-- CONTACT INFO --}}
-            <div class="md:col-span-2 space-y-8">
+            <div class="lg:col-span-2 space-y-8">
                 <div class="bg-surface rounded-[2rem] p-6 sm:p-8 clinical-shadow border border-outline-variant">
                     <h2 class="text-xl font-black text-on-background mb-6 flex items-center gap-2">
                         <span class="material-symbols-outlined text-primary">contact_support</span>
