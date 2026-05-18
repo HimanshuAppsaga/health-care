@@ -8,6 +8,7 @@ use App\Http\Controllers\Api\Mobile\TodayAppointmentController;
 use App\Http\Controllers\Api\QueueController;
 use App\Http\Controllers\Api\ScheduleController;
 use App\Http\Controllers\Api\V1\Patient\TokenController;
+use App\Services\SidebarConfig;
 use Illuminate\Support\Facades\Route;
 
 Route::post('/appointments/book', [AppointmentController::class, 'store'])->middleware('api.key');
@@ -29,4 +30,14 @@ Route::middleware('api.key')->group(function () {
     Route::get('/today-schedule', [ScheduleController::class, 'todaySchedule']);
     Route::get('/today-appointments', [TodayAppointmentController::class, 'index']);
     Route::get('/appointment-history', [AppointmentHistoryController::class, 'index']);
+});
+
+Route::middleware('auth:sanctum')->get('/sidebar', function () {
+    $user = auth()->user();
+    $role = $user->role?->name ?? '';
+
+    return response()->json([
+        'role' => $role,
+        'menu' => SidebarConfig::getMenuForRole($role),
+    ]);
 });

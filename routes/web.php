@@ -5,6 +5,7 @@ use App\Livewire\Auth\Login;
 use App\Livewire\Auth\ResetPassword;
 use App\Livewire\Auth\SignUp;
 use App\Livewire\Common\AppointmentList;
+use App\Livewire\Doctor\AssignRole;
 use App\Livewire\Doctor\ClinicDetail;
 use App\Livewire\Doctor\ClinicEdit;
 use App\Livewire\Doctor\ClinicSettings;
@@ -26,6 +27,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/receptionist/book-appointment', Appointment::class)->name('receptionist.book-appointment');
 
     Route::get('/doctor/dashboard', App\Livewire\Doctor\Dashboard::class)->name('doctor.dashboard');
+    Route::get('/doctor/assign-role', AssignRole::class)->middleware('role:doctor')->name('doctor.assign-role');
     Route::get('/doctor/clinic-settings', ClinicSettings::class)->name('doctor.clinic-settings');
     Route::get('/doctor/clinic-details/{id}', ClinicDetail::class)->name('doctor.clinic.detail');
     Route::get('/doctor/clinic-details/{id}/edit', ClinicEdit::class)->name('doctor.clinic.edit');

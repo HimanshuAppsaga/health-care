@@ -14,6 +14,7 @@ class SidebarConfig
                 'Medical' => [
                     ['name' => 'Dashboard', 'route' => 'doctor.dashboard', 'icon' => 'layout-dashboard'],
                     ['name' => 'Appointments', 'route' => 'appointments.index', 'icon' => 'calendar'],
+                    ['name' => 'Assign Role', 'route' => 'doctor.assign-role', 'icon' => 'shield-check'],
                 ],
             ],
             'receptionist' => [
