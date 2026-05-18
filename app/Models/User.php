@@ -84,13 +84,13 @@ class User extends Authenticatable
         }
 
         if ($this->hasRole('patient')) {
-            return 'patient.dashboard';
+            return 'appointments.index';
         }
 
         if ($this->hasRole('doctor')) {
             return 'doctor.dashboard';
         }
 
-        return 'login'; // Fallback
+        return 'appointments.index'; // Fallback instead of login to avoid infinite redirect
     }
 }

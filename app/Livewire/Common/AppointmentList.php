@@ -83,7 +83,7 @@ class AppointmentList extends Component
         ];
 
         if ($user->hasRole('patient')) {
-            $filters['patient_id'] = $user->patient->id;
+            $filters['patient_id'] = $user->patient?->id;
         }
 
         $appointments = $appointmentService->getAppointments($filters, true);

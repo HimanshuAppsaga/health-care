@@ -42,7 +42,7 @@ class LoginRedirectionTest extends TestCase
             ->set('email', $user->email)
             ->set('password', 'password')
             ->call('authenticate')
-            ->assertRedirect(route('patient.dashboard'));
+            ->assertRedirect(route('appointments.index'));
     }
 
     public function test_authenticated_receptionist_visiting_login_is_redirected(): void

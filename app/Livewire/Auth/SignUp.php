@@ -39,6 +39,11 @@ class SignUp extends Component
             'is_active' => true,
         ]);
 
+        $role = \App\Models\Role::firstOrCreate(['name' => 'patient']);
+        if (! $user->roles()->where('role_id', $role->id)->exists()) {
+            $user->roles()->attach($role);
+        }
+
         Auth::login($user);
 
         return redirect()->intended(route($user->getDashboardRouteName()));

@@ -12,8 +12,8 @@
         </div>
         
         <div class="flex items-center gap-3">
-            @if(auth()->user()->hasRole(['receptionist', 'patient']))
-                <a href="{{ auth()->user()->hasRole('receptionist') ? route('receptionist.book-appointment') : route('patient.book-appointment') }}" 
+            @if(auth()->user()->hasRole('receptionist'))
+                <a href="{{ route('receptionist.book-appointment') }}" 
                    wire:navigate
                    class="px-6 py-3 bg-primary text-on-primary rounded-2xl font-black shadow-lg shadow-primary/30 hover:bg-primary-container transition-all flex items-center gap-2">
                     <span class="material-symbols-outlined">add</span>
