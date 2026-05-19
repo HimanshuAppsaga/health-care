@@ -24,6 +24,7 @@ class DoctorResource extends JsonResource
             'experience_years' => $this->experience_years,
             'consultation_fee' => (float) $this->consultation_fee,
             'is_on_hold' => $this->is_on_hold,
+            'bio' => $this->user->bio ?? null,
             'profile_photo' => ($this->user && $this->user->profile_photo_path)
                 ? Storage::disk('public')->url($this->user->profile_photo_path)
                 : null,

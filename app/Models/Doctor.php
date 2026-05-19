@@ -16,8 +16,6 @@ class Doctor extends Model
         'consultation_fee',
         'is_on_hold',
         'working_hours',
-        'about_me',
-        'profile_picture',
     ];
 
     public function clinic()
