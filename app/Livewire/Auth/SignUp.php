@@ -39,7 +39,7 @@ class SignUp extends Component
 
         Auth::login($user);
 
-        return redirect()->intended(route($user->getDashboardRouteName()));
+        return $this->redirect(route($user->getDashboardRouteName()), navigate: true);
     }
 
     public function render()

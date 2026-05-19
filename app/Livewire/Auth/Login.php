@@ -33,7 +33,7 @@ class Login extends Component
 
             session()->regenerate();
 
-            return redirect()->intended(route($user->getDashboardRouteName()));
+            return $this->redirect(route($user->getDashboardRouteName()), navigate: true);
         } catch (ValidationException $e) {
             $this->addError('email', $e->errors()['email'][0] ?? trans('auth.failed'));
         }

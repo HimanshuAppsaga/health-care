@@ -43,7 +43,7 @@ class ResetPassword extends Component
 
             session()->flash('status', $statusMessage);
 
-            return redirect()->route('login');
+            return $this->redirect(route('login'), navigate: true);
         } catch (ValidationException $e) {
             $this->addError('email', $e->errors()['email'][0] ?? trans('passwords.token'));
         }

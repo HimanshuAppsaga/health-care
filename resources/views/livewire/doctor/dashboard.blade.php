@@ -251,7 +251,7 @@
                         <div class="py-8 text-center text-outline-variant">
                             <span class="material-symbols-outlined text-4xl mb-2 block">event_busy</span>
                             <p class="text-xs font-bold uppercase tracking-widest">No schedule for today</p>
-                            <a href="{{ route('doctor.profile.edit', auth()->user()->doctor?->id ?? 0) }}" class="text-primary text-xs font-bold hover:underline mt-2 inline-block">Create Schedule</a>
+                            <a href="{{ route('doctor.profile.edit', auth()->user()->doctor?->id ?? 0) }}" wire:navigate class="text-primary text-xs font-bold hover:underline mt-2 inline-block">Create Schedule</a>
                         </div>
                     @endforelse
                 </div>
