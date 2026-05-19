@@ -45,5 +45,4 @@ Route::middleware('auth')->group(function () {
 
         return redirect()->route('login');
     })->name('logout.get');
-// fgusdfoikd
 });
