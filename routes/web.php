@@ -23,19 +23,29 @@ Route::middleware('guest')->group(function () {
 });
 
 Route::middleware('auth')->group(function () {
-    Route::get('/receptionist/dashboard', Dashboard::class)->name('receptionist.dashboard');
-    Route::get('/receptionist/book-appointment', Appointment::class)->name('receptionist.book-appointment');
+    // Receptionist routes
+    Route::middleware('role:receptionist')->group(function () {
+        Route::get('/receptionist/dashboard', Dashboard::class)->name('receptionist.dashboard');
+        Route::get('/receptionist/book-appointment', Appointment::class)->name('receptionist.book-appointment');
+    });
 
-    Route::get('/doctor/dashboard', App\Livewire\Doctor\Dashboard::class)->name('doctor.dashboard');
-    Route::get('/doctor/assign-role', AssignRole::class)->middleware('role:doctor')->name('doctor.assign-role');
-    Route::get('/doctor/clinic-settings', ClinicSettings::class)->name('doctor.clinic-settings');
-    Route::get('/doctor/clinic-details/{id}', ClinicDetail::class)->name('doctor.clinic.detail');
-    Route::get('/doctor/clinic-details/{id}/edit', ClinicEdit::class)->name('doctor.clinic.edit');
-    Route::get('/doctor/profile/{id}', DoctorDetail::class)->name('doctor.profile.detail');
-    Route::get('/doctor/profile/{id}/edit', DoctorEdit::class)->name('doctor.profile.edit');
+    // Doctor routes
+    Route::middleware('role:doctor')->group(function () {
+        Route::get('/doctor/dashboard', App\Livewire\Doctor\Dashboard::class)->name('doctor.dashboard');
+        Route::get('/doctor/assign-role', AssignRole::class)->name('doctor.assign-role');
+        Route::get('/doctor/clinic-settings', ClinicSettings::class)->name('doctor.clinic-settings');
+        Route::get('/doctor/clinic-details/{id}', ClinicDetail::class)->name('doctor.clinic.detail');
+        Route::get('/doctor/clinic-details/{id}/edit', ClinicEdit::class)->name('doctor.clinic.edit');
+        Route::get('/doctor/profile/{id}', DoctorDetail::class)->name('doctor.profile.detail');
+        Route::get('/doctor/profile/{id}/edit', DoctorEdit::class)->name('doctor.profile.edit');
+    });
+
+    // Patient routes
+    Route::middleware('role:patient')->group(function () {
+        Route::get('/patient/dashboard', App\Livewire\Patient\Dashboard::class)->name('patient.dashboard');
+    });
 
     Route::get('/appointments', AppointmentList::class)->name('appointments.index');
-    Route::get('/patient/dashboard', App\Livewire\Patient\Dashboard::class)->name('patient.dashboard');
 
     // Fail-safe GET logout
     Route::get('/logout', function () {
