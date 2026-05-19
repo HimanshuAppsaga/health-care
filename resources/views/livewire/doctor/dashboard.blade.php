@@ -210,7 +210,7 @@
                 <h3 class="text-lg font-black text-on-background mb-6">Quick Actions</h3>
                 <div class="space-y-4">
                     
-                    <a href="{{ route('doctor.profile.edit', auth()->user()->doctor->id) }}" wire:navigate class="w-full flex items-center gap-4 p-4 rounded-2xl bg-primary-container/20 text-primary font-bold hover:bg-primary hover:text-on-primary transition-all group">
+                    <a href="{{ route('doctor.profile.edit', auth()->user()->doctor?->id ?? 0) }}" wire:navigate class="w-full flex items-center gap-4 p-4 rounded-2xl bg-primary-container/20 text-primary font-bold hover:bg-primary hover:text-on-primary transition-all group">
                         <div class="w-10 h-10 rounded-xl bg-surface flex items-center justify-center group-hover:bg-primary/20">
                             <span class="material-symbols-outlined">calendar_month</span>
                         </div>
@@ -251,7 +251,7 @@
                         <div class="py-8 text-center text-outline-variant">
                             <span class="material-symbols-outlined text-4xl mb-2 block">event_busy</span>
                             <p class="text-xs font-bold uppercase tracking-widest">No schedule for today</p>
-                            <a href="{{ route('doctor.profile.edit', auth()->user()->doctor->id) }}" class="text-primary text-xs font-bold hover:underline mt-2 inline-block">Create Schedule</a>
+                            <a href="{{ route('doctor.profile.edit', auth()->user()->doctor?->id ?? 0) }}" class="text-primary text-xs font-bold hover:underline mt-2 inline-block">Create Schedule</a>
                         </div>
                     @endforelse
                 </div>

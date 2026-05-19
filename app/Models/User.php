@@ -55,7 +55,7 @@ class User extends Authenticatable
         return $this->hasOne(Doctor::class);
     }
 
-    public function ensureDoctorProfileExists(): Doctor
+    public function ensureDoctorProfileExists(): ?Doctor
     {
         $doctor = $this->doctor;
 
@@ -73,6 +73,8 @@ class User extends Authenticatable
                 'experience_years' => 0,
                 'consultation_fee' => 0,
             ]);
+
+            $this->setRelation('doctor', $doctor);
         }
 
         return $doctor;

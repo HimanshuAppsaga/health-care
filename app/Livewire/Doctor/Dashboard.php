@@ -63,8 +63,8 @@ class Dashboard extends Component
 
         $this->isDoctorOnHold = $doctor ? (bool) $doctor->is_on_hold : false;
 
-        $doctorId = $doctor->id ?? 0;
-        $result = $this->currentTokenService->getCurrentToken($doctor->clinic_id ?? null, $doctorId);
+        $doctorId = $doctor?->id ?? 0;
+        $result = $this->currentTokenService->getCurrentToken($doctor?->clinic_id ?? null, $doctorId);
         $nowServing = $result['data']['current_token'];
 
         $this->lastTokenNumber = $nowServing ? $nowServing->token_number : null;
@@ -78,8 +78,8 @@ class Dashboard extends Component
         }
 
         $doctor = auth()->user()->doctor;
-        $clinicId = $doctor->clinic_id ?? 1;
-        $doctorId = $doctor->id ?? 0;
+        $clinicId = $doctor?->clinic_id ?? 1;
+        $doctorId = $doctor?->id ?? 0;
 
         $this->callNextTokenService->callNextToken($clinicId, $doctorId);
     }
@@ -92,7 +92,7 @@ class Dashboard extends Component
 
         $today = Carbon::today();
         $doctor = auth()->user()->doctor;
-        $doctorId = $doctor->id ?? 0;
+        $doctorId = $doctor?->id ?? 0;
 
         $current = Queue::whereHas('appointment', function ($query) use ($doctorId, $today) {
             $query->where('doctor_id', $doctorId)
@@ -163,7 +163,7 @@ class Dashboard extends Component
     {
         $today = Carbon::today();
         $doctor = auth()->user()->doctor;
-        $doctorId = $doctor->id ?? 0;
+        $doctorId = $doctor?->id ?? 0;
 
         $totalAppointments = Appointment::where('doctor_id', $doctorId)
             ->whereDate('appointment_date', $today)
@@ -188,7 +188,7 @@ class Dashboard extends Component
 
         $revenueToday = 0;
 
-        $result = $this->currentTokenService->getCurrentToken($doctor->clinic_id ?? null, $doctorId);
+        $result = $this->currentTokenService->getCurrentToken($doctor?->clinic_id ?? null, $doctorId);
         $nowServing = $result['data']['current_token'];
 
         $currentStatus = $nowServing ? $nowServing->status : null;
