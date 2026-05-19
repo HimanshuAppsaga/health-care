@@ -14,7 +14,9 @@ use App\Livewire\Doctor\DoctorEdit;
 use App\Livewire\Receptionist\Appointment;
 use App\Livewire\Receptionist\Dashboard;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Session;
 
 Route::middleware('guest')->group(function () {
     Route::get('/', Login::class)->name('login');
@@ -51,9 +53,9 @@ Route::middleware('auth')->group(function () {
     // Fail-safe GET logout
     Route::get('/logout', function () {
         Auth::logout();
-        session()->invalidate();
-        session()->regenerateToken();
+        Session::invalidate();
+        Session::regenerateToken();
 
-        return redirect()->route('login');
+        return Redirect::route('login');
     })->name('logout.get');
 });

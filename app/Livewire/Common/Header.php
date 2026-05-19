@@ -3,6 +3,9 @@
 namespace App\Livewire\Common;
 
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Redirect;
+use Illuminate\Support\Facades\Session;
+use Illuminate\Support\Facades\View;
 use Livewire\Component;
 
 class Header extends Component
@@ -12,14 +15,14 @@ class Header extends Component
     public function logout()
     {
         Auth::logout();
-        session()->invalidate();
-        session()->regenerateToken();
+        Session::invalidate();
+        Session::regenerateToken();
 
-        return redirect()->route('login');
+        return Redirect::route('login');
     }
 
     public function render()
     {
-        return view('livewire.common.header');
+        return View::make('livewire.common.header');
     }
 }
