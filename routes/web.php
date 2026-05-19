@@ -13,6 +13,7 @@ use App\Livewire\Doctor\DoctorDetail;
 use App\Livewire\Doctor\DoctorEdit;
 use App\Livewire\Receptionist\Appointment;
 use App\Livewire\Receptionist\Dashboard;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware('guest')->group(function () {
@@ -49,7 +50,7 @@ Route::middleware('auth')->group(function () {
 
     // Fail-safe GET logout
     Route::get('/logout', function () {
-        auth()->logout();
+        Auth::logout();
         session()->invalidate();
         session()->regenerateToken();
 

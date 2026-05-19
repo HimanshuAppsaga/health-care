@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Common;
 
+use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
 
 class Header extends Component
@@ -10,7 +11,7 @@ class Header extends Component
 
     public function logout()
     {
-        auth()->logout();
+        Auth::logout();
         session()->invalidate();
         session()->regenerateToken();
 
