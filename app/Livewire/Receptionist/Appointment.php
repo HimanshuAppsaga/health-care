@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Receptionist;
 
+use App\Models\Clinic;
 use App\Models\Doctor;
 use App\Models\Patient;
 use App\Services\AppointmentBookingService;
@@ -67,8 +68,11 @@ class Appointment extends Component
 
     public function getListeners()
     {
+        $clinicId = $this->selectedClinicId ?: Clinic::first()?->id ?: 1;
+        $apiKey = Clinic::where('id', $clinicId)->value('api_key') ?: '1';
+
         return [
-            'echo:schedule-updates.1,ScheduleUpdated' => 'generateSlots',
+            "echo:schedule-updates.{$apiKey},ScheduleUpdated" => 'generateSlots',
         ];
     }
 

@@ -48,11 +48,13 @@ class Dashboard extends Component
 
     public function getListeners()
     {
-        $clinicId = 1;
+        $user = auth()->user();
+        $doctor = $user ? $user->ensureDoctorProfileExists() : null;
+        $apiKey = $doctor?->clinic?->api_key ?: '1';
 
         return [
-            "echo:queue-updates.{$clinicId},QueueUpdated" => '$refresh',
-            "echo:schedule-updates.{$clinicId},ScheduleUpdated" => '$refresh',
+            "echo:queue-updates.{$apiKey},QueueUpdated" => '$refresh',
+            "echo:schedule-updates.{$apiKey},ScheduleUpdated" => '$refresh',
         ];
     }
 
@@ -100,7 +102,7 @@ class Dashboard extends Component
         })->whereIn('status', [QueueStatus::SERVING->value, QueueStatus::HOLD->value])->first();
 
         if ($current) {
-            app(QueueService::class)->markAsDone($current->appointment_id, 1); // Clinic ID is hardcoded as 1 in existing code, but should probably be dynamic
+            app(QueueService::class)->markAsDone($current->appointment_id, $doctor?->clinic_id ?? 1);
         }
     }
 
@@ -114,6 +116,7 @@ class Dashboard extends Component
             // If toggling hold while serving, also update the queue status for better reflection
             $today = Carbon::today();
             $doctorId = $doctor->id;
+            $clinicId = $doctor->clinic_id ?? 1;
 
             $current = Queue::whereHas('appointment', function ($query) use ($doctorId, $today) {
                 $query->where('doctor_id', $doctorId)
@@ -124,13 +127,13 @@ class Dashboard extends Component
 
             if ($current) {
                 if ($this->isDoctorOnHold) {
-                    app(QueueService::class)->hold($current->appointment_id, 1);
+                    app(QueueService::class)->hold($current->appointment_id, $clinicId);
                 } else {
                     $current->update(['status' => QueueStatus::SERVING->value]);
-                    broadcast(new QueueUpdated(1, 'continue'))->toOthers();
+                    broadcast(new QueueUpdated($clinicId, 'continue'))->toOthers();
                 }
             } else {
-                broadcast(new QueueUpdated(1, $this->isDoctorOnHold ? 'hold' : 'continue'))->toOthers();
+                broadcast(new QueueUpdated($clinicId, $this->isDoctorOnHold ? 'hold' : 'continue'))->toOthers();
             }
         }
     }

@@ -25,9 +25,35 @@ class Dashboard extends Component
 
     public function getListeners()
     {
+        $user = auth()->user();
+        $patient = $user ? $user->patient : null;
+        $today = Carbon::today();
+
+        $appointment = null;
+        if ($patient) {
+            $appointment = Appointment::where('patient_id', $patient->id)
+                ->whereDate('appointment_date', $today)
+                ->first();
+
+            if (! $appointment) {
+                $appointment = Appointment::where('patient_id', $patient->id)
+                    ->latest('appointment_date')
+                    ->first();
+            }
+        }
+
+        $clinicId = $appointment ? $appointment->clinic_id : ($patient->clinic_id ?? null);
+        if (! $clinicId) {
+            $firstClinic = Clinic::first();
+            $clinicId = $firstClinic ? $firstClinic->id : null;
+        }
+
+        $apiKey = $clinicId ? Clinic::where('id', $clinicId)->value('api_key') : '1';
+        $apiKey = $apiKey ?: '1';
+
         return [
-            'echo:queue-updates.1,QueueUpdated' => '$refresh',
-            'echo:schedule-updates.1,ScheduleUpdated' => '$refresh',
+            "echo:queue-updates.{$apiKey},QueueUpdated" => '$refresh',
+            "echo:schedule-updates.{$apiKey},ScheduleUpdated" => '$refresh',
         ];
     }
 

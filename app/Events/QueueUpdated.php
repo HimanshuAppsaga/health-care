@@ -2,6 +2,7 @@
 
 namespace App\Events;
 
+use App\Models\Clinic;
 use Illuminate\Broadcasting\Channel;
 use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
@@ -19,8 +20,10 @@ class QueueUpdated implements ShouldBroadcast
 
     public function broadcastOn(): array
     {
+        $apiKey = Clinic::where('id', $this->clinicId)->value('api_key') ?: $this->clinicId;
+
         return [
-            new Channel('queue-updates.'.$this->clinicId),
+            new Channel('queue-updates.'.$apiKey),
         ];
     }
 

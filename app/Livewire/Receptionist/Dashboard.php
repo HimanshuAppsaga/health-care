@@ -48,9 +48,17 @@ class Dashboard extends Component
 
     public function getListeners()
     {
+        $selectedDoctorId = $this->selectedDoctorId ?: session('receptionist_selected_doctor_id');
+        if (! $selectedDoctorId) {
+            $selectedDoctorId = Doctor::activeDoctor()->first()?->id;
+        }
+
+        $selectedDoctor = $selectedDoctorId ? Doctor::find($selectedDoctorId) : null;
+        $apiKey = $selectedDoctor?->clinic?->api_key ?: '1';
+
         return [
-            'echo:queue-updates.1,QueueUpdated' => '$refresh',
-            'echo:schedule-updates.1,ScheduleUpdated' => '$refresh',
+            "echo:queue-updates.{$apiKey},QueueUpdated" => '$refresh',
+            "echo:schedule-updates.{$apiKey},ScheduleUpdated" => '$refresh',
         ];
     }
 
