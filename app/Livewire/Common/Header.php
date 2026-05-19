@@ -7,7 +7,7 @@ use Livewire\Component;
 
 class Header extends Component
 {
-    public $title;
+    public ?string $title = null;
 
     public function logout()
     {
