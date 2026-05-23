@@ -137,6 +137,7 @@
                         <thead class="bg-surface-container-low/50">
                             <tr>
                                 <th class="px-6 py-4 text-xs font-bold text-outline uppercase tracking-wider">Patient Name</th>
+                                <th class="px-6 py-4 text-xs font-bold text-outline uppercase tracking-wider">Doctor</th>
                                 <th class="px-6 py-4 text-xs font-bold text-outline uppercase tracking-wider">Mobile</th>
                                 <th class="px-6 py-4 text-xs font-bold text-outline uppercase tracking-wider">Token</th>
                                 <th class="px-6 py-4 text-xs font-bold text-outline uppercase tracking-wider text-right">Status</th>
@@ -146,6 +147,7 @@
                             @forelse($todaysAppointments as $appointment)
                             <tr class="hover:bg-primary-container/10 transition-colors">
                                 <td class="px-6 py-4 font-medium text-on-background">{{ $appointment->name ?? 'Unknown' }}</td>
+                                <td class="px-6 py-4 text-on-surface-variant font-medium">Dr. {{ $appointment->doctor->user->name ?? '--' }}</td>
                                 <td class="px-6 py-4 text-on-surface-variant font-bold">{{ $appointment->phone ?? '--' }}</td>
                                 <td class="px-6 py-4 text-on-surface-variant font-bold">{{ $appointment->token ?? '--' }}</td>
                                 <td class="px-6 py-4 text-right">
@@ -176,6 +178,7 @@
                             <div>
                                 <p class="text-xs font-black text-outline uppercase tracking-widest mb-1">Patient Name</p>
                                 <h4 class="text-base font-bold text-on-background">{{ $appointment->name ?? 'Unknown' }}</h4>
+                                <p class="text-[10px] font-bold text-outline mt-1">Dr. {{ $appointment->doctor->user->name ?? '--' }}</p>
                             </div>
                             <div>
                                 <span class="inline-block px-3 py-1 bg-surface-container-low text-on-surface-variant rounded-lg font-black text-xs border border-outline-variant">

@@ -232,7 +232,6 @@ class Dashboard extends Component
 
         $appointmentService = app(AppointmentService::class);
         $todaysAppointments = $appointmentService->getTodayAppointments([
-            'doctor_id' => $doctorId,
             'clinic_id' => auth()->user()->clinic_id,
         ]);
 
