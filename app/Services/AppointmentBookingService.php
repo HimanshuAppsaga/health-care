@@ -94,9 +94,10 @@ class AppointmentBookingService
                     ]);
                 }
 
-                // Generate sequential token number for the clinic and day (Clinic-specific logic)
+                // Generate sequential token number for the doctor and day
                 $tokenNumber = Queue::join('appointments', 'queues.appointment_id', '=', 'appointments.id')
                     ->where('appointments.clinic_id', $clinicId)
+                    ->where('appointments.doctor_id', $doctorId)
                     ->whereDate('queues.created_at', Carbon::today())
                     ->count() + 1;
 
