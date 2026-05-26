@@ -227,16 +227,6 @@
             <div class="bg-surface p-6 rounded-2xl clinical-shadow border border-outline-variant">
                 <h3 class="text-lg font-black text-on-background mb-6">Quick Actions</h3>
                 <div class="space-y-4">
-                    @php
-                        $hasActiveSchedule = $doctorSchedules->contains(function($s) {
-                            $now = now();
-                            return \Carbon\Carbon::parse($s->start_time)->isBefore($now) && \Carbon\Carbon::parse($s->end_time)->isAfter($now);
-                        });
-                        $nextSchedule = $doctorSchedules->first(function($s) {
-                            return \Carbon\Carbon::parse($s->start_time)->isAfter(now());
-                        });
-                    @endphp
-                    
                     <a href="{{ route('receptionist.book-appointment') }}" wire:navigate class="w-full flex items-center gap-4 p-4 rounded-2xl bg-tertiary-container/20 text-tertiary font-bold hover:bg-tertiary hover:text-on-tertiary transition-all group clinical-shadow">
                         <div class="w-10 h-10 rounded-xl bg-surface flex items-center justify-center group-hover:bg-tertiary/20">
                             <span class="material-symbols-outlined">calendar_add_on</span>
@@ -262,26 +252,37 @@
                     <h3 class="text-lg font-black text-on-background">Today's Schedule</h3>
                     <span class="px-2 py-1 bg-primary-container/20 text-primary text-[10px] font-black uppercase rounded-md tracking-tighter">Availability</span>
                 </div>
-                <div class="space-y-4">
-                    @forelse($doctorSchedules as $schedule)
-                        @php
-                            $isCompleted = \Carbon\Carbon::parse($schedule->end_time)->isBefore(now());
-                            $isActive = \Carbon\Carbon::parse($schedule->start_time)->isBefore(now()) && \Carbon\Carbon::parse($schedule->end_time)->isAfter(now());
-                        @endphp
-                        <div class="p-4 rounded-xl {{ $isCompleted ? 'bg-surface-container-low opacity-60' : 'bg-surface-container-low' }} border {{ $isActive ? 'border-tertiary bg-tertiary-container/10' : 'border-outline-variant/30' }} group hover:border-primary/30 transition-all">
-                            <div class="flex items-center justify-between mb-2">
-                                <div class="flex items-center gap-1 text-gray-500 text-sm">
-                                    <span class="material-symbols-outlined text-sm">schedule</span>
-                                    <span class="font-bold">{{ \Carbon\Carbon::parse($schedule->start_time)->format('h:i A') }} - {{ \Carbon\Carbon::parse($schedule->end_time)->format('h:i A') }}</span>
-                                </div>
-                                @if($isCompleted)
-                                    <span class="text-[10px] font-black uppercase text-gray-400">Completed</span>
-                                @elseif($isActive)
-                                    <span class="flex items-center gap-1">
-                                        <span class="w-1.5 h-1.5 rounded-full bg-[#0fbda6] animate-pulse"></span>
-                                        <span class="text-[10px] font-black uppercase text-[#0fbda6]">Active</span>
-                                    </span>
-                                @endif
+                <div class="space-y-6">
+                    @forelse($doctorSchedules as $doctorId => $schedules)
+                        @php $doctor = $schedules->first()->doctor; @endphp
+                        <div>
+                            <h4 class="text-sm font-bold text-outline mb-3 flex items-center gap-2">
+                                <span class="w-2 h-2 rounded-full bg-primary"></span>
+                                Dr. {{ $doctor->user->name }}
+                            </h4>
+                            <div class="space-y-4">
+                                @foreach($schedules as $schedule)
+                                    @php
+                                        $isCompleted = \Carbon\Carbon::parse($schedule->end_time)->isBefore(now());
+                                        $isActive = \Carbon\Carbon::parse($schedule->start_time)->isBefore(now()) && \Carbon\Carbon::parse($schedule->end_time)->isAfter(now());
+                                    @endphp
+                                    <div class="p-4 rounded-xl {{ $isCompleted ? 'bg-surface-container-low opacity-60' : 'bg-surface-container-low' }} border {{ $isActive ? 'border-tertiary bg-tertiary-container/10' : 'border-outline-variant/30' }} group hover:border-primary/30 transition-all">
+                                        <div class="flex items-center justify-between mb-2">
+                                            <div class="flex items-center gap-1 text-gray-500 text-sm">
+                                                <span class="material-symbols-outlined text-sm">schedule</span>
+                                                <span class="font-bold">{{ \Carbon\Carbon::parse($schedule->start_time)->format('h:i A') }} - {{ \Carbon\Carbon::parse($schedule->end_time)->format('h:i A') }}</span>
+                                            </div>
+                                            @if($isCompleted)
+                                                <span class="text-[10px] font-black uppercase text-gray-400">Completed</span>
+                                            @elseif($isActive)
+                                                <span class="flex items-center gap-1">
+                                                    <span class="w-1.5 h-1.5 rounded-full bg-[#0fbda6] animate-pulse"></span>
+                                                    <span class="text-[10px] font-black uppercase text-[#0fbda6]">Active</span>
+                                                </span>
+                                            @endif
+                                        </div>
+                                    </div>
+                                @endforeach
                             </div>
                         </div>
                     @empty

@@ -225,7 +225,7 @@ class Dashboard extends Component
                 $doctorSchedules->push($sObj);
             }
         }
-        $doctorSchedules = $doctorSchedules->sortBy('start_time');
+        $doctorSchedules = $doctorSchedules->sortBy('start_time')->groupBy('doctor_id');
 
         return view('livewire.receptionist.dashboard', [
             'totalAppointments' => $totalAppointments,
