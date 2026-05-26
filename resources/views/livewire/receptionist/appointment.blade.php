@@ -44,6 +44,17 @@
                         </div>
                     @endif
 
+                    <div class="mb-4">
+                        <label class="block text-xs font-bold text-slate-500 mb-2 uppercase tracking-wider">Select Doctor</label>
+                        <select wire:model.live="selectedDoctorId" class="w-full p-3 border border-slate-200 rounded-xl focus:ring-primary focus:border-primary text-sm bg-white">
+                            <option value="">Select a Doctor</option>
+                            @foreach($doctors as $doctor)
+                                <option value="{{ $doctor->id }}">Dr. {{ $doctor->user->name }}</option>
+                            @endforeach
+                        </select>
+                        @error('selectedDoctorId') <span class="text-xs text-red-500">{{ $message }}</span> @enderror
+                    </div>
+
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
                             <label class="block text-xs font-bold text-slate-500 mb-2 uppercase tracking-wider">Full Name</label>

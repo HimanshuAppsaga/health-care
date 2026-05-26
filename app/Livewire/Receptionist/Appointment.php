@@ -102,25 +102,7 @@ class Appointment extends Component
             ];
             $dayName = $dayNames[$dayOfWeek];
 
-            $this->selectedDoctorId = session('receptionist_selected_doctor_id');
-
-            if (! $this->selectedDoctorId) {
-                $this->selectedDoctorId = Doctor::activeDoctor()
-                    ->where('working_hours->'.$dayName, '!=', 'Closed')
-                    ->first()?->id;
-
-                // Fallback to first doctor if no one has a schedule today
-                if (! $this->selectedDoctorId) {
-                    $this->selectedDoctorId = $this->doctors->first()?->id;
-                }
-            }
-
-            if ($this->selectedDoctorId) {
-                $this->selectedDoctor = Doctor::with('user')->find($this->selectedDoctorId);
-                $this->fee = $this->selectedDoctor->consultation_fee;
-                $this->updateTotal();
-                $this->generateSlots();
-            }
+            $this->selectedDoctorId = '';
         }
     }
 
@@ -289,6 +271,7 @@ class Appointment extends Component
     public function bookAppointment()
     {
         $this->validate([
+            'selectedDoctorId' => 'required',
             'name' => 'required|string|max:191',
             'phone' => [
                 'required',
@@ -303,11 +286,11 @@ class Appointment extends Component
                     }
                 },
             ],
+        ], [
+            'selectedDoctorId.required' => 'Please select a doctor.',
         ]);
 
-        if (! $this->selectedDoctorId) {
-            $this->selectedDoctorId = Doctor::activeDoctor()->first()?->id;
-        }
+
 
         $data = [
             'doctor_id' => $this->selectedDoctorId,
