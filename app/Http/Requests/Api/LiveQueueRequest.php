@@ -3,6 +3,7 @@
 namespace App\Http\Requests\Api;
 
 use App\Http\Resources\QueueResource;
+use App\Models\Appointment;
 use App\Models\Queue;
 use App\Services\CurrentTokenService;
 use Carbon\Carbon;
@@ -28,8 +29,24 @@ class LiveQueueRequest extends FormRequest
     {
         return [
             'doctor_id' => 'nullable|exists:doctors,id',
+            'appointment_id' => 'nullable|exists:appointments,id',
             'per_page' => 'nullable|integer|min:1|max:100',
         ];
+    }
+
+    /**
+     * Get the resolved doctor ID for the request.
+     */
+    public function getResolvedDoctorId(): ?int
+    {
+        if ($this->has('appointment_id')) {
+            $appointment = Appointment::find($this->input('appointment_id'));
+            if ($appointment) {
+                return $appointment->doctor_id;
+            }
+        }
+
+        return $this->input('doctor_id');
     }
 
     /**
@@ -38,7 +55,7 @@ class LiveQueueRequest extends FormRequest
     public function getCurrentPatientData(CurrentTokenService $currentTokenService): array
     {
         $clinic = $this->clinic;
-        $doctorId = $this->input('doctor_id');
+        $doctorId = $this->getResolvedDoctorId();
         $today = Carbon::today();
 
         $result = $currentTokenService->getCurrentToken($clinic->id, $doctorId);
@@ -57,7 +74,7 @@ class LiveQueueRequest extends FormRequest
     public function getWaitingListData(): array
     {
         $clinic = $this->clinic;
-        $doctorId = $this->input('doctor_id');
+        $doctorId = $this->getResolvedDoctorId();
         $today = Carbon::today();
 
         $query = Queue::with(['appointment.doctor.user'])
