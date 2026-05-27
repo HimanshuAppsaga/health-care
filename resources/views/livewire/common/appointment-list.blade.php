@@ -93,6 +93,7 @@
                     <tr class="bg-surface-container-low/50">
                         <th class="px-8 py-6 text-xs font-black text-outline uppercase tracking-widest">Date</th>
                         <th class="px-8 py-6 text-xs font-black text-outline uppercase tracking-widest">Patient Details</th>
+                        <th class="px-8 py-6 text-xs font-black text-outline uppercase tracking-widest">Doctor</th>
                         <th class="px-8 py-6 text-xs font-black text-outline uppercase tracking-widest">Token</th>
                         <th class="px-8 py-6 text-xs font-black text-outline uppercase tracking-widest">Status</th>
                     </tr>
@@ -117,6 +118,21 @@
                             </div>
                         </td>
                         <td class="px-8 py-6">
+                            <div class="flex items-center gap-3">
+                                @if($appointment->doctor)
+                                    <div class="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-black border border-primary/20 uppercase">
+                                        {{ substr($appointment->doctor->user->name ?? 'D', 0, 1) }}
+                                    </div>
+                                    <div class="flex flex-col">
+                                        <span class="font-bold text-on-background group-hover:text-primary transition-colors">{{ $appointment->doctor->user->name ?? 'Unknown' }}</span>
+                                        <span class="text-xs text-outline font-medium">{{ $appointment->doctor->specialization ?? 'General' }}</span>
+                                    </div>
+                                @else
+                                    <span class="text-outline">--</span>
+                                @endif
+                            </div>
+                        </td>
+                        <td class="px-8 py-6">
                             <span class="inline-block px-3 py-1 bg-surface-container-low text-on-surface-variant rounded-lg font-black text-sm border border-outline-variant">
                                 {{ $appointment->token ?? '--' }}
                             </span>
@@ -137,7 +153,7 @@
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="4" class="px-8 py-16 text-center">
+                        <td colspan="5" class="px-8 py-16 text-center">
                             <div class="flex flex-col items-center justify-center text-outline">
                                 <span class="material-symbols-outlined text-6xl mb-4">event_busy</span>
                                 <p class="text-lg font-black uppercase tracking-widest">No appointments found</p>
@@ -190,6 +206,20 @@
                     </div>
                 </div>
                 
+                <div class="px-2 py-2 mt-1 bg-surface-container-low/30 rounded-xl border border-outline-variant/50 flex items-center gap-3">
+                    @if($appointment->doctor)
+                        <div class="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary font-black border border-primary/20 uppercase text-xs shrink-0">
+                            {{ substr($appointment->doctor->user->name ?? 'D', 0, 1) }}
+                        </div>
+                        <div class="flex flex-col">
+                            <span class="font-bold text-on-background text-sm truncate">{{ $appointment->doctor->user->name ?? 'Unknown' }}</span>
+                            <span class="text-[10px] text-outline font-medium uppercase tracking-wider truncate">{{ $appointment->doctor->specialization ?? 'General' }}</span>
+                        </div>
+                    @else
+                        <span class="text-xs text-outline italic">No doctor assigned</span>
+                    @endif
+                </div>
+
                 <div class="flex justify-between items-center pl-2 pt-2 border-t border-outline-variant/10">
                     <div>
                         <p class="text-[10px] font-black text-outline uppercase tracking-widest mb-0.5">Appointment Date</p>
