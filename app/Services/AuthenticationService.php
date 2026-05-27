@@ -77,12 +77,19 @@ class AuthenticationService
     /**
      * Reset the user's password using the given token and password.
      *
-     * @param  array{token: string, email: string, password: string, password_confirmation: string}  $data
+     * @param  array{token: string, email: string, password: string, password_confirmation: string, otp: string}  $data
      *
      * @throws ValidationException
      */
     public function resetPassword(array $data): string
     {
+        $cachedOtp = \Illuminate\Support\Facades\Cache::get("password_reset_otp_{$data['email']}");
+        if (!$cachedOtp || $cachedOtp !== $data['otp']) {
+            throw ValidationException::withMessages([
+                'otp' => ['The provided 4-digit code is invalid or has expired.'],
+            ]);
+        }
+
         $status = Password::reset(
             $data,
             function ($user, $password) {
@@ -103,6 +110,8 @@ class AuthenticationService
                 'email' => [trans($status)],
             ]);
         }
+
+        \Illuminate\Support\Facades\Cache::forget("password_reset_otp_{$data['email']}");
 
         return trans($status);
     }

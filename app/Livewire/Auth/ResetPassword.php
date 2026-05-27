@@ -37,28 +37,26 @@ class ResetPassword extends Component
     {
         $this->validate();
 
-        $cachedOtp = Cache::get("password_reset_otp_{$this->email}");
-        if (! $cachedOtp || $cachedOtp !== $this->otp) {
-            $this->addError('otp', 'The provided 4-digit code is invalid or has expired.');
-
-            return;
-        }
-
         try {
             $statusMessage = $authService->resetPassword([
                 'token' => $this->token,
                 'email' => $this->email,
+                'otp' => $this->otp,
                 'password' => $this->password,
                 'password_confirmation' => $this->password_confirmation,
             ]);
-
-            Cache::forget("password_reset_otp_{$this->email}");
 
             session()->flash('status', $statusMessage);
 
             return $this->redirect(route('login'), navigate: true);
         } catch (ValidationException $e) {
-            $this->addError('email', $e->errors()['email'][0] ?? trans('passwords.token'));
+            $errors = $e->errors();
+            if (isset($errors['otp'])) {
+                $this->addError('otp', $errors['otp'][0]);
+            }
+            if (isset($errors['email'])) {
+                $this->addError('email', $errors['email'][0]);
+            }
         }
     }
 
