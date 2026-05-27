@@ -3,6 +3,7 @@
 namespace App\Livewire\Auth;
 
 use App\Services\AuthenticationService;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Validation\ValidationException;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
@@ -17,6 +18,9 @@ class ResetPassword extends Component
 
     #[Validate('required|email')]
     public string $email = '';
+
+    #[Validate('required|numeric|digits:4')]
+    public string $otp = '';
 
     #[Validate('required|string|min:8|same:password_confirmation')]
     public string $password = '';
@@ -33,6 +37,13 @@ class ResetPassword extends Component
     {
         $this->validate();
 
+        $cachedOtp = Cache::get("password_reset_otp_{$this->email}");
+        if (! $cachedOtp || $cachedOtp !== $this->otp) {
+            $this->addError('otp', 'The provided 4-digit code is invalid or has expired.');
+
+            return;
+        }
+
         try {
             $statusMessage = $authService->resetPassword([
                 'token' => $this->token,
@@ -40,6 +51,8 @@ class ResetPassword extends Component
                 'password' => $this->password,
                 'password_confirmation' => $this->password_confirmation,
             ]);
+
+            Cache::forget("password_reset_otp_{$this->email}");
 
             session()->flash('status', $statusMessage);
 

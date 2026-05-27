@@ -32,9 +32,12 @@ class ResetPasswordTest extends TestCase
         ]);
 
         $token = Password::createToken($user);
+        $otp = '1234';
+        \Illuminate\Support\Facades\Cache::put("password_reset_otp_{$user->email}", $otp, now()->addMinutes(60));
 
         Livewire::test(ResetPassword::class, ['token' => $token])
             ->set('email', $user->email)
+            ->set('otp', $otp)
             ->set('password', 'new-password')
             ->set('password_confirmation', 'new-password')
             ->call('resetPassword')
@@ -51,6 +54,7 @@ class ResetPasswordTest extends TestCase
 
         Livewire::test(ResetPassword::class, ['token' => $token])
             ->set('email', $user->email)
+            ->set('otp', '1234')
             ->set('password', 'new-password')
             ->set('password_confirmation', 'different-password')
             ->call('resetPassword')
@@ -64,6 +68,7 @@ class ResetPasswordTest extends TestCase
 
         Livewire::test(ResetPassword::class, ['token' => $token])
             ->set('email', $user->email)
+            ->set('otp', '1234')
             ->set('password', 'short')
             ->set('password_confirmation', 'short')
             ->call('resetPassword')
@@ -73,9 +78,12 @@ class ResetPasswordTest extends TestCase
     public function test_password_reset_fails_with_invalid_token(): void
     {
         $user = User::factory()->create();
+        $otp = '1234';
+        \Illuminate\Support\Facades\Cache::put("password_reset_otp_{$user->email}", $otp, now()->addMinutes(60));
 
         Livewire::test(ResetPassword::class, ['token' => 'invalid-token'])
             ->set('email', $user->email)
+            ->set('otp', $otp)
             ->set('password', 'new-password')
             ->set('password_confirmation', 'new-password')
             ->call('resetPassword')
