@@ -88,7 +88,7 @@ class AuthController extends Controller
     {
         try {
             $message = $this->authService->resetPassword(
-                $request->only('token', 'email', 'otp', 'password', 'password_confirmation')
+                $request->only('email', 'otp', 'password', 'password_confirmation')
             );
 
             return ApiService::message($message);

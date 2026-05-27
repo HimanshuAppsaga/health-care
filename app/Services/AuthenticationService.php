@@ -6,6 +6,9 @@ use App\Models\Role;
 use App\Models\User;
 use Illuminate\Auth\Events\PasswordReset;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
@@ -75,44 +78,43 @@ class AuthenticationService
     }
 
     /**
-     * Reset the user's password using the given token and password.
+     * Reset the user's password using the given email and OTP.
      *
-     * @param  array{token: string, email: string, password: string, password_confirmation: string, otp: string}  $data
+     * @param  array{email: string, password: string, password_confirmation: string, otp: string, token?: string}  $data
      *
      * @throws ValidationException
      */
     public function resetPassword(array $data): string
     {
-        $cachedOtp = \Illuminate\Support\Facades\Cache::get("password_reset_otp_{$data['email']}");
-        if (!$cachedOtp || $cachedOtp !== $data['otp']) {
+        $cachedOtp = Cache::get("password_reset_otp_{$data['email']}");
+        if (! $cachedOtp || $cachedOtp !== $data['otp']) {
             throw ValidationException::withMessages([
                 'otp' => ['The provided 4-digit code is invalid or has expired.'],
             ]);
         }
 
-        $status = Password::reset(
-            $data,
-            function ($user, $password) {
-                $user->forceFill([
-                    'password' => $password,
-                ]);
+        $user = User::where('email', $data['email'])->first();
 
-                $user->setRememberToken(Str::random(60));
-
-                $user->save();
-
-                event(new PasswordReset($user));
-            }
-        );
-
-        if ($status !== Password::PASSWORD_RESET) {
+        if (! $user) {
             throw ValidationException::withMessages([
-                'email' => [trans($status)],
+                'email' => [trans('passwords.user')],
             ]);
         }
 
-        \Illuminate\Support\Facades\Cache::forget("password_reset_otp_{$data['email']}");
+        $user->forceFill([
+            'password' => Hash::make($data['password']),
+        ]);
 
-        return trans($status);
+        $user->setRememberToken(Str::random(60));
+        $user->save();
+
+        event(new PasswordReset($user));
+
+        Cache::forget("password_reset_otp_{$data['email']}");
+
+        // Also clean up any lingering database tokens if they exist
+        DB::table('password_reset_tokens')->where('email', $data['email'])->delete();
+
+        return trans('passwords.reset');
     }
 }
