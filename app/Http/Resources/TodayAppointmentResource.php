@@ -15,6 +15,8 @@ class TodayAppointmentResource extends JsonResource
     public function toArray(Request $request): array
     {
         return [
+            'doctor_id' => $this->doctor_id,
+            'doctor_name' => $this->doctor?->user?->name,
             'patient_name' => $this->name ?? $this->patient?->name,
             'appointment_date' => $this->appointment_date,
             'token_no' => $this->token,
