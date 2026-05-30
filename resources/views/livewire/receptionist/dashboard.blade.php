@@ -28,7 +28,7 @@
         <div class="bg-surface p-6 rounded-2xl clinical-shadow border border-outline-variant flex items-center justify-between hover:border-tertiary/30 transition-all">
             <div>
                 <p class="text-sm font-medium text-outline mb-1">Pending Patients</p>
-                <h3 class="text-3xl font-black text-tertiary">{{ $waitingCount }}</h3>
+                <h3 class="text-3xl font-black text-tertiary">{{ $pendingArrivals }}</h3>
             </div>
             <div class="w-14 h-14 bg-tertiary-container/20 rounded-2xl flex items-center justify-center text-tertiary">
                 <span class="material-symbols-outlined text-3xl" style="font-variation-settings: 'FILL' 1;">pending_actions</span>
