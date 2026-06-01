@@ -20,6 +20,10 @@ Route::middleware('api.key.validate')->group(function () {
     Route::post('/auth/reset-password', [AuthController::class, 'resetPassword']);
 });
 
+Route::middleware(['api.key.validate', 'auth:sanctum'])->group(function () {
+    Route::post('/auth/logout', [AuthController::class, 'logout']);
+});
+
 Route::post('/appointments/book', [AppointmentController::class, 'store'])->middleware('api.key');
 
 // Secure Multi-Tenant Clinic API Routes

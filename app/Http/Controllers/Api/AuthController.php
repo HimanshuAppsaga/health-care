@@ -5,11 +5,14 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\ForgotPasswordRequest;
 use App\Http\Requests\Api\LoginRequest;
+use App\Http\Requests\Api\LogoutRequest;
 use App\Http\Requests\Api\RegisterRequest;
 use App\Http\Requests\Api\ResetPasswordRequest;
+use App\Http\Resources\Api\LogoutResource;
 use App\Http\Resources\Api\UserResource;
 use App\Services\ApiService;
 use App\Services\AuthenticationService;
+use App\Services\LogoutService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Validation\ValidationException;
 
@@ -96,6 +99,20 @@ class AuthController extends Controller
             return ApiService::error($e->getMessage(), 422, $e->errors());
         } catch (\Exception $e) {
             return ApiService::error('Password reset failed: '.$e->getMessage(), 500);
+        }
+    }
+
+    /**
+     * Handle mobile logout.
+     */
+    public function logout(LogoutRequest $request, LogoutService $logoutService): JsonResponse
+    {
+        try {
+            $logoutService->logoutUser();
+
+            return ApiService::respond('auth', new LogoutResource([]), 'Logout successful');
+        } catch (\Exception $e) {
+            return ApiService::error('Logout failed: '.$e->getMessage(), 500);
         }
     }
 }

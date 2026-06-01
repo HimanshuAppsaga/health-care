@@ -2,9 +2,8 @@
 
 namespace App\Livewire\Common;
 
-use Illuminate\Support\Facades\Auth;
+use App\Services\LogoutService;
 use Illuminate\Support\Facades\Redirect;
-use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\View;
 use Livewire\Component;
 
@@ -12,11 +11,9 @@ class Header extends Component
 {
     public ?string $title = null;
 
-    public function logout()
+    public function logout(LogoutService $logoutService)
     {
-        Auth::logout();
-        Session::invalidate();
-        Session::regenerateToken();
+        $logoutService->logoutUser();
 
         return Redirect::route('login');
     }
