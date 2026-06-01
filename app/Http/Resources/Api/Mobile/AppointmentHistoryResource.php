@@ -20,6 +20,10 @@ class AppointmentHistoryResource extends JsonResource
                 'name' => $this->name ?? $this->patient?->name,
                 'phone' => $this->phone ?? $this->patient?->phone,
             ],
+            'doctor' => [
+                'id' => $this->doctor_id,
+                'name' => $this->doctor?->user?->name,
+            ],
             'appointment_date' => $this->appointment_date,
             'status' => $this->status,
             'clinic_id' => $this->clinic_id,
