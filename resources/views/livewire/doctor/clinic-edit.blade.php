@@ -182,57 +182,42 @@
                              x-data="{
                                  map: null,
                                  marker: null,
-                                 searchResults: [],
-                                 searchQuery: '',
-                                 isSearching: false,
+                                 searchBox: null,
                                  initMap() {
                                      let lat = parseFloat($wire.latitude) || 21.2688948;
                                      let lng = parseFloat($wire.longitude) || 72.9771112;
                                      
-                                     // Initialize Leaflet map
-                                     this.map = L.map(this.$refs.mapContainer).setView([lat, lng], 13);
-                                     
-                                     // Add OpenStreetMap standard tiles
-                                     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                                         attribution: '&copy; <a href=\'https://www.openstreetmap.org/copyright\'>OpenStreetMap</a> contributors'
-                                     }).addTo(this.map);
-                                     
-                                     // Beautiful modern SVG pin matching clinic brand colors
-                                     let customPin = L.divIcon({
-                                         className: 'custom-leaflet-pin',
-                                         html: `<div style='background-color:#0ea5e9; width: 30px; height: 30px; border-radius: 50% 50% 50% 0; position: absolute; transform: rotate(-45deg); left: 50%; top: 50%; margin: -15px 0 0 -15px; border: 2px solid white; box-shadow: 0 10px 15px -3px rgba(14, 165, 233, 0.4);'><div style='width: 10px; height: 10px; background: white; border-radius: 50%; position: absolute; top: 10px; left: 10px;'></div></div>`,
-                                         iconSize: [30, 30],
-                                         iconAnchor: [15, 30]
+                                     this.map = new google.maps.Map(this.$refs.mapContainer, {
+                                         center: { lat: lat, lng: lng },
+                                         zoom: 13,
+                                         mapTypeControl: false,
                                      });
                                      
-                                     // Add draggable marker
-                                     this.marker = L.marker([lat, lng], { 
+                                     this.marker = new google.maps.Marker({
+                                         position: { lat: lat, lng: lng },
+                                         map: this.map,
                                          draggable: true,
-                                         icon: customPin
-                                     }).addTo(this.map);
-                                     
-                                     // Marker dragging updates model coordinates
-                                     this.marker.on('dragend', (e) => {
-                                         let position = this.marker.getLatLng();
-                                         $wire.latitude = position.lat.toFixed(6);
-                                         $wire.longitude = position.lng.toFixed(6);
                                      });
                                      
-                                     // Map clicks reposition the marker and update coordinates
-                                     this.map.on('click', (e) => {
-                                         this.marker.setLatLng(e.latlng);
-                                         $wire.latitude = e.latlng.lat.toFixed(6);
-                                         $wire.longitude = e.latlng.lng.toFixed(6);
+                                     this.marker.addListener('dragend', () => {
+                                         let position = this.marker.getPosition();
+                                         $wire.latitude = position.lat().toFixed(6);
+                                         $wire.longitude = position.lng().toFixed(6);
                                      });
                                      
-                                     // Watch model coordinate changes and update map position
+                                     this.map.addListener('click', (e) => {
+                                         this.marker.setPosition(e.latLng);
+                                         $wire.latitude = e.latLng.lat().toFixed(6);
+                                         $wire.longitude = e.latLng.lng().toFixed(6);
+                                     });
+                                     
                                      $wire.$watch('latitude', (value) => {
                                          let latVal = parseFloat(value);
                                          let lngVal = parseFloat($wire.longitude);
                                          if (!isNaN(latVal) && !isNaN(lngVal)) {
-                                             let pos = [latVal, lngVal];
-                                             this.marker.setLatLng(pos);
-                                             this.map.setView(pos, this.map.getZoom());
+                                             let pos = { lat: latVal, lng: lngVal };
+                                             this.marker.setPosition(pos);
+                                             this.map.panTo(pos);
                                          }
                                      });
                                      
@@ -240,101 +225,75 @@
                                          let latVal = parseFloat($wire.latitude);
                                          let lngVal = parseFloat(value);
                                          if (!isNaN(latVal) && !isNaN(lngVal)) {
-                                             let pos = [latVal, lngVal];
-                                             this.marker.setLatLng(pos);
-                                             this.map.setView(pos, this.map.getZoom());
+                                             let pos = { lat: latVal, lng: lngVal };
+                                             this.marker.setPosition(pos);
+                                             this.map.panTo(pos);
                                          }
                                      });
+
+                                     const input = this.$refs.searchInput;
+                                     this.searchBox = new google.maps.places.SearchBox(input);
+                                     
+                                     this.map.addListener('bounds_changed', () => {
+                                         this.searchBox.setBounds(this.map.getBounds());
+                                     });
+
+                                     this.searchBox.addListener('places_changed', () => {
+                                         const places = this.searchBox.getPlaces();
+
+                                         if (places.length == 0) {
+                                             return;
+                                         }
+
+                                         const place = places[0];
+                                         if (!place.geometry || !place.geometry.location) {
+                                             return;
+                                         }
+
+                                         this.map.setCenter(place.geometry.location);
+                                         this.map.setZoom(16);
+                                         this.marker.setPosition(place.geometry.location);
+
+                                         $wire.latitude = place.geometry.location.lat().toFixed(6);
+                                         $wire.longitude = place.geometry.location.lng().toFixed(6);
+                                     });
                                  },
-                                 async searchLocation() {
-                                     if (this.searchQuery.length < 3) {
-                                         this.searchResults = [];
-                                         return;
-                                     }
-                                     
-                                     this.isSearching = true;
-                                     try {
-                                         let response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(this.searchQuery)}&limit=5`);
-                                         this.searchResults = await response.json();
-                                     } catch (error) {
-                                         console.error('Search error:', error);
-                                     } finally {
-                                         this.isSearching = false;
-                                     }
-                                 },
-                                 selectLocation(item) {
-                                     let lat = parseFloat(item.lat);
-                                     let lng = parseFloat(item.lon);
-                                     
-                                     let pos = [lat, lng];
-                                     this.map.setView(pos, 16);
-                                     this.marker.setLatLng(pos);
-                                     
-                                     $wire.latitude = lat.toFixed(6);
-                                     $wire.longitude = lng.toFixed(6);
-                                     
-                                     this.searchQuery = item.display_name;
-                                     this.searchResults = [];
-                                 },
-                                 loadLeaflet() {
-                                     if (window.L) {
+                                 loadGoogleMaps() {
+                                     if (window.google && window.google.maps) {
                                          this.initMap();
                                          return;
                                      }
                                      
-                                     // Load Leaflet CSS
-                                     if (!document.querySelector('link[href*=\'leaflet.css\']')) {
-                                         let link = document.createElement('link');
-                                         link.rel = 'stylesheet';
-                                         link.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
-                                         document.head.appendChild(link);
-                                     }
-                                     
-                                     // Load Leaflet JS
-                                     if (!document.querySelector('script[src*=\'leaflet.js\']')) {
-                                         let script = document.createElement('script');
-                                         script.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
-                                         script.onload = () => {
+                                     if (!document.querySelector('script[src*=\'maps.googleapis.com\']')) {
+                                         window.initGoogleMap = () => {
                                              this.initMap();
                                          };
+                                         let script = document.createElement('script');
+                                         script.src = 'https://maps.googleapis.com/maps/api/js?key={{ config('services.google_maps_api_key') }}&libraries=places&callback=initGoogleMap';
+                                         script.async = true;
+                                         script.defer = true;
                                          document.head.appendChild(script);
                                      } else {
-                                         // Script exists, wait for it
-                                         let checkLeaflet = setInterval(() => {
-                                             if (window.L) {
-                                                 clearInterval(checkLeaflet);
+                                         let checkGoogleMaps = setInterval(() => {
+                                             if (window.google && window.google.maps) {
+                                                 clearInterval(checkGoogleMaps);
                                                  this.initMap();
                                              }
                                          }, 100);
                                      }
                                  }
                              }" 
-                             x-init="loadLeaflet()">
+                             x-init="loadGoogleMaps()">
                             
                             <!-- Search Bar & Autocomplete Dropdown -->
-                            <div class="relative mb-4" @click.away="searchResults = []">
+                            <div class="relative mb-4">
                                 <div class="group flex items-center gap-2 bg-surface-container-low border-2 border-outline-variant/30 rounded-xl px-4 py-3 focus-within:border-primary transition-all">
-                                    <span class="material-symbols-outlined text-outline group-focus-within:text-primary" x-show="!isSearching">search</span>
-                                    <span class="animate-spin material-symbols-outlined text-primary text-sm flex items-center justify-center w-5 h-5" x-show="isSearching" x-cloak>sync</span>
+                                    <span class="material-symbols-outlined text-outline group-focus-within:text-primary">search</span>
                                     <input type="text" 
-                                           x-model="searchQuery"
-                                           @input.debounce.500ms="searchLocation()"
+                                           x-ref="searchInput"
                                            @keydown.enter.prevent=""
                                            placeholder="Search location..."
                                            class="w-full bg-transparent border-0 outline-none focus:outline-none focus:ring-0 font-bold text-sm p-0 placeholder:text-outline-variant">
-                                </div>
-
-                                <!-- Autocomplete Dropdown Menu -->
-                                <div x-show="searchResults.length > 0" 
-                                     x-transition
-                                     x-cloak
-                                     class="absolute left-0 right-0 mt-2 bg-surface border border-outline-variant/50 rounded-2xl shadow-2xl z-[200] max-h-60 overflow-y-auto custom-scrollbar">
-                                    <template x-for="item in searchResults" :key="item.place_id">
-                                        <div @click="selectLocation(item)" 
-                                             class="px-5 py-3 hover:bg-primary/5 hover:text-primary cursor-pointer font-bold text-xs border-b border-outline-variant/30 transition-colors last:border-b-0"
-                                             x-text="item.display_name">
-                                        </div>
-                                    </template>
                                 </div>
                             </div>
 
