@@ -2,11 +2,14 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
 
 class Doctor extends Model
 {
+    use HasFactory;
+
     protected $fillable = [
         'user_id',
         'clinic_id',

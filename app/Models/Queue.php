@@ -3,10 +3,13 @@
 namespace App\Models;
 
 use App\Enums\QueueStatus;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class Queue extends Model
 {
+    use HasFactory;
+
     protected $fillable = [
         'appointment_id',
         'token_number',
