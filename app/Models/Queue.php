@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\QueueStatus;
 use Illuminate\Database\Eloquent\Model;
 
 class Queue extends Model
@@ -11,6 +12,11 @@ class Queue extends Model
         'token_number',
         'status',
         'called_at',
+    ];
+
+    protected $casts = [
+        'called_at' => 'datetime',
+        'status' => QueueStatus::class,
     ];
 
     public function appointment()

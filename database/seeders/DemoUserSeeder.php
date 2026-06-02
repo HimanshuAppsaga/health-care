@@ -53,12 +53,9 @@ class DemoUserSeeder extends Seeder
                     'name' => $userData['name'],
                     'phone' => $userData['phone'], // ✅ FIX HERE
                     'password' => 'password',
+                    'role_id' => $role->id,
                 ]
             );
-
-            if (! $user->roles()->where('role_id', $role->id)->exists()) {
-                $user->roles()->attach($role);
-            }
         }
     }
 }

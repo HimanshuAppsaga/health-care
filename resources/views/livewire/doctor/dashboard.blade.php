@@ -2,7 +2,7 @@
     <!-- No inline overrides needed, using global app.css theme -->
 
     <!-- Stats Grid -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8 mt-6 px-8">
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8 mt-6 px-4 sm:px-6 lg:px-8">
         <div class="bg-surface p-6 rounded-2xl clinical-shadow border border-outline-variant flex items-center justify-between group hover:border-primary/30 transition-all">
             <div>
                 <p class="text-sm font-medium text-outline mb-1">Total Appointments</p>
@@ -27,7 +27,7 @@
         <div class="bg-surface p-6 rounded-2xl clinical-shadow border border-outline-variant flex items-center justify-between hover:border-tertiary/30 transition-all">
             <div>
                 <p class="text-sm font-medium text-outline mb-1">Pending Patients</p>
-                <h3 class="text-3xl font-black text-tertiary">{{ $waitingCount }}</h3>
+                <h3 class="text-3xl font-black text-tertiary">{{ $pendingArrivals }}</h3>
             </div>
             <div class="w-14 h-14 bg-tertiary-container/20 rounded-2xl flex items-center justify-center text-tertiary">
                 <span class="material-symbols-outlined text-3xl" style="font-variation-settings: 'FILL' 1;">pending_actions</span>
@@ -35,11 +35,11 @@
         </div>
     </div>
 
-    <div class="grid grid-cols-12 gap-8 px-8 pb-12">
+    <div class="grid grid-cols-12 gap-4 sm:gap-6 lg:gap-8 px-4 sm:px-6 lg:px-8 pb-12">
         <!-- Center Column: Live Queue -->
-        <div class="col-span-12 lg:col-span-8 flex flex-col gap-8">
+        <div class="col-span-12 lg:col-span-8 flex flex-col gap-4 sm:gap-6 lg:gap-8">
             <div class="bg-surface rounded-[2rem] clinical-shadow border border-outline-variant overflow-hidden">
-                <div class="p-8 border-b border-outline-variant flex justify-between items-center bg-surface-container-low">
+                <div class="p-4 sm:p-8 border-b border-outline-variant flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-surface-container-low">
                     <h2 class="text-xl font-black flex items-center gap-2">
                         <span class="w-2 h-2 rounded-full {{ $isDoctorOnHold ? 'bg-orange-500' : 'bg-red-500 animate-pulse' }}"></span>
                         Live Queue Manager
@@ -48,17 +48,17 @@
                         @endif
                     </h2>
                     @if($nowServing && $nowServing->appointment && $nowServing->appointment->doctor)
-                        <span class="text-xs font-bold text-outline-variant tracking-widest uppercase">{{ $nowServing->appointment->doctor->user->department ?? 'General Dept' }} • Dr. {{ $nowServing->appointment->doctor->user->name ?? 'Unknown' }}</span>
+                        <span class="text-xs font-bold text-outline-variant tracking-widest uppercase truncate max-w-full">Dr. {{ $nowServing->appointment->doctor->user->name ?? 'Unknown' }}</span>
                     @endif
                 </div>
                 <div class="p-8 flex flex-col items-center justify-center text-center">
                     <p class="text-sm font-bold text-outline-variant uppercase tracking-widest mb-2">Now Serving</p>
                     <div class="relative">
                         <div class="absolute -inset-8 bg-secondary/10 blur-3xl rounded-full"></div>
-                        <div class="relative text-9xl font-black {{ $nowServing && $nowServing->status === 'hold' ? 'text-amber-500' : 'text-secondary' }} tracking-tighter mb-4">
+                        <div class="relative text-9xl font-black {{ $nowServing && $nowServing->status?->value === 'hold' ? 'text-amber-500' : 'text-secondary' }} tracking-tighter mb-4">
                             {{ $nowServing ? $nowServing->token_number : '--' }}
                         </div>
-                        @if($nowServing && $nowServing->status === 'hold')
+                        @if($nowServing && $nowServing->status?->value === 'hold')
                             <div class="absolute top-0 right-0 -mr-12 bg-orange-500 text-white text-xs font-black px-3 py-1 rounded-full shadow-lg animate-bounce">
                                 ON HOLD
                             </div>
@@ -80,7 +80,7 @@
                         @endforelse
                     </div>
                     
-                    <div class="flex gap-4 w-full max-w-2xl">
+                    <div class="flex flex-col sm:flex-row gap-4 w-full max-w-2xl px-4 sm:px-0">
                         <button wire:click="callNextPatient" 
                             @if($nowServing || $isDoctorOnHold) disabled @endif 
                             class="flex-1 py-4 bg-secondary text-white rounded-2xl font-black text-lg clinical-shadow shadow-secondary/30 transition-all flex items-center justify-center gap-2 
@@ -120,12 +120,13 @@
                         <span class="material-symbols-outlined text-sm">arrow_forward</span>
                     </a>
                 </div>
-                <div class="overflow-x-auto">
-                    <table class="w-full text-left">
+                <!-- PC & Tablet View (Table) -->
+                <div class="hidden md:block overflow-x-auto">
+                    <table class="w-full min-w-[600px] text-left">
                         <thead class="bg-surface-container-low/50">
                             <tr>
-                                <th class="px-6 py-4 text-xs font-bold text-outline uppercase tracking-wider">Schedule Time</th>
                                 <th class="px-6 py-4 text-xs font-bold text-outline uppercase tracking-wider">Patient Name</th>
+                                <th class="px-6 py-4 text-xs font-bold text-outline uppercase tracking-wider">Mobile</th>
                                 <th class="px-6 py-4 text-xs font-bold text-outline uppercase tracking-wider">Token</th>
                                 <th class="px-6 py-4 text-xs font-bold text-outline uppercase tracking-wider text-right">Status</th>
                             </tr>
@@ -133,32 +134,14 @@
                         <tbody class="divide-y divide-outline-variant/10">
                             @forelse($todaysAppointments as $appointment)
                             <tr class="hover:bg-primary-container/10 transition-colors">
-                                <td class="px-6 py-4 font-bold text-primary">
-                                    @php
-                                        $session = $doctorSchedules->first(function($s) use ($appointment) {
-                                            return $appointment->start_time >= $s->start_time && $appointment->start_time < $s->end_time;
-                                        });
-                                    @endphp
-                                    <div class="flex items-center gap-2">
-                                        <span class="material-symbols-outlined text-base">schedule</span>
-                                        @if($session)
-                                            {{ \Carbon\Carbon::parse($session->start_time)->format('h:i A') }} - {{ \Carbon\Carbon::parse($session->end_time)->format('h:i A') }}
-                                        @else
-                                            {{ \Carbon\Carbon::parse($appointment->start_time)->format('h:i A') }}
-                                        @endif
-                                    </div>
-                                </td>
                                 <td class="px-6 py-4 font-medium text-on-background">{{ $appointment->name ?? 'Unknown' }}</td>
+                                <td class="px-6 py-4 text-on-surface-variant font-bold">{{ $appointment->phone ?? '--' }}</td>
                                 <td class="px-6 py-4 text-on-surface-variant font-bold">{{ $appointment->token ?? '--' }}</td>
                                 <td class="px-6 py-4 text-right">
-                                    @if($appointment->status === 'confirmed')
-                                        <span class="px-3 py-1 bg-green-100 text-green-700 text-xs font-bold rounded-full">Confirmed</span>
-                                    @elseif($appointment->status === 'pending')
+                                    @if($appointment->status->value === 'pending')
                                         <span class="px-3 py-1 bg-yellow-100 text-yellow-700 text-xs font-bold rounded-full">Pending</span>
-                                    @elseif($appointment->status === 'cancelled')
-                                        <span class="px-3 py-1 bg-red-100 text-red-700 text-xs font-bold rounded-full">Cancelled</span>
                                     @else
-                                        <span class="px-3 py-1 bg-gray-100 text-gray-700 text-xs font-bold rounded-full">{{ ucfirst($appointment->status) }}</span>
+                                        <span class="px-3 py-1 bg-gray-100 text-gray-700 text-xs font-bold rounded-full">{{ ucfirst($appointment->status->value) }}</span>
                                     @endif
                                 </td>
                             </tr>
@@ -170,6 +153,54 @@
                         </tbody>
                     </table>
                 </div>
+
+                <!-- Mobile View (Cards) -->
+                <div class="block md:hidden space-y-4 p-4">
+                    @forelse($todaysAppointments as $appointment)
+                    <div class="bg-surface p-5 rounded-2xl border border-outline-variant hover:border-primary/30 transition-all flex flex-col gap-3 relative overflow-hidden">
+                        <!-- Left Status Accent Bar -->
+                        <div class="absolute left-0 top-0 bottom-0 w-1.5 {{ $appointment->status->value === 'pending' ? 'bg-amber-500' : 'bg-primary' }}"></div>
+                        
+                        <div class="flex justify-between items-start pl-2">
+                            <div>
+                                <p class="text-xs font-black text-outline uppercase tracking-widest mb-1">Patient Name</p>
+                                <h4 class="text-base font-bold text-on-background">{{ $appointment->name ?? 'Unknown' }}</h4>
+                            </div>
+                            <div>
+                                <span class="inline-block px-3 py-1 bg-surface-container-low text-on-surface-variant rounded-lg font-black text-xs border border-outline-variant">
+                                    Token #{{ $appointment->token ?? '--' }}
+                                </span>
+                            </div>
+                        </div>
+                        
+                        <div class="flex justify-between items-center pl-2 pt-2 border-t border-outline-variant/10">
+                            <div>
+                                <p class="text-[10px] font-black text-outline uppercase tracking-widest mb-0.5">Mobile</p>
+                                @if($appointment->phone)
+                                    <a href="tel:{{ $appointment->phone }}" class="text-sm font-bold text-primary hover:underline flex items-center gap-1">
+                                        <span class="material-symbols-outlined text-xs">phone</span>
+                                        {{ $appointment->phone }}
+                                    </a>
+                                @else
+                                    <span class="text-sm font-bold text-on-surface-variant">--</span>
+                                @endif
+                            </div>
+                            <div>
+                                <p class="text-[10px] font-black text-outline uppercase tracking-widest mb-0.5 text-right">Status</p>
+                                @if($appointment->status->value === 'pending')
+                                    <span class="px-3 py-1 bg-yellow-100 text-yellow-700 text-xs font-bold rounded-full">Pending</span>
+                                @else
+                                    <span class="px-3 py-1 bg-gray-100 text-gray-700 text-xs font-bold rounded-full">{{ ucfirst($appointment->status->value) }}</span>
+                                @endif
+                            </div>
+                        </div>
+                    </div>
+                    @empty
+                    <div class="py-8 text-center text-outline font-medium bg-surface rounded-2xl border border-outline-variant">
+                        No appointments for today.
+                    </div>
+                    @endforelse
+                </div>
             </div>
         </div>
 
@@ -179,7 +210,7 @@
                 <h3 class="text-lg font-black text-on-background mb-6">Quick Actions</h3>
                 <div class="space-y-4">
                     
-                    <a href="{{ route('doctor.schedule') }}" wire:navigate class="w-full flex items-center gap-4 p-4 rounded-2xl bg-primary-container/20 text-primary font-bold hover:bg-primary hover:text-on-primary transition-all group">
+                    <a href="{{ route('doctor.profile.edit', auth()->user()->doctor?->id ?? 0) }}" wire:navigate class="w-full flex items-center gap-4 p-4 rounded-2xl bg-primary-container/20 text-primary font-bold hover:bg-primary hover:text-on-primary transition-all group">
                         <div class="w-10 h-10 rounded-xl bg-surface flex items-center justify-center group-hover:bg-primary/20">
                             <span class="material-symbols-outlined">calendar_month</span>
                         </div>
@@ -197,11 +228,22 @@
                 </div>
                 <div class="space-y-4">
                     @forelse($doctorSchedules as $schedule)
-                        <div class="p-4 rounded-xl bg-surface-container-low border border-outline-variant/30 group hover:border-primary/30 transition-all">
-                            <div class="flex items-center gap-3">
-                                <div class="flex items-center gap-2 text-outline text-sm font-bold">
-                                    <span class="material-symbols-outlined text-base">schedule</span>
-                                    <span>{{ \Carbon\Carbon::parse($schedule->start_time)->format('h:i A') }} - {{ \Carbon\Carbon::parse($schedule->end_time)->format('h:i A') }}</span>
+                        <div class="p-4 rounded-xl {{ $schedule->status === 'active' ? 'bg-primary/5 border-primary/30 ring-1 ring-primary/20' : 'bg-surface-container-low border-outline-variant/30' }} border group transition-all relative overflow-hidden">
+                            @if($schedule->status === 'active')
+                                <div class="absolute top-0 right-0 w-16 h-16 bg-primary/5 blur-xl rounded-full -mr-8 -mt-8"></div>
+                            @endif
+                            
+                            <div class="flex items-center justify-between gap-3 relative">
+                                <div class="flex items-center gap-3 text-on-background text-sm font-bold">
+                                    <span class="material-symbols-outlined text-base {{ $schedule->status === 'active' ? 'text-primary' : 'text-outline' }}">schedule</span>
+                                    <span class="{{ $schedule->status === 'active' ? 'text-primary' : '' }}">{{ $schedule->start_time }} - {{ $schedule->end_time }}</span>
+                                </div>
+                                
+                                <div class="flex items-center gap-2">
+                                    <span class="w-1.5 h-1.5 rounded-full {{ $schedule->status === 'active' ? 'bg-green-500 animate-pulse' : ($schedule->status === 'pending' ? 'bg-amber-500' : 'bg-outline-variant') }}"></span>
+                                    <span class="text-[10px] font-black uppercase tracking-widest {{ $schedule->status === 'active' ? 'text-green-600' : ($schedule->status === 'pending' ? 'text-amber-600' : 'text-outline') }}">
+                                        {{ $schedule->status }}
+                                    </span>
                                 </div>
                             </div>
                         </div>
@@ -209,7 +251,7 @@
                         <div class="py-8 text-center text-outline-variant">
                             <span class="material-symbols-outlined text-4xl mb-2 block">event_busy</span>
                             <p class="text-xs font-bold uppercase tracking-widest">No schedule for today</p>
-                            <a href="{{ route('doctor.schedule') }}" class="text-primary text-xs font-bold hover:underline mt-2 inline-block">Create Schedule</a>
+                            <a href="{{ route('doctor.profile.edit', auth()->user()->doctor?->id ?? 0) }}" wire:navigate class="text-primary text-xs font-bold hover:underline mt-2 inline-block">Create Schedule</a>
                         </div>
                     @endforelse
                 </div>

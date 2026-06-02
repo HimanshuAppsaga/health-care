@@ -24,7 +24,7 @@ class LoginRedirectionTest extends TestCase
     public function test_receptionist_is_redirected_to_receptionist_dashboard(): void
     {
         $user = User::factory()->create();
-        $user->roles()->attach(Role::where('name', 'receptionist')->first());
+        $user->update(['role_id' => Role::where('name', 'receptionist')->first()->id]);
 
         Livewire::test(Login::class)
             ->set('email', $user->email)
@@ -36,7 +36,7 @@ class LoginRedirectionTest extends TestCase
     public function test_patient_is_redirected_to_patient_dashboard(): void
     {
         $user = User::factory()->create();
-        $user->roles()->attach(Role::where('name', 'patient')->first());
+        $user->update(['role_id' => Role::where('name', 'patient')->first()->id]);
 
         Livewire::test(Login::class)
             ->set('email', $user->email)
@@ -48,10 +48,20 @@ class LoginRedirectionTest extends TestCase
     public function test_authenticated_receptionist_visiting_login_is_redirected(): void
     {
         $user = User::factory()->create();
-        $user->roles()->attach(Role::where('name', 'receptionist')->first());
+        $user->update(['role_id' => Role::where('name', 'receptionist')->first()->id]);
 
         $response = $this->actingAs($user)->get(route('login'));
 
         $response->assertRedirect(route('receptionist.dashboard'));
+    }
+
+    public function test_authenticated_patient_visiting_appointments_is_redirected(): void
+    {
+        $user = User::factory()->create();
+        $user->update(['role_id' => Role::where('name', 'patient')->first()->id]);
+
+        $response = $this->actingAs($user)->get(route('appointments.index'));
+
+        $response->assertRedirect(route('patient.dashboard'));
     }
 }

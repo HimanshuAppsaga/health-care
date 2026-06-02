@@ -2,21 +2,27 @@
 
 namespace App\Livewire\Receptionist;
 
-use App\Events\QueueUpdated;
-use App\Models\Appointment as AppointmentModel;
 use App\Models\Clinic;
 use App\Models\Doctor;
-use App\Models\DoctorSchedule;
 use App\Models\Patient;
-use App\Models\Queue;
+use App\Services\AppointmentBookingService;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
+use Livewire\Attributes\Layout;
+use Livewire\Attributes\Title;
 use Livewire\Component;
 
+#[Layout('components.layouts.app')]
+#[Title('Book Appointment | ClinicOS')]
 class Appointment extends Component
 {
+    protected AppointmentBookingService $bookingService;
+
+    public function boot(AppointmentBookingService $bookingService)
+    {
+        $this->bookingService = $bookingService;
+    }
+
     public $step = 1;
 
     // Selection properties
@@ -45,6 +51,10 @@ class Appointment extends Component
 
     public $availableSlots = [];
 
+    public $bookingAllowed = true;
+
+    public $bookingMessage = '';
+
     // Summary
     public $selectedClinic;
 
@@ -58,8 +68,11 @@ class Appointment extends Component
 
     public function getListeners()
     {
+        $clinicId = $this->selectedClinicId ?: Clinic::first()?->id ?: 1;
+        $apiKey = Clinic::where('id', $clinicId)->value('api_key') ?: '1';
+
         return [
-            'echo:schedule-updates.1,ScheduleUpdated' => 'generateSlots',
+            "echo:schedule-updates.{$apiKey},ScheduleUpdated" => 'generateSlots',
         ];
     }
 
@@ -79,31 +92,23 @@ class Appointment extends Component
                 $this->phone = $patient->phone;
             }
 
-            $this->doctors = Doctor::whereHas('user')->get();
+            $this->doctors = Doctor::activeDoctor()->get();
 
             // Try to pick a doctor who has a schedule today
             $dayOfWeek = Carbon::today()->dayOfWeek;
-            $this->selectedDoctorId = Doctor::whereHas('schedules', function ($query) use ($dayOfWeek) {
-                $query->where('day_of_week', $dayOfWeek);
-            })->first()?->id;
+            $dayNames = [
+                0 => 'sunday', 1 => 'monday', 2 => 'tuesday', 3 => 'wednesday',
+                4 => 'thursday', 5 => 'friday', 6 => 'saturday',
+            ];
+            $dayName = $dayNames[$dayOfWeek];
 
-            // Fallback to first doctor if no one has a schedule today
-            if (! $this->selectedDoctorId) {
-                $this->selectedDoctorId = $this->doctors->first()?->id;
-            }
-
-            if ($this->selectedDoctorId) {
-                $this->selectedDoctor = Doctor::with('user')->find($this->selectedDoctorId);
-                $this->fee = $this->selectedDoctor->consultation_fee;
-                $this->updateTotal();
-                $this->generateSlots();
-            }
+            $this->selectedDoctorId = '';
         }
     }
 
     public function updatedSelectedClinicId($value)
     {
-        $this->doctors = Doctor::whereHas('user')
+        $this->doctors = Doctor::activeDoctor()
             ->get();
 
         $this->selectedDoctorId = null;
@@ -138,36 +143,41 @@ class Appointment extends Component
         // Doctors can still be booked even if they are temporarily pausing their current session.
 
         $date = Carbon::parse($this->selectedDate);
-        $dayOfWeek = $date->dayOfWeek; // 0 (Sun) to 6 (Sat)
+        $doctor = Doctor::find($this->selectedDoctorId);
 
-        $schedules = DoctorSchedule::where('doctor_id', $this->selectedDoctorId)
-            ->where('day_of_week', $dayOfWeek)
-            ->get();
-
-        if ($schedules->isEmpty()) {
+        if (! $doctor) {
             return;
         }
 
+        // Check booking status using reusable logic
+        $status = $this->bookingService->checkBookingStatus($doctor, $date);
+        $this->bookingAllowed = $status['allowed'];
+        $this->bookingMessage = $status['message'];
+
+        if (! $this->bookingAllowed) {
+            $this->availableSlots = [];
+            $this->selectedSlot = null;
+
+            return;
+        }
+
+        $dayOfWeek = $date->dayOfWeek;
+        $schedules = $doctor->getScheduleForDay($dayOfWeek);
+
         foreach ($schedules as $schedule) {
 
-            $start = Carbon::createFromFormat('H:i:s', $schedule->start_time);
-            $end = Carbon::createFromFormat('H:i:s', $schedule->end_time);
-            $duration = $schedule->slot_duration ?: 30;
+            $start = Carbon::createFromFormat('H:i:s', $schedule['start_time']);
+            $end = Carbon::createFromFormat('H:i:s', $schedule['end_time']);
+            $duration = $schedule['slot_duration'] ?? 15;
 
             // If the schedule hasn't started yet today, don't allow bookings
             if ($this->selectedDate === Carbon::today()->format('Y-m-d') && now()->isBefore($start)) {
                 continue;
             }
 
-            // Fetch booked slots for this specific schedule to avoid overlapping
-            $bookedSlotsForSchedule = AppointmentModel::where('doctor_id', $this->selectedDoctorId)
-                ->where('appointment_date', $this->selectedDate)
-                ->whereIn('status', ['pending', 'confirmed'])
-                ->whereTime('start_time', '>=', $schedule->start_time)
-                ->whereTime('start_time', '<', $schedule->end_time)
-                ->pluck('start_time')
-                ->map(fn ($time) => Carbon::parse($time)->format('H:i'))
-                ->toArray();
+            // Note: Since we moved to a token-based system, we no longer store start_time in appointments.
+            // We can show all slots available in the doctor's schedule, or limit by max_patients if needed.
+            $bookedSlotsForSchedule = [];
 
             while ($start->copy()->addMinutes($duration)->lte($end)) {
                 $timeSlot = $start->format('H:i');
@@ -240,7 +250,19 @@ class Appointment extends Component
         } elseif ($this->step == 4) {
             $this->validate([
                 'name' => 'required|string|max:191',
-                'phone' => 'required|string|max:20',
+                'phone' => [
+                    'required',
+                    'digits:10',
+                    function ($attribute, $value, $fail) {
+                        $exists = \App\Models\Appointment::where('phone', $value)
+                            ->where('created_at', '>=', now()->subHours(24))
+                            ->exists();
+
+                        if ($exists) {
+                            $fail('appointment is already booked With This Number.');
+                        }
+                    },
+                ],
                 'reason' => 'required',
             ]);
         }
@@ -249,131 +271,78 @@ class Appointment extends Component
     public function bookAppointment()
     {
         $this->validate([
+            'selectedDoctorId' => 'required',
             'name' => 'required|string|max:191',
-            'phone' => 'required|string|max:20',
-            'selectedSlot' => 'required',
+            'phone' => [
+                'required',
+                'digits:10',
+                function ($attribute, $value, $fail) {
+                    $exists = \App\Models\Appointment::where('phone', $value)
+                        ->where('created_at', '>=', now()->subHours(24))
+                        ->exists();
+
+                    if ($exists) {
+                        $fail('appointment is already booked With This Number.');
+                    }
+                },
+            ],
+        ], [
+            'selectedDoctorId.required' => 'Please select a doctor.',
         ]);
 
-        // Double check slot availability
-        if (! in_array($this->selectedSlot, $this->availableSlots)) {
-            $this->generateSlots(); // Refresh slots
-            if (! in_array($this->selectedSlot, $this->availableSlots)) {
-                session()->flash('error', 'Selected slot is no longer available. Please pick another one.');
 
-                return;
-            }
-        }
 
-        try {
-            return DB::transaction(function () {
-                // Ensure doctor is selected
-                if (! $this->selectedDoctorId) {
-                    $this->selectedDoctorId = Doctor::whereHas('user')->first()?->id;
-                }
+        $data = [
+            'doctor_id' => $this->selectedDoctorId,
+            'clinic_id' => $this->selectedClinicId,
+            'name' => $this->name,
+            'phone' => $this->phone,
+            'appointment_date' => $this->selectedDate,
+        ];
 
-                if (! $this->selectedDoctorId) {
-                    session()->flash('error', 'No doctor available to assign this appointment.');
+        $result = $this->bookingService->bookAppointment($data, Auth::user());
 
-                    return;
-                }
-
-                if (empty($this->selectedClinicId)) {
-                    $doctor = Doctor::find($this->selectedDoctorId);
-                    $this->selectedClinicId = $doctor?->clinic_id ?? Clinic::firstOrCreate(
-                        ['name' => 'Default Clinic'],
-                        ['address' => 'Main Street']
-                    )->id;
-                }
-
-                // Find or create patient record by phone
-                $patient = Patient::where('phone', $this->phone)->first();
-
-                if (! $patient) {
-                    $user = Auth::user();
-                    $patient = Patient::create([
-                        'clinic_id' => $this->selectedClinicId,
-                        'user_id' => $user?->id,
-                        'name' => $this->name,
-                        'email' => $user?->email ?? 'guest@example.com',
-                        'phone' => $this->phone,
-                        'dob' => '1990-01-01',
-                        'gender' => 'other',
-                    ]);
-                } else {
-                    // Update patient details if changed
-                    $patient->update([
-                        'name' => $this->name,
-                        'user_id' => $patient->user_id ?? Auth::id(),
-                    ]);
-                }
-
-                // Generate simple sequential token number for the day
-                $tokenNumber = Queue::whereDate('created_at', Carbon::today())->count() + 1;
-
-                $appointment = AppointmentModel::create([
-                    'clinic_id' => $this->selectedClinicId,
-                    'doctor_id' => $this->selectedDoctorId,
-                    'patient_id' => $patient->id,
-                    'name' => $this->name,
-                    'phone' => $this->phone,
-                    'token' => $tokenNumber,
-                    'appointment_date' => $this->selectedDate ?? Carbon::today()->format('Y-m-d'),
-                    'start_time' => $this->selectedSlot ?? '09:00',
-                    'end_time' => Carbon::parse($this->selectedSlot ?? '09:00')->addMinutes(30)->format('H:i'), // Default 30 min
-                    'status' => 'pending',
-                    'notes' => ($this->reason ?? 'Checkup').($this->notes ? "\n".$this->notes : ''),
-                ]);
-
-                Queue::create([
-                    'appointment_id' => $appointment->id,
-                    'token_number' => $tokenNumber,
-                    'status' => 'waiting',
-                ]);
-
-                $this->generatedToken = $tokenNumber;
-
-                Log::info('Appointment booked successfully', [
-                    'appointment_id' => $appointment->id,
-                    'token' => $tokenNumber,
-                    'patient' => $this->name,
-                ]);
-
-                session()->flash('message', 'Appointment booked successfully! Your Token: '.$tokenNumber);
-
-                $this->generateSlots(); // Refresh slots for next booking
-
-                broadcast(new QueueUpdated(1, 'booked'))->toOthers();
-            });
-        } catch (\Exception $e) {
-            Log::error('Failed to book appointment: '.$e->getMessage(), [
-                'name' => $this->name,
-                'phone' => $this->phone,
-                'trace' => $e->getTraceAsString(),
-            ]);
-
-            session()->flash('error', 'Something went wrong while booking the appointment. Please try again.');
+        if ($result['success']) {
+            $this->generatedToken = $result['data']['token'];
+            session()->flash('message', $result['message'].' Your Token: '.$result['data']['token']);
+        } else {
+            session()->flash('error', $result['message']);
         }
     }
 
     public function getSelectedSessionProperty()
     {
-        if (! $this->selectedSlot || ! $this->selectedDoctorId) {
+        if (! $this->selectedSlot || ! $this->selectedDoctorId || ! $this->selectedDate) {
             return null;
         }
 
-        $slotTime = Carbon::parse($this->selectedSlot)->format('H:i:s');
-        $dayOfWeek = Carbon::parse($this->selectedDate)->dayOfWeek;
+        $date = Carbon::parse($this->selectedDate);
+        $dayOfWeek = $date->dayOfWeek;
+        $dayNames = [
+            0 => 'sunday', 1 => 'monday', 2 => 'tuesday', 3 => 'wednesday',
+            4 => 'thursday', 5 => 'friday', 6 => 'saturday',
+        ];
+        $dayName = $dayNames[$dayOfWeek];
 
-        return DoctorSchedule::where('doctor_id', $this->selectedDoctorId)
-            ->where('day_of_week', $dayOfWeek)
-            ->whereTime('start_time', '<=', $slotTime)
-            ->whereTime('end_time', '>', $slotTime)
-            ->first();
+        $doctor = Doctor::find($this->selectedDoctorId);
+        if (! $doctor) {
+            return null;
+        }
+
+        $sessions = $doctor->getScheduleForDay($dayOfWeek);
+        $slotTime = Carbon::createFromFormat('H:i', $this->selectedSlot)->format('H:i:s');
+
+        foreach ($sessions as $session) {
+            if ($session['start_time'] <= $slotTime && $session['end_time'] > $slotTime) {
+                return (object) $session;
+            }
+        }
+
+        return null;
     }
 
     public function render()
     {
-        return view('livewire.receptionist.appointment')
-            ->layout('components.layouts.app');
+        return view('livewire.receptionist.appointment');
     }
 }

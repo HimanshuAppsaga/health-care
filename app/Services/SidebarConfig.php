@@ -6,12 +6,15 @@ class SidebarConfig
 {
     public static function getMenuForRole(string $role): array
     {
+        $user = auth()->user();
+        $clinicId = $user?->doctor?->clinic_id ?? ($user?->receptionist?->clinic_id ?? 0);
+
         $config = [
             'doctor' => [
                 'Medical' => [
                     ['name' => 'Dashboard', 'route' => 'doctor.dashboard', 'icon' => 'layout-dashboard'],
                     ['name' => 'Appointments', 'route' => 'appointments.index', 'icon' => 'calendar'],
-                    ['name' => 'Schedule', 'route' => 'doctor.schedule', 'icon' => 'clock'],
+                    ['name' => 'Assign Role', 'route' => 'doctor.assign-role', 'icon' => 'shield-check'],
                 ],
             ],
             'receptionist' => [
@@ -24,9 +27,6 @@ class SidebarConfig
             'patient' => [
                 'Medical' => [
                     ['name' => 'Dashboard', 'route' => 'patient.dashboard', 'icon' => 'layout-dashboard'],
-                    ['name' => 'Appointments', 'route' => 'appointments.index', 'icon' => 'calendar-days'],
-                    ['name' => 'Book Appointment', 'route' => 'patient.book-appointment', 'icon' => 'calendar'],
-                    ['name' => 'Medical Records', 'route' => 'patient.records', 'icon' => 'folder-medical'],
                 ],
             ],
         ];

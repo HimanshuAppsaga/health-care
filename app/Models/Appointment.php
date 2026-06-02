@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\AppointmentStatus;
 use Illuminate\Database\Eloquent\Model;
 
 class Appointment extends Model
@@ -11,13 +12,14 @@ class Appointment extends Model
         'doctor_id',
         'patient_id',
         'appointment_date',
-        'start_time',
-        'end_time',
         'status',
-        'notes',
         'name',
         'phone',
         'token',
+    ];
+
+    protected $casts = [
+        'status' => AppointmentStatus::class,
     ];
 
     public function doctor()

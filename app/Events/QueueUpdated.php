@@ -2,10 +2,9 @@
 
 namespace App\Events;
 
+use App\Models\Clinic;
 use Illuminate\Broadcasting\Channel;
 use Illuminate\Broadcasting\InteractsWithSockets;
-use Illuminate\Broadcasting\PresenceChannel;
-use Illuminate\Broadcasting\PrivateChannel;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
@@ -21,8 +20,10 @@ class QueueUpdated implements ShouldBroadcast
 
     public function broadcastOn(): array
     {
+        $apiKey = Clinic::where('id', $this->clinicId)->value('api_key') ?: $this->clinicId;
+
         return [
-            new Channel('queue-updates.' . $this->clinicId),
+            new Channel('queue-updates.'.$apiKey),
         ];
     }
 

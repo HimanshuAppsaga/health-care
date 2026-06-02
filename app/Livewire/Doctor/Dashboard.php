@@ -2,10 +2,15 @@
 
 namespace App\Livewire\Doctor;
 
+use App\Enums\QueueStatus;
 use App\Events\QueueUpdated;
 use App\Models\Appointment;
-use App\Models\DoctorSchedule;
 use App\Models\Queue;
+use App\Services\CallNextTokenService;
+use App\Services\CurrentTokenService;
+use App\Services\QueueService;
+use App\Services\ScheduleService;
+use App\Services\TokenTransferService;
 use Carbon\Carbon;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
@@ -15,6 +20,26 @@ use Livewire\Component;
 #[Title('Doctor Dashboard | ClinicOS')]
 class Dashboard extends Component
 {
+    protected $currentTokenService;
+
+    protected $callNextTokenService;
+
+    protected $tokenTransferService;
+
+    protected $scheduleService;
+
+    public function boot(
+        CurrentTokenService $currentTokenService,
+        CallNextTokenService $callNextTokenService,
+        TokenTransferService $tokenTransferService,
+        ScheduleService $scheduleService
+    ) {
+        $this->currentTokenService = $currentTokenService;
+        $this->callNextTokenService = $callNextTokenService;
+        $this->tokenTransferService = $tokenTransferService;
+        $this->scheduleService = $scheduleService;
+    }
+
     public bool $isDoctorOnHold = false;
 
     public $lastTokenNumber;
@@ -23,11 +48,13 @@ class Dashboard extends Component
 
     public function getListeners()
     {
-        $clinicId = 1;
+        $user = auth()->user();
+        $doctor = $user ? $user->ensureDoctorProfileExists() : null;
+        $apiKey = $doctor?->clinic?->api_key ?: '1';
 
         return [
-            "echo:queue-updates.{$clinicId},QueueUpdated" => '$refresh',
-            "echo:schedule-updates.{$clinicId},ScheduleUpdated" => '$refresh',
+            "echo:queue-updates.{$apiKey},QueueUpdated" => '$refresh',
+            "echo:schedule-updates.{$apiKey},ScheduleUpdated" => '$refresh',
         ];
     }
 
@@ -38,15 +65,9 @@ class Dashboard extends Component
 
         $this->isDoctorOnHold = $doctor ? (bool) $doctor->is_on_hold : false;
 
-        $today = Carbon::today();
-        $doctorId = $doctor->id ?? 0;
-
-        $nowServing = Queue::whereHas('appointment', function ($query) use ($doctorId, $today) {
-            $query->where('doctor_id', $doctorId)
-                ->whereDate('appointment_date', $today);
-        })
-            ->whereIn('status', ['serving', 'hold'])
-            ->first();
+        $doctorId = $doctor?->id ?? 0;
+        $result = $this->currentTokenService->getCurrentToken($doctor?->clinic_id ?? null, $doctorId);
+        $nowServing = $result['data']['current_token'];
 
         $this->lastTokenNumber = $nowServing ? $nowServing->token_number : null;
         $this->lastStatus = $nowServing ? $nowServing->status : null;
@@ -58,31 +79,11 @@ class Dashboard extends Component
             return;
         }
 
-        $today = Carbon::today();
         $doctor = auth()->user()->doctor;
-        $doctorId = $doctor->id ?? 0;
+        $clinicId = $doctor?->clinic_id ?? 1;
+        $doctorId = $doctor?->id ?? 0;
 
-        $current = Queue::whereHas('appointment', function ($query) use ($doctorId, $today) {
-            $query->where('doctor_id', $doctorId)
-                ->whereDate('appointment_date', $today);
-        })->where('status', 'serving')->first();
-
-        if ($current) {
-            $current->update(['status' => 'completed']);
-        }
-
-        $next = Queue::whereHas('appointment', function ($query) use ($doctorId, $today) {
-            $query->where('doctor_id', $doctorId)
-                ->whereDate('appointment_date', $today);
-        })
-            ->where('status', 'waiting')
-            ->orderByRaw('CAST(token_number AS UNSIGNED) ASC')
-            ->first();
-
-        if ($next) {
-            $next->update(['status' => 'serving', 'called_at' => now()]);
-            broadcast(new QueueUpdated(1, 'next'))->toOthers();
-        }
+        $this->callNextTokenService->callNextToken($clinicId, $doctorId);
     }
 
     public function markAsDone()
@@ -93,19 +94,15 @@ class Dashboard extends Component
 
         $today = Carbon::today();
         $doctor = auth()->user()->doctor;
-        $doctorId = $doctor->id ?? 0;
+        $doctorId = $doctor?->id ?? 0;
 
         $current = Queue::whereHas('appointment', function ($query) use ($doctorId, $today) {
             $query->where('doctor_id', $doctorId)
                 ->whereDate('appointment_date', $today);
-        })->whereIn('status', ['serving', 'hold'])->first();
+        })->whereIn('status', [QueueStatus::SERVING->value, QueueStatus::HOLD->value])->first();
 
         if ($current) {
-            $current->update(['status' => 'completed']);
-            if ($current->appointment) {
-                $current->appointment->update(['status' => 'completed']);
-            }
-            broadcast(new QueueUpdated(1, 'completed'))->toOthers();
+            app(QueueService::class)->markAsDone($current->appointment_id, $doctor?->clinic_id ?? 1);
         }
     }
 
@@ -119,18 +116,25 @@ class Dashboard extends Component
             // If toggling hold while serving, also update the queue status for better reflection
             $today = Carbon::today();
             $doctorId = $doctor->id;
+            $clinicId = $doctor->clinic_id ?? 1;
 
             $current = Queue::whereHas('appointment', function ($query) use ($doctorId, $today) {
                 $query->where('doctor_id', $doctorId)
                     ->whereDate('appointment_date', $today);
             })
-                ->whereIn('status', ['serving', 'hold'])
+                ->whereIn('status', [QueueStatus::SERVING->value, QueueStatus::HOLD->value])
                 ->first();
 
             if ($current) {
-                $current->update(['status' => $this->isDoctorOnHold ? 'hold' : 'serving']);
+                if ($this->isDoctorOnHold) {
+                    app(QueueService::class)->hold($current->appointment_id, $clinicId);
+                } else {
+                    $current->update(['status' => QueueStatus::SERVING->value]);
+                    broadcast(new QueueUpdated($clinicId, 'continue'))->toOthers();
+                }
+            } else {
+                broadcast(new QueueUpdated($clinicId, $this->isDoctorOnHold ? 'hold' : 'continue'))->toOthers();
             }
-            broadcast(new QueueUpdated(1, $this->isDoctorOnHold ? 'hold' : 'continue'))->toOthers();
         }
     }
 
@@ -140,49 +144,21 @@ class Dashboard extends Component
             return;
         }
 
-        $today = Carbon::today();
         $doctor = auth()->user()->doctor;
-        $doctorId = $doctor->id ?? 0;
+        if (! $doctor) {
+            return;
+        }
 
-        $current = Queue::whereHas('appointment', function ($query) use ($doctorId, $today) {
-            $query->where('doctor_id', $doctorId)
-                ->whereDate('appointment_date', $today);
-        })->where('status', 'serving')->first();
+        $clinicId = $doctor->clinic_id ?? 1;
+        $doctorId = $doctor->id;
+        $depth = $doctor->clinic->transfer_depth ?? 6;
 
-        if ($current) {
-            $currentTokenNum = (int) $current->token_number;
-            $newTokenStr = (string) ($currentTokenNum + 6);
+        $result = $this->tokenTransferService->transferToken($clinicId, $doctorId, $depth);
 
-            // Shift the next 6 tokens down by 1
-            $nextTokensToShift = Queue::whereHas('appointment', function ($query) use ($doctorId, $today) {
-                $query->where('doctor_id', $doctorId)
-                    ->whereDate('appointment_date', $today);
-            })
-                ->where('status', 'waiting')
-                ->whereRaw('CAST(token_number AS UNSIGNED) > ?', [$currentTokenNum])
-                ->orderByRaw('CAST(token_number AS UNSIGNED) ASC')
-                ->take(6)
-                ->get();
-
-            foreach ($nextTokensToShift as $q) {
-                $num = (int) $q->token_number;
-                $newNumStr = (string) ($num - 1);
-                $q->update(['token_number' => $newNumStr]);
-                if ($q->appointment) {
-                    $q->appointment->update(['token' => $newNumStr]);
-                }
-            }
-
-            // Update the transferred token
-            $current->update([
-                'token_number' => $newTokenStr,
-                'status' => 'waiting',
-            ]);
-
-            if ($current->appointment) {
-                $current->appointment->update(['token' => $newTokenStr]);
-            }
-            broadcast(new QueueUpdated(1, 'transfer'))->toOthers();
+        if ($result['success']) {
+            $this->dispatch('notify', type: 'success', message: $result['message']);
+        } else {
+            $this->dispatch('notify', type: 'error', message: $result['message']);
         }
     }
 
@@ -190,7 +166,7 @@ class Dashboard extends Component
     {
         $today = Carbon::today();
         $doctor = auth()->user()->doctor;
-        $doctorId = $doctor->id ?? 0;
+        $doctorId = $doctor?->id ?? 0;
 
         $totalAppointments = Appointment::where('doctor_id', $doctorId)
             ->whereDate('appointment_date', $today)
@@ -205,7 +181,7 @@ class Dashboard extends Component
 
         $pendingArrivals = Appointment::where('doctor_id', $doctorId)
             ->whereDate('appointment_date', $today)
-            ->where('status', 'confirmed')
+            ->where('status', 'pending')
             ->count();
 
         $completedToday = Appointment::where('doctor_id', $doctorId)
@@ -215,13 +191,8 @@ class Dashboard extends Component
 
         $revenueToday = 0;
 
-        $nowServing = Queue::with('appointment')
-            ->whereHas('appointment', function ($query) use ($doctorId, $today) {
-                $query->where('doctor_id', $doctorId)
-                    ->whereDate('appointment_date', $today);
-            })
-            ->whereIn('status', ['serving', 'hold'])
-            ->first();
+        $result = $this->currentTokenService->getCurrentToken($doctor?->clinic_id ?? null, $doctorId);
+        $nowServing = $result['data']['current_token'];
 
         $currentStatus = $nowServing ? $nowServing->status : null;
         $currentToken = $nowServing ? $nowServing->token_number : null;
@@ -238,9 +209,9 @@ class Dashboard extends Component
             $this->lastTokenNumber = $currentToken;
             $this->lastStatus = $currentStatus;
         } elseif ($this->lastStatus !== $currentStatus) {
-            if ($currentStatus === 'hold' || $currentStatus === 'serving') {
+            if ($currentStatus?->value === 'hold' || $currentStatus?->value === 'serving') {
                 $shouldNotify = true;
-                $reason = $currentStatus === 'hold' ? 'hold' : 'continue';
+                $reason = $currentStatus?->value === 'hold' ? 'hold' : 'continue';
             }
             $this->lastStatus = $currentStatus;
         }
@@ -262,7 +233,7 @@ class Dashboard extends Component
         $todaysAppointments = Appointment::with(['doctor.user'])
             ->where('doctor_id', $doctorId)
             ->whereDate('appointment_date', $today)
-            ->orderBy('start_time', 'asc')
+            ->orderByRaw('CAST(token AS UNSIGNED) ASC')
             ->get();
 
         $waitingCount = Queue::whereHas('appointment', function ($query) use ($doctorId, $today) {
@@ -274,19 +245,9 @@ class Dashboard extends Component
 
         $isDoctorOnHold = $this->isDoctorOnHold;
 
-        $doctorSchedules = DoctorSchedule::where('doctor_id', $doctorId)
-            ->where('day_of_week', $today->dayOfWeek)
-            ->orderBy('start_time', 'asc')
-            ->get()
-            ->map(function ($schedule) use ($today) {
-                $schedule->booked_count = Appointment::where('doctor_id', $schedule->doctor_id)
-                    ->whereDate('appointment_date', $today)
-                    ->whereTime('start_time', '>=', $schedule->start_time)
-                    ->whereTime('start_time', '<', $schedule->end_time)
-                    ->count();
+        $isDoctorOnHold = $this->isDoctorOnHold;
 
-                return $schedule;
-            });
+        $doctorSchedules = $this->scheduleService->getTodaySchedules($doctorId);
 
         return view('livewire.doctor.dashboard', [
             'totalAppointments' => $totalAppointments,
@@ -300,6 +261,7 @@ class Dashboard extends Component
             'todaysAppointments' => $todaysAppointments,
             'isDoctorOnHold' => $isDoctorOnHold,
             'doctorSchedules' => $doctorSchedules,
+            'transferDepth' => auth()->user()->doctor?->clinic?->transfer_depth ?? 6,
         ]);
     }
 }

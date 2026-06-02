@@ -2,9 +2,9 @@
 
 namespace App\Livewire\Auth;
 
-use Illuminate\Auth\Events\PasswordReset;
-use Illuminate\Support\Facades\Password;
-use Illuminate\Support\Str;
+use App\Services\AuthenticationService;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Validation\ValidationException;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
 use Livewire\Attributes\Validate;
@@ -19,6 +19,9 @@ class ResetPassword extends Component
     #[Validate('required|email')]
     public string $email = '';
 
+    #[Validate('required|numeric|digits:4')]
+    public string $otp = '';
+
     #[Validate('required|string|min:8|same:password_confirmation')]
     public string $password = '';
 
@@ -30,33 +33,31 @@ class ResetPassword extends Component
         $this->email = request()->query('email', '');
     }
 
-    public function resetPassword()
+    public function resetPassword(AuthenticationService $authService)
     {
         $this->validate();
 
-        $status = Password::reset(
-            [
+        try {
+            $statusMessage = $authService->resetPassword([
                 'token' => $this->token,
                 'email' => $this->email,
+                'otp' => $this->otp,
                 'password' => $this->password,
                 'password_confirmation' => $this->password_confirmation,
-            ],
-            function ($user, $password) {
-                $user->forceFill([
-                    'password' => $password,
-                ])->setRememberToken(Str::random(60))->save();
+            ]);
 
-                event(new PasswordReset($user));
+            session()->flash('status', $statusMessage);
+
+            return $this->redirect(route('login'), navigate: true);
+        } catch (ValidationException $e) {
+            $errors = $e->errors();
+            if (isset($errors['otp'])) {
+                $this->addError('otp', $errors['otp'][0]);
             }
-        );
-
-        if ($status === Password::PASSWORD_RESET) {
-            session()->flash('status', trans($status));
-
-            return redirect()->route('login');
+            if (isset($errors['email'])) {
+                $this->addError('email', $errors['email'][0]);
+            }
         }
-
-        $this->addError('email', trans($status));
     }
 
     public function render()

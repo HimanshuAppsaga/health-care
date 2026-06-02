@@ -20,6 +20,15 @@
                 @error('email') <span class="text-error text-xs font-bold pl-1">{{ $message }}</span> @enderror
             </div>
 
+            <!-- OTP Field -->
+            <div class="space-y-2.5">
+                <label class="block text-[10px] uppercase tracking-widest font-black text-outline pl-1" for="otp">4-Digit Security Code</label>
+                <div class="relative group">
+                    <input wire:model="otp" class="w-full bg-surface-container-low border-transparent focus:border-primary/30 focus:bg-surface focus:ring-4 focus:ring-primary/5 rounded-2xl py-4 px-4 text-sm font-bold text-on-background transition-all placeholder:text-outline-variant/50 outline-none tracking-[0.5em] text-center" id="otp" placeholder="••••" type="text" maxlength="4" autocomplete="off"/>
+                </div>
+                @error('otp') <span class="text-error text-xs font-bold pl-1">{{ $message }}</span> @enderror
+            </div>
+
             <!-- New Password Field -->
             <div class="space-y-2.5">
                 <label class="block text-[10px] uppercase tracking-widest font-black text-outline pl-1" for="new_password">New Password</label>

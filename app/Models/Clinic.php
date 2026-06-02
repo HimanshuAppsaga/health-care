@@ -8,8 +8,42 @@ class Clinic extends Model
 {
     protected $fillable = [
         'name',
+        'description',
         'address',
+        'contact_number',
+        'about_clinic',
+        'latitude',
+        'longitude',
+        'working_hours',
+        'logo',
+        'api_key',
+        'transfer_depth',
     ];
+
+    /**
+     * The attributes that should be hidden for serialization.
+     *
+     * @var array<int, string>
+     */
+    protected $hidden = [
+        'api_key',
+    ];
+
+    protected $casts = [
+        'working_hours' => 'array',
+    ];
+
+    /**
+     * Generate a secure, unique API key for the clinic.
+     */
+    public static function generateUniqueApiKey(): string
+    {
+        do {
+            $key = bin2hex(random_bytes(32)); // 64 characters
+        } while (static::where('api_key', $key)->exists());
+
+        return $key;
+    }
 
     public function doctors()
     {

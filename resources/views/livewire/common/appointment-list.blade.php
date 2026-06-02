@@ -1,19 +1,19 @@
-<div class="p-8">
+<div class="p-4 sm:p-8">
     <!-- Header Section -->
     <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
         <div>
-            <h1 class="text-3xl font-black text-on-background flex items-center gap-3">
-                <span class="w-12 h-12 bg-primary text-on-primary rounded-2xl flex items-center justify-center">
+            <h1 class="text-2xl sm:text-3xl font-black text-on-background flex items-center gap-3">
+                <span class="w-12 h-12 bg-primary text-on-primary rounded-2xl flex items-center justify-center shrink-0">
                     <span class="material-symbols-outlined text-2xl">calendar_month</span>
                 </span>
-                Appointment History
+                <span class="truncate">Appointment History</span>
             </h1>
-            <p class="text-outline font-medium mt-1 ml-15">View and manage all appointments across the clinic</p>
+            <p class="text-outline font-medium mt-1 ml-0 sm:ml-15 text-sm sm:text-base">View and manage all appointments across the clinic</p>
         </div>
         
         <div class="flex items-center gap-3">
-            @if(auth()->user()->hasRole(['receptionist', 'patient']))
-                <a href="{{ auth()->user()->hasRole('receptionist') ? route('receptionist.book-appointment') : route('patient.book-appointment') }}" 
+            @if(auth()->user()->hasRole('receptionist'))
+                <a href="{{ route('receptionist.book-appointment') }}" 
                    wire:navigate
                    class="px-6 py-3 bg-primary text-on-primary rounded-2xl font-black shadow-lg shadow-primary/30 hover:bg-primary-container transition-all flex items-center gap-2">
                     <span class="material-symbols-outlined">add</span>
@@ -86,12 +86,14 @@
 
     <!-- Appointments Table -->
     <div class="bg-surface rounded-[2rem] shadow-clinical border border-outline-variant overflow-hidden">
-        <div class="overflow-x-auto">
-            <table class="w-full text-left border-collapse">
+        <!-- PC & Tablet View (Table) -->
+        <div class="hidden md:block overflow-x-auto">
+            <table class="w-full min-w-[700px] text-left border-collapse">
                 <thead>
                     <tr class="bg-surface-container-low/50">
-                        <th class="px-8 py-6 text-xs font-black text-outline uppercase tracking-widest">Date & Time</th>
+                        <th class="px-8 py-6 text-xs font-black text-outline uppercase tracking-widest">Date</th>
                         <th class="px-8 py-6 text-xs font-black text-outline uppercase tracking-widest">Patient Details</th>
+                        <th class="px-8 py-6 text-xs font-black text-outline uppercase tracking-widest">Doctor</th>
                         <th class="px-8 py-6 text-xs font-black text-outline uppercase tracking-widest">Token</th>
                         <th class="px-8 py-6 text-xs font-black text-outline uppercase tracking-widest">Status</th>
                     </tr>
@@ -102,23 +104,6 @@
                         <td class="px-8 py-6">
                             <div class="flex flex-col">
                                 <span class="font-black text-on-background">{{ \Carbon\Carbon::parse($appointment->appointment_date)->format('M d, Y') }}</span>
-                                <div class="text-xs font-bold text-primary flex items-center gap-1 mt-1">
-                                    <span class="material-symbols-outlined text-xs">schedule</span>
-                                    @php
-                                        $dayOfWeek = \Carbon\Carbon::parse($appointment->appointment_date)->dayOfWeek;
-                                        $session = $schedules->first(function($s) use ($appointment, $dayOfWeek) {
-                                            return $s->doctor_id == $appointment->doctor_id && 
-                                                   $s->day_of_week == $dayOfWeek &&
-                                                   $appointment->start_time >= $s->start_time && 
-                                                   $appointment->start_time < $s->end_time;
-                                        });
-                                    @endphp
-                                    @if($session)
-                                        {{ \Carbon\Carbon::parse($session->start_time)->format('h:i A') }} - {{ \Carbon\Carbon::parse($session->end_time)->format('h:i A') }}
-                                    @else
-                                        {{ \Carbon\Carbon::parse($appointment->start_time)->format('h:i A') }} - {{ \Carbon\Carbon::parse($appointment->end_time)->format('h:i A') }}
-                                    @endif
-                                </div>
                             </div>
                         </td>
                         <td class="px-8 py-6">
@@ -133,6 +118,21 @@
                             </div>
                         </td>
                         <td class="px-8 py-6">
+                            <div class="flex items-center gap-3">
+                                @if($appointment->doctor)
+                                    <div class="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-black border border-primary/20 uppercase">
+                                        {{ substr($appointment->doctor->user->name ?? 'D', 0, 1) }}
+                                    </div>
+                                    <div class="flex flex-col">
+                                        <span class="font-bold text-on-background group-hover:text-primary transition-colors">{{ $appointment->doctor->user->name ?? 'Unknown' }}</span>
+                                        <span class="text-xs text-outline font-medium">{{ $appointment->doctor->specialization ?? 'General' }}</span>
+                                    </div>
+                                @else
+                                    <span class="text-outline">--</span>
+                                @endif
+                            </div>
+                        </td>
+                        <td class="px-8 py-6">
                             <span class="inline-block px-3 py-1 bg-surface-container-low text-on-surface-variant rounded-lg font-black text-sm border border-outline-variant">
                                 {{ $appointment->token ?? '--' }}
                             </span>
@@ -143,16 +143,17 @@
                                     'pending' => 'bg-amber-100 text-amber-700 border-amber-200',
                                     'completed' => 'bg-primary-container/20 text-primary border-primary-container/30',
                                 ];
-                                $class = $statusClasses[$appointment->status] ?? 'bg-surface-container-low text-on-surface-variant border-outline-variant';
+                                $statusValue = $appointment->status->value;
+                                $class = $statusClasses[$statusValue] ?? 'bg-surface-container-low text-on-surface-variant border-outline-variant';
                             @endphp
                             <span class="px-4 py-1.5 {{ $class }} text-[10px] font-black uppercase rounded-full border tracking-widest">
-                                {{ $appointment->status }}
+                                {{ str_replace('_', ' ', $statusValue) }}
                             </span>
                         </td>
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="6" class="px-8 py-16 text-center">
+                        <td colspan="5" class="px-8 py-16 text-center">
                             <div class="flex flex-col items-center justify-center text-outline">
                                 <span class="material-symbols-outlined text-6xl mb-4">event_busy</span>
                                 <p class="text-lg font-black uppercase tracking-widest">No appointments found</p>
@@ -163,6 +164,85 @@
                     @endforelse
                 </tbody>
             </table>
+        </div>
+
+        <!-- Mobile View (Cards) -->
+        <div class="block md:hidden space-y-4 p-4">
+            @forelse($appointments as $appointment)
+            <div class="bg-surface p-5 rounded-2xl border border-outline-variant hover:border-primary/30 transition-all flex flex-col gap-3 relative overflow-hidden">
+                @php
+                    $statusClasses = [
+                        'pending' => 'bg-amber-100 text-amber-700 border-amber-200',
+                        'completed' => 'bg-primary-container/20 text-primary border-primary-container/30',
+                    ];
+                    $statusValue = $appointment->status->value;
+                    $class = $statusClasses[$statusValue] ?? 'bg-surface-container-low text-on-surface-variant border-outline-variant';
+                @endphp
+                
+                <!-- Left Status Accent Bar -->
+                <div class="absolute left-0 top-0 bottom-0 w-1.5 {{ $statusValue === 'pending' ? 'bg-amber-500' : 'bg-primary' }}"></div>
+                
+                <div class="flex justify-between items-start pl-2">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-full bg-surface-container-low flex items-center justify-center text-primary font-black border border-outline-variant uppercase shrink-0 text-sm">
+                            {{ substr($appointment->name, 0, 1) }}
+                        </div>
+                        <div class="flex flex-col">
+                            <span class="font-bold text-on-background text-base">{{ $appointment->name }}</span>
+                            @if($appointment->phone)
+                                <a href="tel:{{ $appointment->phone }}" class="text-xs text-primary font-bold hover:underline flex items-center gap-1">
+                                    <span class="material-symbols-outlined text-[10px]">phone</span>
+                                    {{ $appointment->phone }}
+                                </a>
+                            @else
+                                <span class="text-xs text-on-surface-variant">--</span>
+                            @endif
+                        </div>
+                    </div>
+                    <div>
+                        <span class="inline-block px-3 py-1 bg-surface-container-low text-on-surface-variant rounded-lg font-black text-xs border border-outline-variant">
+                            Token #{{ $appointment->token ?? '--' }}
+                        </span>
+                    </div>
+                </div>
+                
+                <div class="px-2 py-2 mt-1 bg-surface-container-low/30 rounded-xl border border-outline-variant/50 flex items-center gap-3">
+                    @if($appointment->doctor)
+                        <div class="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary font-black border border-primary/20 uppercase text-xs shrink-0">
+                            {{ substr($appointment->doctor->user->name ?? 'D', 0, 1) }}
+                        </div>
+                        <div class="flex flex-col">
+                            <span class="font-bold text-on-background text-sm truncate">{{ $appointment->doctor->user->name ?? 'Unknown' }}</span>
+                            <span class="text-[10px] text-outline font-medium uppercase tracking-wider truncate">{{ $appointment->doctor->specialization ?? 'General' }}</span>
+                        </div>
+                    @else
+                        <span class="text-xs text-outline italic">No doctor assigned</span>
+                    @endif
+                </div>
+
+                <div class="flex justify-between items-center pl-2 pt-2 border-t border-outline-variant/10">
+                    <div>
+                        <p class="text-[10px] font-black text-outline uppercase tracking-widest mb-0.5">Appointment Date</p>
+                        <span class="text-sm font-bold text-on-background flex items-center gap-1">
+                            <span class="material-symbols-outlined text-xs text-outline">calendar_today</span>
+                            {{ \Carbon\Carbon::parse($appointment->appointment_date)->format('M d, Y') }}
+                        </span>
+                    </div>
+                    <div>
+                        <p class="text-[10px] font-black text-outline uppercase tracking-widest mb-0.5 text-right">Status</p>
+                        <span class="px-3 py-1 {{ $class }} text-[10px] font-black uppercase rounded-full border tracking-widest">
+                            {{ str_replace('_', ' ', $statusValue) }}
+                        </span>
+                    </div>
+                </div>
+            </div>
+            @empty
+            <div class="py-12 text-center text-outline font-medium bg-surface rounded-2xl border border-outline-variant flex flex-col items-center justify-center">
+                <span class="material-symbols-outlined text-5xl mb-3 text-outline-variant">event_busy</span>
+                <p class="text-base font-black uppercase tracking-widest">No appointments found</p>
+                <p class="text-xs font-medium">Try adjusting your filters or search terms</p>
+            </div>
+            @endforelse
         </div>
 
         @if($appointments->hasPages())

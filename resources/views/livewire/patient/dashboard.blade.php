@@ -1,65 +1,71 @@
-<div class="p-6 md:p-8 space-y-8">
-    <!-- Greeting & Quick Action Hero -->
-    <section class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        
-        <div class="bg-white rounded-3xl p-8 shadow-sm border border-outline-variant/30 flex flex-col items-center justify-center text-center group cursor-pointer hover:shadow-xl transition-all duration-300">
-            <div class="w-16 h-16 bg-violet-50 rounded-2xl flex items-center justify-center text-primary-container mb-4 group-hover:scale-110 transition-transform">
-                <span class="material-symbols-outlined text-3xl">add_circle</span>
-            </div>
-            <h3 class="text-xl font-bold text-gray-900 dark:text-white">Book Appointment</h3>
-            <p class="text-sm text-gray-500 mt-2">Schedule your next check-up with your preferred specialist.</p>
-            <button class="mt-6 px-6 py-2.5 bg-primary-container text-white font-bold rounded-xl hover:shadow-lg hover:shadow-primary-container/30 transition-all">Start Booking</button>
+<div class="p-4 sm:p-8 max-w-4xl mx-auto font-manrope">
+    <!-- Main Queue Card -->
+    <div class="bg-surface rounded-[2rem] shadow-clinical border border-outline-variant overflow-hidden">
+        <!-- Card Header -->
+        <div class="p-6 sm:p-8 border-b border-outline-variant flex items-center bg-surface-container-low">
+            <h2 class="text-xl font-black flex items-center gap-3 text-on-surface">
+                <span class="w-3 h-3 rounded-full bg-[#f87171] animate-pulse"></span>
+                Live Queue Manager
+            </h2>
         </div>
-    </section>
 
-    <!-- Dashboard Grid -->
-    <section class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        <!-- Upcoming Appointments -->
-        <div class="bg-white rounded-3xl p-6 shadow-sm border border-outline-variant/30 flex flex-col">
-            <div class="flex justify-between items-center mb-6">
-                <h2 class="text-lg font-bold flex items-center gap-2">
-                    <span class="material-symbols-outlined text-primary-container">event</span>
-                    Upcoming Appointments
-                </h2>
-                <span class="text-xs font-bold text-primary-container cursor-pointer hover:underline">View All</span>
+        <!-- Card Body -->
+        <div class="p-6 sm:p-12 md:p-16 flex flex-col items-center justify-center text-center relative overflow-hidden">
+            <!-- Glow background effect -->
+            <div class="absolute -inset-10 bg-primary/5 blur-3xl rounded-full pointer-events-none"></div>
+
+            <p class="text-sm font-black text-outline uppercase tracking-widest mb-4 relative z-10">Now Serving</p>
+            
+            <div class="relative mb-6 z-10">
+                <div class="text-8xl sm:text-9xl font-black text-[#005bb0] tracking-tighter leading-none select-none">
+                    {{ $nowServing ? $nowServing->token_number : '— —' }}
+                </div>
             </div>
-            <div class="space-y-4">
-                @forelse($upcomingAppointments as $appointment)
-                    <div class="flex items-center gap-4 p-3 rounded-2xl hover:bg-gray-50 transition-colors border border-transparent hover:border-outline-variant/20">
-                        <img class="w-12 h-12 rounded-xl object-cover" src="{{ $appointment->doctor->user->profile_photo_url ?? 'https://ui-avatars.com/api/?name='.urlencode($appointment->doctor->user->name).'&background=E8DDFF&color=21005D' }}"/>
-                        <div class="flex-1">
-                            <h4 class="text-sm font-bold">Dr. {{ $appointment->doctor->user->name }}</h4>
-                            <p class="text-[11px] text-gray-500">{{ $appointment->doctor->specialization }} • {{ \Carbon\Carbon::parse($appointment->appointment_date)->format('d M, H:i') }}</p>
-                        </div>
-                        <span class="material-symbols-outlined text-gray-400 text-sm">chevron_right</span>
-                    </div>
+
+            <h4 class="text-xl sm:text-2xl font-bold text-on-background mb-10 relative z-10">
+                {{ $nowServing ? ($nowServing->appointment->name ?? 'Unknown Patient') : 'No Patient Assigned' }}
+            </h4>
+
+            <div class="flex flex-wrap items-center justify-center gap-3 relative z-10">
+                <p class="text-xs sm:text-sm font-bold text-outline uppercase tracking-widest w-full sm:w-auto mb-2 sm:mb-0">Next Tokens:</p>
+                @forelse($nextTokens as $token)
+                    <span class="px-5 py-2 bg-surface-container text-[#005bb0] font-black rounded-full text-sm sm:text-base border border-outline-variant/30 transition-all hover:scale-105">
+                        {{ $token->token_number }}
+                    </span>
                 @empty
-                    <div class="text-center py-8">
-                        <p class="text-sm text-gray-500">No upcoming appointments</p>
-                    </div>
+                    <span class="px-5 py-2 bg-surface-container text-outline font-black rounded-full text-sm sm:text-base border border-outline-variant/30">
+                        None
+                    </span>
                 @endforelse
             </div>
         </div>
+    </div>
 
-    </section>
-
-    <!-- Mobile Navigation (visible on mobile only) -->
-    <nav class="md:hidden flex justify-around items-center py-3 px-6 bg-white border-t border-gray-200 fixed bottom-0 w-full z-50">
-        <button class="flex flex-col items-center gap-1 text-violet-700">
-            <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">dashboard</span>
-            <span class="text-[10px] font-bold">Home</span>
-        </button>
-        <button class="flex flex-col items-center gap-1 text-gray-400">
-            <span class="material-symbols-outlined">calendar_month</span>
-            <span class="text-[10px] font-bold">Book</span>
-        </button>
-        <button class="flex flex-col items-center gap-1 text-gray-400">
-            <span class="material-symbols-outlined">chat_bubble</span>
-            <span class="text-[10px] font-bold">Messages</span>
-        </button>
-        <button class="flex flex-col items-center gap-1 text-gray-400">
-            <span class="material-symbols-outlined">account_circle</span>
-            <span class="text-[10px] font-bold">Profile</span>
-        </button>
-    </nav>
+    <!-- Patient's Personal Token Helper Card -->
+    @if($appointment)
+        <div class="mt-8 bg-primary-container/10 rounded-[2rem] border border-primary/20 p-6 sm:p-8 flex flex-col md:flex-row items-center justify-between gap-6 shadow-sm">
+            <div class="flex flex-col sm:flex-row items-center gap-5 text-center sm:text-left">
+                <div class="w-16 h-16 bg-[#005bb0] text-white rounded-2xl flex items-center justify-center font-black text-2xl shadow-lg shadow-[#005bb0]/25 shrink-0">
+                    {{ $appointment->token ?? '—' }}
+                </div>
+                <div>
+                    <h3 class="text-lg font-black text-on-background">Your Token Number</h3>
+                    <p class="text-sm text-outline font-medium">Consulting Doctor: <strong class="text-on-background">Dr. {{ $appointment->doctor->user->name ?? 'Staff' }}</strong></p>
+                </div>
+            </div>
+            <div>
+                @php
+                    $statusClasses = [
+                        'pending' => 'bg-amber-100 text-amber-800 border-amber-200',
+                        'completed' => 'bg-emerald-100 text-emerald-800 border-emerald-200',
+                    ];
+                    $statusVal = $appointment->status->value;
+                    $statusClass = $statusClasses[$statusVal] ?? 'bg-gray-100 text-gray-800 border-gray-200';
+                @endphp
+                <span class="px-5 py-2.5 border rounded-full text-xs font-black uppercase tracking-widest {{ $statusClass }}">
+                    Status: {{ ucfirst($statusVal) }}
+                </span>
+            </div>
+        </div>
+    @endif
 </div>

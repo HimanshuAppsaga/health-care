@@ -13,6 +13,9 @@
 
         @livewireStyles
         <style>
+            [x-cloak] {
+                display: none !important;
+            }
             .custom-scrollbar::-webkit-scrollbar {
                 width: 6px;
             }
@@ -34,12 +37,31 @@
     </head>
     <body class="antialiased bg-background text-on-background">
         @auth
-            <div class="flex h-screen font-manrope">
-                <!-- Sidebar -->
-                <livewire:common.sidebar />
+            <div x-data="{ mobileSidebarOpen: false }" class="flex h-screen font-manrope relative overflow-hidden">
+                <!-- Sidebar Wrapper -->
+                <div 
+                    :class="mobileSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'"
+                    class="fixed inset-y-0 left-0 z-50 transition-transform duration-300 ease-in-out lg:static lg:translate-x-0 bg-surface shrink-0"
+                >
+                    <livewire:common.sidebar />
+                </div>
+
+                <!-- Overlay for mobile sidebar -->
+                <div 
+                    x-show="mobileSidebarOpen" 
+                    x-cloak
+                    @click="mobileSidebarOpen = false"
+                    class="fixed inset-0 z-40 bg-black/40 lg:hidden transition-opacity duration-300"
+                    x-transition:enter="ease-out duration-300"
+                    x-transition:enter-start="opacity-0"
+                    x-transition:enter-end="opacity-100"
+                    x-transition:leave="ease-in duration-200"
+                    x-transition:leave-start="opacity-100"
+                    x-transition:leave-end="opacity-0"
+                ></div>
 
                 <!-- Main Content -->
-                <div class="flex-1 flex flex-col overflow-hidden">
+                <div class="flex-1 flex flex-col overflow-hidden min-w-0">
                     <!-- Header -->
                     <livewire:common.header :title="$title ?? ''" />
 

@@ -1,17 +1,25 @@
 <div class="relative flex">
     <!-- Sidebar -->
     <aside 
-        class="flex flex-col h-screen transition-all duration-300 ease-in-out bg-surface border-r border-outline-variant {{ $isCollapsed ? 'w-20' : 'w-72' }}"
+        class="flex flex-col h-screen transition-all duration-300 ease-in-out bg-surface border-r border-outline-variant w-72 lg:{{ $isCollapsed ? 'w-20' : 'w-72' }} relative"
     >
+        <!-- Close Button (Mobile Only) -->
+        <button 
+            @click="mobileSidebarOpen = false" 
+            class="lg:hidden absolute top-4 right-4 p-2 rounded-xl text-outline hover:text-on-surface hover:bg-surface-container transition-all"
+        >
+            <span class="material-symbols-outlined">close</span>
+        </button>
+
         <!-- Logo Section -->
         <div class="flex flex-col justify-center h-28 px-8">
             <div class="flex items-center gap-3">
                 <div class="flex-shrink-0">
-                    <span class="text-2xl font-bold tracking-tight text-primary">ClinicOS</span>
+                    <span class="text-2xl font-bold tracking-tight text-primary">{{ $title }}</span>
                 </div>
             </div>
             @if(!$isCollapsed)
-                <span class="text-xs font-medium text-outline mt-0.5">Admin Console</span>
+                <span class="text-xs font-medium text-outline mt-0.5">{{ $subtitle }}</span>
             @endif
         </div>
 
@@ -29,7 +37,8 @@
                             @endphp
                             <div class="relative">
                                 <a 
-                                    href="{{ Route::has($item['route']) ? route($item['route']) : '#' }}" 
+                                    href="{{ Route::has($item['route']) ? route($item['route'], $item['params'] ?? []) : '#' }}" 
+                                    wire:navigate
                                     class="flex items-center gap-4 px-8 py-3.5 text-sm font-semibold transition-all duration-200 group
                                         {{ $isActive 
                                             ? 'bg-primary-container text-on-primary-container' 
@@ -64,14 +73,62 @@
         <!-- Bottom Actions -->
         <div class="mt-auto py-6">
             <!-- Clinic Settings -->
-            <div class="px-4 mb-4">
-                <a href="#" class="flex items-center gap-4 px-4 py-3 text-sm font-semibold text-outline hover:text-on-surface transition-colors group">
-                    <x-icon name="settings" class="w-5 h-5 text-outline-variant group-hover:text-outline" />
-                    @if(!$isCollapsed)
-                        <span>Clinic Settings</span>
-                    @endif
-                </a>
-            </div>
+            @if(auth()->user()->hasRole('doctor'))
+                @php 
+                    $user = auth()->user();
+                    $clinicId = $user->doctor?->clinic_id ?? 0;
+                    $doctorId = $user->doctor?->id ?? 0;
+                    
+                    $isClinicDetailActive = request()->routeIs('doctor.clinic.detail');
+                    $isProfileActive = request()->routeIs('doctor.profile.detail');
+                    $isSettingsActive = request()->routeIs('doctor.clinic-settings');
+                @endphp
+
+                <!-- Clinic Detail -->
+                <div class="px-4 mb-2">
+                    <a href="{{ route('doctor.clinic.detail', ['id' => $clinicId]) }}" wire:navigate 
+                        class="flex items-center gap-4 px-4 py-3 text-sm font-semibold transition-all duration-200 group rounded-xl
+                            {{ $isClinicDetailActive 
+                                ? 'bg-primary-container text-on-primary-container' 
+                                : 'text-outline hover:text-on-surface hover:bg-surface-container' }}"
+                    >
+                        <x-icon name="building" class="w-5 h-5 {{ $isClinicDetailActive ? 'text-on-primary-container' : 'text-outline-variant group-hover:text-outline' }}" />
+                        @if(!$isCollapsed)
+                            <span>Clinic Detail</span>
+                        @endif
+                    </a>
+                </div>
+
+                <!-- My Profile -->
+                <div class="px-4 mb-2">
+                    <a href="{{ route('doctor.profile.detail', ['id' => $doctorId]) }}" wire:navigate 
+                        class="flex items-center gap-4 px-4 py-3 text-sm font-semibold transition-all duration-200 group rounded-xl
+                            {{ $isProfileActive 
+                                ? 'bg-primary-container text-on-primary-container' 
+                                : 'text-outline hover:text-on-surface hover:bg-surface-container' }}"
+                    >
+                        <x-icon name="user" class="w-5 h-5 {{ $isProfileActive ? 'text-on-primary-container' : 'text-outline-variant group-hover:text-outline' }}" />
+                        @if(!$isCollapsed)
+                            <span>My Profile</span>
+                        @endif
+                    </a>
+                </div>
+
+                <!-- Clinic Settings -->
+                <div class="px-4 mb-4">
+                    <a href="{{ route('doctor.clinic-settings') }}" wire:navigate 
+                        class="flex items-center gap-4 px-4 py-3 text-sm font-semibold transition-all duration-200 group rounded-xl
+                            {{ $isSettingsActive 
+                                ? 'bg-primary-container text-on-primary-container' 
+                                : 'text-outline hover:text-on-surface hover:bg-surface-container' }}"
+                    >
+                        <x-icon name="settings" class="w-5 h-5 {{ $isSettingsActive ? 'text-on-primary-container' : 'text-outline-variant group-hover:text-outline' }}" />
+                        @if(!$isCollapsed)
+                            <span>Clinic Settings</span>
+                        @endif
+                    </a>
+                </div>
+            @endif
 
             <!-- User Profile Section -->
             <div class="px-4 border-t border-outline-variant pt-6">
@@ -90,7 +147,7 @@
                                 {{ auth()->user()?->name ?? 'Dr. Sarah Smith' }}
                             </p>
                             <p class="text-[10px] font-semibold text-outline truncate">
-                                {{ ucfirst(auth()->user()?->roles()->first()?->name ?? 'Chief Administrator') }}
+                                {{ ucfirst(auth()->user()?->role?->name ?? 'Chief Administrator') }}
                             </p>
                         </div>
                     @endif

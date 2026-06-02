@@ -3,97 +3,124 @@
 namespace App\Livewire\Patient;
 
 use App\Models\Appointment;
-use App\Models\Notification;
-use App\Models\Prescription;
-use Illuminate\Support\Facades\Auth;
+use App\Models\Clinic;
+use App\Models\Doctor;
+use App\Models\Queue;
+use App\Services\CurrentTokenService;
+use Carbon\Carbon;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
 use Livewire\Component;
 
 #[Layout('components.layouts.app')]
-#[Title('Patient Dashboard | HealthSync Pro')]
+#[Title('Queue Dashboard | ClinicOS')]
 class Dashboard extends Component
 {
-    public $patient;
+    protected $currentTokenService;
 
-    public $nextAppointment;
-
-    public $upcomingAppointments;
-
-    public $recentPrescriptions;
-
-    public $notifications;
-
-    // Mock data for vitals as they don't exist in schema yet
-    public $vitals = [
-        'heart_rate' => 72,
-        'weight' => 168,
-        'sleep_avg' => 7.5,
-        'heart_rate_change' => -4,
-    ];
-
-    public function mount()
+    public function boot(CurrentTokenService $currentTokenService)
     {
-        $user = Auth::user();
-        $this->patient = $user->patient;
-
-        if (! $this->patient) {
-            // Handle case where user is not a patient
-            // For now, we'll just use the user object if patient record is missing
-            // but in a real app, we'd redirect or show an error.
-        }
-
-        $this->loadData();
+        $this->currentTokenService = $currentTokenService;
     }
 
-    public function loadData()
+    public function getListeners()
     {
-        $patientId = $this->patient ? $this->patient->id : null;
+        $user = auth()->user();
+        $patient = $user ? $user->patient : null;
+        $today = Carbon::today();
 
-        if ($patientId) {
-            // Next Appointment
-            $this->nextAppointment = Appointment::where('patient_id', $patientId)
-                ->where('appointment_date', '>=', now()->toDateString())
-                ->where('status', 'confirmed')
-                ->with('doctor.user')
-                ->orderBy('appointment_date')
-                ->orderBy('start_time')
+        $appointment = null;
+        if ($patient) {
+            $appointment = Appointment::where('patient_id', $patient->id)
+                ->whereDate('appointment_date', $today)
                 ->first();
 
-            // Upcoming Appointments (excluding the next one)
-            $this->upcomingAppointments = Appointment::where('patient_id', $patientId)
-                ->where('appointment_date', '>=', now()->toDateString())
-                ->where('status', 'confirmed')
-                ->when($this->nextAppointment, function ($query) {
-                    $query->where('id', '!=', $this->nextAppointment->id);
-                })
-                ->with('doctor.user')
-                ->orderBy('appointment_date')
-                ->orderBy('start_time')
-                ->limit(3)
-                ->get();
-
-            // Recent Prescriptions
-            $this->recentPrescriptions = Prescription::where('patient_id', $patientId)
-                ->with(['doctor.user', 'items'])
-                ->latest()
-                ->limit(3)
-                ->get();
-
-            // Notifications
-            $this->notifications = Notification::where('user_id', Auth::id())
-                ->latest()
-                ->limit(5)
-                ->get();
-        } else {
-            $this->upcomingAppointments = collect();
-            $this->recentPrescriptions = collect();
-            $this->notifications = collect();
+            if (! $appointment) {
+                $appointment = Appointment::where('patient_id', $patient->id)
+                    ->latest('appointment_date')
+                    ->first();
+            }
         }
+
+        $clinicId = $appointment ? $appointment->clinic_id : ($patient->clinic_id ?? null);
+        if (! $clinicId) {
+            $firstClinic = Clinic::first();
+            $clinicId = $firstClinic ? $firstClinic->id : null;
+        }
+
+        $apiKey = $clinicId ? Clinic::where('id', $clinicId)->value('api_key') : '1';
+        $apiKey = $apiKey ?: '1';
+
+        return [
+            "echo:queue-updates.{$apiKey},QueueUpdated" => '$refresh',
+            "echo:schedule-updates.{$apiKey},ScheduleUpdated" => '$refresh',
+        ];
     }
 
     public function render()
     {
-        return view('livewire.patient.dashboard');
+        $user = auth()->user();
+        $patient = $user->patient;
+        $today = Carbon::today();
+
+        // 1. Try to find the patient's appointment for today
+        $appointment = null;
+        if ($patient) {
+            $appointment = Appointment::where('patient_id', $patient->id)
+                ->whereDate('appointment_date', $today)
+                ->first();
+
+            // 2. If no appointment today, get the latest appointment
+            if (! $appointment) {
+                $appointment = Appointment::where('patient_id', $patient->id)
+                    ->latest('appointment_date')
+                    ->first();
+            }
+        }
+
+        // 3. Resolve Doctor ID & Clinic ID
+        $doctorId = $appointment ? $appointment->doctor_id : null;
+        $clinicId = $appointment ? $appointment->clinic_id : ($patient->clinic_id ?? null);
+
+        // Fallbacks if doctor or clinic are still not found
+        if (! $doctorId) {
+            $firstDoctor = Doctor::activeDoctor()->first();
+            $doctorId = $firstDoctor ? $firstDoctor->id : null;
+        }
+        if (! $clinicId) {
+            $firstClinic = Clinic::first();
+            $clinicId = $firstClinic ? $firstClinic->id : null;
+        }
+
+        // 4. Fetch the current serving token for this doctor
+        $nowServing = null;
+        $nextTokens = collect();
+        $isDoctorOnHold = false;
+
+        if ($doctorId && $clinicId) {
+            $result = $this->currentTokenService->getCurrentToken($clinicId, $doctorId);
+            $nowServing = $result['success'] ? $result['data']['current_token'] : null;
+
+            $nextTokens = Queue::with('appointment')
+                ->whereHas('appointment', function ($query) use ($doctorId, $today) {
+                    $query->where('doctor_id', $doctorId)
+                        ->whereDate('appointment_date', $today);
+                })
+                ->where('status', 'waiting')
+                ->orderByRaw('CAST(token_number AS UNSIGNED) ASC')
+                ->take(3)
+                ->get();
+
+            $isDoctorOnHold = Doctor::where('id', $doctorId)
+                ->where('is_on_hold', true)
+                ->exists();
+        }
+
+        return view('livewire.patient.dashboard', [
+            'nowServing' => $nowServing,
+            'nextTokens' => $nextTokens,
+            'isDoctorOnHold' => $isDoctorOnHold,
+            'appointment' => $appointment,
+        ]);
     }
 }
