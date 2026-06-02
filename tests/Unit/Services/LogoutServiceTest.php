@@ -32,6 +32,9 @@ class LogoutServiceTest extends TestCase
         $this->assertTrue(session()->has('foo'));
         $this->assertAuthenticatedAs($user);
 
+        // Bind the session driver to the request so hasSession() is true
+        request()->setLaravelSession(session()->driver());
+
         $this->logoutService->logoutUser();
 
         // After logout, session should be invalidated and user logged out

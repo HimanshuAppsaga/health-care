@@ -101,6 +101,12 @@ class AuthenticationService
             ]);
         }
 
+        if (isset($data['token']) && ! Password::broker()->tokenExists($user, $data['token'])) {
+            throw ValidationException::withMessages([
+                'email' => [trans('passwords.token')],
+            ]);
+        }
+
         $user->forceFill([
             'password' => Hash::make($data['password']),
         ]);
