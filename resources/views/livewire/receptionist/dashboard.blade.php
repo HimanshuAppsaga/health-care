@@ -90,6 +90,7 @@
                                 @forelse($nextTokens as $token)
                                     <div class="flex items-center gap-1 px-3 py-1 bg-surface-container-low text-on-surface-variant rounded-full border border-outline-variant/30">
                                         <span class="font-black text-sm text-primary">{{ $token->token_number }}</span>
+                                        <span class="text-xs font-medium text-on-surface-variant">- {{ $token->appointment->name ?? 'Unknown' }}</span>
                                     </div>
                                 @empty
                                     <span class="text-xs text-outline font-medium bg-surface-container-low px-3 py-1 rounded-full">None</span>

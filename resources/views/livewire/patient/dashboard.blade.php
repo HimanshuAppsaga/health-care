@@ -30,7 +30,7 @@
                 <p class="text-xs sm:text-sm font-bold text-outline uppercase tracking-widest w-full sm:w-auto mb-2 sm:mb-0">Next Tokens:</p>
                 @forelse($nextTokens as $token)
                     <span class="px-5 py-2 bg-surface-container text-[#005bb0] font-black rounded-full text-sm sm:text-base border border-outline-variant/30 transition-all hover:scale-105">
-                        {{ $token->token_number }}
+                        {{ $token->token_number }} <span class="text-xs font-bold text-outline-variant">- {{ $token->appointment->name ?? 'Unknown' }}</span>
                     </span>
                 @empty
                     <span class="px-5 py-2 bg-surface-container text-outline font-black rounded-full text-sm sm:text-base border border-outline-variant/30">
