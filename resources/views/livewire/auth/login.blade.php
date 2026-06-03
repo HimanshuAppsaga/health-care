@@ -1,7 +1,7 @@
 <div>
     <!-- Top Anchor -->
     <div class="mb-12 flex flex-col items-center">
-        <span class="text-2xl font-black text-primary tracking-tighter font-manrope">ClinicOS</span>
+        <span class="text-2xl font-black text-primary tracking-tighter font-manrope">Clinic Saga</span>
         <div class="h-1.5 w-12 bg-secondary mt-2 rounded-full"></div>
     </div>
     
@@ -22,7 +22,7 @@
                     <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-outline-variant group-focus-within:text-primary transition-colors">
                         <span class="material-symbols-outlined text-xl">mail</span>
                     </div>
-                    <input wire:model="email" class="block w-full pl-12 pr-4 py-4 bg-surface-container-low border border-transparent focus:border-primary/30 focus:bg-surface focus:ring-4 focus:ring-primary/5 rounded-2xl text-sm font-bold text-on-background transition-all placeholder:text-outline-variant/50" id="email" name="email" placeholder="practitioner@clinicos.com" required="" type="email"/>
+                    <input wire:model="email" class="block w-full pl-12 pr-4 py-4 bg-surface-container-low border border-transparent focus:border-primary/30 focus:bg-surface focus:ring-4 focus:ring-primary/5 rounded-2xl text-sm font-bold text-on-background transition-all placeholder:text-outline-variant/50" id="email" name="email" placeholder="practitioner@clinicsaga.com" required="" type="email"/>
                 </div>
                 @error('email') <span class="text-error text-xs font-bold pl-1">{{ $message }}</span> @enderror
             </div>
@@ -69,7 +69,7 @@
     <!-- Footer -->
     <footer class="mt-12 text-center">
         <p class="font-manrope text-[10px] uppercase tracking-[0.2em] font-black text-outline-variant">
-            © {{ date('Y') }} ClinicOS • Clinical Precision Platform
+            © {{ date('Y') }} Clinic Saga • Clinical Precision Platform
         </p>
     </footer>
 </div>

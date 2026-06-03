@@ -14,7 +14,7 @@ class Sidebar extends Component
 
     public bool $isCollapsed = false;
 
-    public string $title = 'ClinicOS';
+    public string $title = 'Clinic Saga';
 
     public string $subtitle = 'Admin Console';
 
@@ -49,10 +49,10 @@ class Sidebar extends Component
                     if ($clinic) {
                         $this->title = $clinic->name;
                     } else {
-                        $this->title = config('app.name', 'ClinicOS');
+                        $this->title = config('app.name', 'Clinic Saga');
                     }
                 } else {
-                    $this->title = config('app.name', 'ClinicOS');
+                    $this->title = config('app.name', 'Clinic Saga');
                 }
 
                 $this->subtitle = match ($role) {

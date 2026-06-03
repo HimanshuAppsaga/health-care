@@ -6,8 +6,8 @@
         </button>
         @if($title)
             @php
-                // Remove the suffix | ClinicOS if it exists for cleaner header display
-                $displayTitle = str_replace(' | ClinicOS', '', $title);
+                // Remove the suffix | Clinic Saga if it exists for cleaner header display
+                $displayTitle = str_replace(' | Clinic Saga', '', $title);
             @endphp
             <h1 class="text-lg sm:text-xl font-black text-on-background tracking-tight truncate">{{ $displayTitle }}</h1>
         @endif

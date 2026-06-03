@@ -66,7 +66,7 @@
     <!-- Footer -->
     <footer class="mt-12 text-center">
         <p class="font-manrope text-[10px] uppercase tracking-[0.2em] font-black text-outline-variant opacity-60">
-            © {{ date('Y') }} ClinicOS • Precision Security Layer
+            © {{ date('Y') }} Clinic Saga • Precision Security Layer
         </p>
     </footer>
 </div>

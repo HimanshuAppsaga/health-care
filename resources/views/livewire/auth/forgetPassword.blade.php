@@ -27,7 +27,7 @@
                     <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
                         <span class="material-symbols-outlined text-outline-variant text-xl group-focus-within:text-primary transition-colors">mail</span>
                     </div>
-                    <input wire:model="email" class="block w-full pl-12 pr-4 py-4 bg-surface-container-low border-transparent rounded-2xl text-sm font-bold text-on-background focus:ring-4 focus:ring-primary/5 focus:border-primary/30 focus:bg-surface transition-all placeholder:text-outline-variant/50 outline-none" id="email" name="email" placeholder="practitioner@clinicos.com" required="" type="email"/>
+                    <input wire:model="email" class="block w-full pl-12 pr-4 py-4 bg-surface-container-low border-transparent rounded-2xl text-sm font-bold text-on-background focus:ring-4 focus:ring-primary/5 focus:border-primary/30 focus:bg-surface transition-all placeholder:text-outline-variant/50 outline-none" id="email" name="email" placeholder="practitioner@clinicsaga.com" required="" type="email"/>
                 </div>
                 @error('email') <span class="text-error text-xs font-bold pl-1">{{ $message }}</span> @enderror
             </div>
@@ -50,7 +50,7 @@
     <!-- Footer -->
     <footer class="mt-12 text-center">
         <p class="font-manrope text-[10px] uppercase tracking-[0.2em] font-black text-outline-variant opacity-60">
-            © {{ date('Y') }} ClinicOS • Clinical Precision Platform
+            © {{ date('Y') }} Clinic Saga • Clinical Precision Platform
         </p>
     </footer>
 </div>

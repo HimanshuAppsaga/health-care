@@ -10,7 +10,7 @@ use Livewire\Component;
 use Livewire\WithPagination;
 
 #[Layout('components.layouts.app')]
-#[Title('Appointments | ClinicOS')]
+#[Title('Appointments | Clinic Saga')]
 class AppointmentList extends Component
 {
     use WithPagination;

@@ -10,7 +10,7 @@ use Livewire\Attributes\Validate;
 use Livewire\Component;
 
 #[Layout('components.layouts.app')]
-#[Title('Assign Role | ClinicOS')]
+#[Title('Assign Role | Clinic Saga')]
 class AssignRole extends Component
 {
     #[Validate('required|email|exists:users,email', message: [

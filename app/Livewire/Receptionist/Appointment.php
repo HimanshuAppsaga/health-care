@@ -13,7 +13,7 @@ use Livewire\Attributes\Title;
 use Livewire\Component;
 
 #[Layout('components.layouts.app')]
-#[Title('Book Appointment | ClinicOS')]
+#[Title('Book Appointment | Clinic Saga')]
 class Appointment extends Component
 {
     protected AppointmentBookingService $bookingService;

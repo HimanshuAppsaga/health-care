@@ -13,7 +13,7 @@ use Livewire\Attributes\Title;
 use Livewire\Component;
 
 #[Layout('components.layouts.app')]
-#[Title('Queue Dashboard | ClinicOS')]
+#[Title('Queue Dashboard | Clinic Saga')]
 class Dashboard extends Component
 {
     protected $currentTokenService;

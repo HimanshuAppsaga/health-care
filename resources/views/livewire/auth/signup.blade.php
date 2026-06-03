@@ -3,7 +3,7 @@
     <div class="flex flex-col items-center space-y-2 mb-12">
         <div class="flex items-center space-x-2">
             <span class="material-symbols-outlined text-primary text-4xl" style="font-variation-settings: 'FILL' 1;">medical_services</span>
-            <span class="text-2xl font-black text-primary tracking-tighter font-manrope">ClinicOS</span>
+            <span class="text-2xl font-black text-primary tracking-tighter font-manrope">Clinic Saga</span>
         </div>
         <p class="text-on-surface-variant font-bold text-[10px] uppercase tracking-[0.2em]">Precision Sanctuary Enrollment</p>
     </div>
@@ -30,7 +30,7 @@
                     <label class="block text-[10px] font-black uppercase tracking-widest text-outline ml-1" for="email">Email Address</label>
                     <div class="relative group">
                         <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-outline-variant text-lg transition-colors group-focus-within:text-primary">alternate_email</span>
-                        <input wire:model="email" class="w-full bg-surface-container-low border-transparent focus:border-primary/30 focus:bg-surface focus:ring-4 focus:ring-primary/5 rounded-2xl py-4 pl-12 pr-4 text-sm font-bold text-on-background transition-all placeholder:text-outline-variant/50 outline-none" id="email" name="email" placeholder="precision@clinicos.com" required="" type="email"/>
+                        <input wire:model="email" class="w-full bg-surface-container-low border-transparent focus:border-primary/30 focus:bg-surface focus:ring-4 focus:ring-primary/5 rounded-2xl py-4 pl-12 pr-4 text-sm font-bold text-on-background transition-all placeholder:text-outline-variant/50 outline-none" id="email" name="email" placeholder="precision@clinicsaga.com" required="" type="email"/>
                     </div>
                     @error('email') <span class="text-error text-xs font-bold pl-1">{{ $message }}</span> @enderror
                 </div>
@@ -85,7 +85,7 @@
     </div>
 
     <div class="flex flex-col md:flex-row items-center justify-between text-outline-variant text-[10px] font-black uppercase tracking-[0.2em] opacity-60">
-        <p>© {{ date('Y') }} ClinicOS</p>
+        <p>© {{ date('Y') }} Clinic Saga</p>
         <div class="flex space-x-6 mt-4 md:mt-0">
             <a class="hover:text-primary transition-colors" href="#">Help Center</a>
             <a class="hover:text-primary transition-colors" href="#">System Status</a>
