@@ -60,4 +60,32 @@ class RememberMeTest extends TestCase
 
         $this->assertNotNull($rememberCookie, 'Remember cookie was not queued by Livewire!');
     }
+
+    public function test_user_login_without_remember_me_does_not_queue_remember_cookie()
+    {
+        $user = User::factory()->create([
+            'email' => 'test3@example.com',
+            'password' => bcrypt('password'),
+        ]);
+
+        $component = Livewire::test(Login::class)
+            ->set('email', 'test3@example.com')
+            ->set('password', 'password')
+            ->set('remember', false)
+            ->call('authenticate');
+
+        $this->assertAuthenticatedAs($user);
+
+        $queuedCookies = Cookie::getQueuedCookies();
+
+        $rememberCookie = null;
+        foreach ($queuedCookies as $cookie) {
+            if (str_starts_with($cookie->getName(), 'remember_web_')) {
+                $rememberCookie = $cookie;
+                break;
+            }
+        }
+
+        $this->assertNull($rememberCookie, 'Remember cookie was queued when remember me was false!');
+    }
 }
