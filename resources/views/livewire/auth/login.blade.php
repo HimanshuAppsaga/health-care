@@ -44,7 +44,7 @@
             
             <!-- Remember Me -->
             <div class="flex items-center pl-1">
-                <input wire:model="remember" class="h-4 w-4 text-primary focus:ring-primary/20 border-outline-variant/50 rounded-lg cursor-pointer transition-all" id="remember_me" name="remember_me" type="checkbox"/>
+                <input wire:model="remember" value="1" class="h-4 w-4 text-primary focus:ring-primary/20 border-outline-variant/50 rounded-lg cursor-pointer transition-all" id="remember_me" name="remember_me" type="checkbox"/>
                 <label class="ml-3 block text-sm font-bold text-on-surface-variant cursor-pointer" for="remember_me">
                     Keep me logged in
                 </label>
